@@ -19,10 +19,133 @@
 <section id="saved" class="hidden"><div class="box"><h2>محفوظاتي على هذا الجهاز</h2><h3>طلبات الخدمات</h3><div id="sl"></div><h3>إعلانات العمل</h3><div id="jl"></div><h3>العقارات</h3><div id="rl"></div><button onclick="clearAll()">مسح المحفوظات</button></div></section>
 </main><footer>اقضيلي © 2026 — نسخة تجريبية أولى</footer>
 <script>
-const $=x=>document.getElementById(x),keys=['services','jobs','realty'];function show(id){['home','services','jobs','realty','ask','saved'].forEach(x=>$(x).classList.toggle('hidden',x!==id));render();scrollTo(0,0)}function get(k){try{return JSON.parse(localStorage.getItem('iqdili_'+k)||'[]')}catch(e){return[]}}function val(id){return $(id).value.trim()}function save(k,o){let a=get(k);a.unshift({...o,date:new Date().toLocaleString('ar-TN')});localStorage.setItem('iqdili_'+k,JSON.stringify(a));alert('تحفظت على هذا الجهاز فقط، ومازالت موش منشورة.');render()}
-$('sf').onsubmit=e=>{e.preventDefault();save('services',{type:val('st'),details:val('sd'),area:val('sa'),when:val('sw')});e.target.reset();$('sa').value='صفاقس'};
-$('jf').onsubmit=e=>{e.preventDefault();save('jobs',{kind:val('jk'),title:val('jt'),area:val('ja'),nature:val('jn'),info:val('ji'),contact:val('jc')});e.target.reset();$('ja').value='صفاقس'};
-$('rf').onsubmit=e=>{e.preventDefault();save('realty',{action:val('rt'),type:val('rp'),area:val('ra'),price:val('price'),size:val('size'),rooms:val('rooms'),info:val('ri'),contact:val('rc')});e.target.reset();$('ra').value='صفاقس'};
+const SUPABASE_URL = "https://djzapiwxxuligpdbskfm.supabase.co";
+const SUPABASE_KEY = "sb_publishable_IO1BB--ciapq2gJBjYxr3g_Yv4um_9n";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+const $=x=>document.getElementById(x);
+const keys=['services','jobs','realty'];
+
+function show(id){
+  ['home','services','jobs','realty','ask','saved']
+  .forEach(x=>$(x).classList.toggle('hidden',x!==id));
+  render();
+  scrollTo(0,0);
+}
+
+function get(k){
+  try{return JSON.parse(localStorage.getItem('iqdili_'+k)||'[]')}
+  catch(e){return[]}
+}
+
+function val(id){return $(id).value.trim()}
+
+async function save(k,o){
+  let table={
+    services:'service_requests',
+    jobs:'job_posts',
+    realty:'real_estate_posts'
+  }[k];
+
+  let data={};
+
+  if(k==='services'){
+    data={
+      title:o.type,
+      description:o.details,
+      city:o.area,
+      status:'pending'
+    };
+  }
+
+  if(k==='jobs'){
+    data={
+      title:o.kind+' - '+o.title,
+      description:o.info,
+      city:o.area,
+      phone:o.contact,
+      status:'pending'
+    };
+  }
+
+  if(k==='realty'){
+    data={
+      title:o.action+' - '+o.type,
+      property_type:o.type,
+      listing_type:o.action,
+      description:o.info,
+      city:o.area,
+      phone:o.contact,
+      status:'pending'
+    };
+  }
+
+  const {error}=await supabaseClient
+    .from(table)
+    .insert([data]);
+
+  if(error){
+    alert('فشل الإرسال: '+error.message);
+    return false;
+  }
+
+  let a=get(k);
+  a.unshift({...o,date:new Date().toLocaleString('ar-TN')});
+  localStorage.setItem('iqdili_'+k,JSON.stringify(a));
+
+  alert('وصل طلبك للإدارة وهو في انتظار المراجعة.');
+  render();
+  return true;
+}
+
+$('sf').onsubmit=async e=>{
+  e.preventDefault();
+  if(await save('services',{
+    type:val('st'),
+    details:val('sd'),
+    area:val('sa'),
+    when:val('sw')
+  })){
+    e.target.reset();
+    $('sa').value='صفاقس';
+  }
+};
+
+$('jf').onsubmit=async e=>{
+  e.preventDefault();
+  if(await save('jobs',{
+    kind:val('jk'),
+    title:val('jt'),
+    area:val('ja'),
+    nature:val('jn'),
+    info:val('ji'),
+    contact:val('jc')
+  })){
+    e.target.reset();
+    $('ja').value='صفاقس';
+  }
+};
+
+$('rf').onsubmit=async e=>{
+  e.preventDefault();
+  if(await save('realty',{
+    action:val('rt'),
+    type:val('rp'),
+    area:val('ra'),
+    price:val('price'),
+    size:val('size'),
+    rooms:val('rooms'),
+    info:val('ri'),
+    contact:val('rc')
+  })){
+    e.target.reset();
+    $('ra').value='صفاقس';
+  }
+};
 function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function list(k,fn){let a=get(k);return a.length?a.map(fn).join(''):'<p class="muted">ما فما حتى عنصر محفوظ.</p>'}
 function render(){$('sl').innerHTML=list('services',x=>`<div class="entry"><b>${esc(x.type)}</b><p>${esc(x.details)}</p><small>${esc(x.area)} · ${esc(x.date)}</small></div>`);$('jl').innerHTML=list('jobs',x=>`<div class="entry"><b>${esc(x.kind)}: ${esc(x.title)}</b><p>${esc(x.info)}</p><small>${esc(x.area)} · ${esc(x.date)}</small></div>`);$('rl').innerHTML=list('realty',x=>`<div class="entry"><b>${esc(x.action)} · ${esc(x.type)}</b><p>${esc(x.area)}: ${esc(x.info)}</p><small>${x.price?esc(x.price)+' د.ت · ':''}${x.size?esc(x.size)+' م² · ':''}${esc(x.date)}</small></div>`)}
 function ask(){if(!val('q'))return alert('اكتب سؤالك');$('answer').textContent='هذه نسخة تجريبية غير مربوطة بمساعد ذكي. ربط المساعد يكون في مرحلة لاحقة.';$('answer').classList.remove('hidden')}function clearAll(){if(confirm('متأكد تحب تمسح المحفوظات؟')){keys.forEach(k=>localStorage.removeItem('iqdili_'+k));render()}}render();
