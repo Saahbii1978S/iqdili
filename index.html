@@ -85,16 +85,17 @@ if(k==='services'){
       status:'pending'
     };
 }
-  if(k==='jobs'){
-    data={
-      title:o.kind+' - '+o.title,
-      description:o.info,
-      city:o.area,
-      phone:o.contact,
-      status:'pending'
-    };
-  }
-
+if(k==='jobs'){
+  data={
+    title:o.kind+' - '+o.title,
+    job_type:o.kind,
+    work_nature:o.nature,
+    description:o.info,
+    city:o.area,
+    phone:o.contact,
+    status:'pending'
+  };
+}
 if(k==='realty'){
   data={
     title:o.action+' - '+o.type,
