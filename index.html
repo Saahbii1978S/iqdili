@@ -133,18 +133,7 @@ if(k==='jobs'){
     status:'pending'
   };
 }
-if(k==='realty'){if(k==='market'){
-  data={
-    title:o.title,
-    description:o.description,
-    category:o.category,
-    price:o.price ? Number(o.price) : null,
-    city:o.city,
-    phone:o.phone,
-    listing_type:o.listing_type,
-    status:'pending'
-  };
-}
+if(k==='realty'){
   data={
     title:o.action+' - '+o.type,
     property_type:o.type,
@@ -157,6 +146,20 @@ if(k==='realty'){if(k==='market'){
     rooms:o.rooms ? Number(o.rooms) : null,
     status:'pending'
   };
+}
+
+if(k==='market'){
+  data={
+    title:o.title,
+    description:o.description,
+    category:o.category,
+    price:o.price ? Number(o.price) : null,
+    city:o.city,
+    phone:o.phone,
+    listing_type:o.listing_type,
+    status:'pending'
+  };
+}
 }
   const {error}=await supabaseClient
     .from(table)
