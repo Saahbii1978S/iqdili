@@ -160,7 +160,6 @@ if(k==='market'){
     status:'pending'
   };
 }
-}
   const {error}=await supabaseClient
     .from(table)
     .insert([data]);
