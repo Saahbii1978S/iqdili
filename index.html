@@ -109,9 +109,9 @@
 <footer>اقضيلي © 2026 — نسخة سحابية كاملة</footer>
 
 <script>
-const URL = "https://djzapiwxxuligpdbskfm.supabase.co";
+const SUPABASE_URL = "https://djzapiwxxuligpdbskfm.supabase.co";
 const KEY = "sb_publishable_IO1BB--ciapq2gJBjYxr3g_Yv4um_9n";
-const supabase = window.supabase.createClient(URL, KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, KEY);
 
 function show(id){
   ['home','services','jobs','realty','market','ask','saved'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
