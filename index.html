@@ -122,11 +122,22 @@ try {
   console.error("Supabase error:", error);
 }
 
-function show(id){
-  ['home','services','jobs','realty','market','ask','saved'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
-  loadData();
-  scrollTo(0,0);
-}
+window.show = function(id){
+  const sections = ['home','services','jobs','realty','market','ask','saved'];
+
+  sections.forEach(function(x){
+    const section = document.getElementById(x);
+    if(section){
+      section.classList.toggle('hidden', x !== id);
+    }
+  });
+
+  if(typeof loadData === 'function'){
+    loadData();
+  }
+
+  window.scrollTo(0,0);
+};
 
 function val(id){return document.getElementById(id).value.trim()}
 
