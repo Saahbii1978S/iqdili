@@ -220,7 +220,28 @@ $('rf').onsubmit=async e=>{
     $('ra').value='صفاقس';
   }
 };
-function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function list(k,fn){let a=get(k);return a.length?a.map(fn).join(''):'<p class="muted">ما فما حتى عنصر محفوظ.</p>'}
+async function submitMarket(){
+  if(!val('mn') || !val('ma') || !val('md') || !val('mphone')){
+    return alert('عمّر الخانات المطلوبة');
+  }
+
+  if(await save('market',{
+    listing_type:val('mt'),
+    category:val('mc'),
+    title:val('mn'),
+    price:val('mp'),
+    city:val('ma'),
+    description:val('md'),
+    phone:val('mphone')
+  })){
+    $('mn').value='';
+    $('mp').value='';
+    $('ma').value='تونس';
+    $('md').value='';
+    $('mphone').value='';
+  }
+}
+  function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function list(k,fn){let a=get(k);return a.length?a.map(fn).join(''):'<p class="muted">ما فما حتى عنصر محفوظ.</p>'}
 function render(){$('sl').innerHTML=list('services',x=>`<div class="entry"><b>${esc(x.type)}</b><p>${esc(x.details)}</p><small>${esc(x.area)} · ${esc(x.date)}</small></div>`);$('jl').innerHTML=list('jobs',x=>`<div class="entry"><b>${esc(x.kind)}: ${esc(x.title)}</b><p>${esc(x.info)}</p><small>${esc(x.area)} · ${esc(x.date)}</small></div>`);$('rl').innerHTML=list('realty',x=>`<div class="entry"><b>${esc(x.action)} · ${esc(x.type)}</b><p>${esc(x.area)}: ${esc(x.info)}</p><small>${x.price?esc(x.price)+' د.ت · ':''}${x.size?esc(x.size)+' م² · ':''}${esc(x.date)}</small></div>`)}
 function ask(){if(!val('q'))return alert('اكتب سؤالك');$('answer').textContent='هذه نسخة تجريبية غير مربوطة بمساعد ذكي. ربط المساعد يكون في مرحلة لاحقة.';$('answer').classList.remove('hidden')}function clearAll(){if(confirm('متأكد تحب تمسح المحفوظات؟')){keys.forEach(k=>localStorage.removeItem('iqdili_'+k));render()}}render();
 </script></body></html>
