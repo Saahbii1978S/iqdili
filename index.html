@@ -5,6 +5,7 @@
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f2f7f6;color:#173b38;font:16px Tahoma,Arial;line-height:1.7}header{background:linear-gradient(135deg,#087f75,#14566a);color:white;text-align:center;padding:24px}nav{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;background:white;padding:12px}button{font:inherit;cursor:pointer;border:0;border-radius:9px;padding:9px 12px;background:#087f75;color:white}nav button{background:#e3f3ef;color:#087f75}main{max-width:900px;margin:auto;padding:16px}.box,.card{background:white;border:1px solid #dce8e5;border-radius:14px;padding:16px;margin-bottom:12px}.entry{padding:10px;border:1px solid #e3f3ef;border-radius:8px;margin-bottom:10px;background:#fafdfc}.hidden{display:none!important}.note{background:#fff6df;color:#75591b;padding:12px;border-radius:10px;font-size:13px}
 </style>
+<!-- تصليح رابط استدعاء مكتبة Supabase -->
 <script src="https://jsdelivr.net"></script>
 </head>
 <body>
@@ -69,7 +70,8 @@
 </main>
 
 <script>
-const URL = "https://supabase.co";
+// تصليح رابط مشروعك الفعلي الحقيقي
+const URL = "https://djzapiwxxuligpdbskfm.supabase.co";
 const KEY = "sb_publishable_IO1BB--ciapq2gJBjYxr3g_Yv4um_9n";
 const supabase = window.supabase.createClient(URL, KEY);
 
