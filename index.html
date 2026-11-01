@@ -111,7 +111,16 @@
 <script>
 const SUPABASE_URL = "https://djzapiwxxuligpdbskfm.supabase.co";
 const KEY = "sb_publishable_IO1BB--ciapq2gJBjYxr3g_Yv4um_9n";
-const supabase = window.supabase.createClient(SUPABASE_URL, KEY);
+
+let supabase = null;
+
+try {
+  if (window.supabase && window.supabase.createClient) {
+    supabase = window.supabase.createClient(SUPABASE_URL, KEY);
+  }
+} catch (error) {
+  console.error("Supabase error:", error);
+}
 
 function show(id){
   ['home','services','jobs','realty','market','ask','saved'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));
@@ -122,6 +131,10 @@ function show(id){
 function val(id){return document.getElementById(id).value.trim()}
 
 async function sendData(table) {
+  if (!supabase) {
+    alert('الاتصال بقاعدة البيانات غير متوفر حالياً.');
+    return;
+  }
   let data = {};
   if(table==='services') {
     if(!val('sd') || !val('sc')) { alert('الرجاء تعبئة التفاصيل ورقم الهاتف!'); return; }
@@ -155,6 +168,7 @@ async function sendData(table) {
 }
 
 async function loadData() {
+  if (!supabase) return;
   const { data: m } = await supabase.from('market').select('*').order('id', { ascending: false });
   if(m && document.getElementById('market-list')) { 
     document.getElementById('market-list').innerHTML = m.map(x=>`<div class="entry"><b>[${x.ad_type}] ${x.product_name}</b> - <span style="color:#087f75">${x.price} د.ت</span><br><small>الصنف: ${x.category} | 📍 ${x.region}</small><br>${x.description}<br><small>📞 تواصل: ${x.contact_phone}</small></div>`).join(''); 
