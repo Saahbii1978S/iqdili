@@ -95,18 +95,20 @@ if(k==='services'){
     };
   }
 
-  if(k==='realty'){
-    data={
-      title:o.action+' - '+o.type,
-      property_type:o.type,
-      listing_type:o.action,
-      description:o.info,
-      city:o.area,
-      phone:o.contact,
-      status:'pending'
-    };
-  }
-
+if(k==='realty'){
+  data={
+    title:o.action+' - '+o.type,
+    property_type:o.type,
+    listing_type:o.action,
+    description:o.info,
+    city:o.area,
+    phone:o.contact,
+    price:o.price ? Number(o.price) : null,
+    size:o.size ? Number(o.size) : null,
+    rooms:o.rooms ? Number(o.rooms) : null,
+    status:'pending'
+  };
+}
   const {error}=await supabaseClient
     .from(table)
     .insert([data]);
