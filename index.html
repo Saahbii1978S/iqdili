@@ -100,6 +100,16 @@ footer{text-align:center;padding:20px;color:#647875}
 <p class="muted">إذا ما ظهرتش إعلانات، يمكن قاعدة البيانات فارغة أو إعدادات القراءة غير مفعّلة.</p>
 </div></section>
 
+
+<section id="reset-password" class="hidden">
+<div class="box"><h2>تغيير كلمة المرور</h2>
+<p>اكتب كلمة مرور جديدة لحسابك في اقضيلي.</p>
+<label>كلمة المرور الجديدة</label><input id="new-password" type="password" autocomplete="new-password" minlength="8">
+<label>أعد كتابة كلمة المرور</label><input id="confirm-password" type="password" autocomplete="new-password" minlength="8">
+<button type="button" id="save-new-password" style="margin-top:12px">حفظ كلمة المرور</button>
+<p id="reset-password-message" class="muted"></p>
+</div></section>
+
 <section id="admin" class="hidden">
 <div class="box"><h2>لوحة إدارة اقضيلي</h2>
 <div id="admin-login">
@@ -131,7 +141,7 @@ function val(id){const node=el(id);return node ? node.value.trim() : ""}
 function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
 
 function show(id){
-const allowed=["home","services","jobs","realty","market","ask","saved","admin"];
+const allowed=["home","services","jobs","realty","market","ask","saved","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 window.scrollTo({top:0,behavior:"auto"});
@@ -155,6 +165,26 @@ db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }catch(error){console.error("Supabase connection setup:",error);}
 }
 connect();
+
+
+if(db){
+db.auth.onAuthStateChange((event)=>{
+ if(event==="PASSWORD_RECOVERY"){show("reset-password");}
+});
+}
+el("save-new-password").addEventListener("click",async()=>{
+ const password=val("new-password"),confirm=val("confirm-password"),message=el("reset-password-message"),button=el("save-new-password");
+ if(password.length<8){message.textContent="كلمة المرور يلزمها 8 أحرف على الأقل.";return;}
+ if(password!==confirm){message.textContent="كلمتا المرور موش متطابقتين.";return;}
+ button.disabled=true;button.textContent="جاري الحفظ...";
+ const {error}=await db.auth.updateUser({password});
+ button.disabled=false;button.textContent="حفظ كلمة المرور";
+ if(error){message.textContent="ما نجّمش نبدّل كلمة المرور. افتح رابط الاسترجاع الجديد وعاود.";return;}
+ message.textContent="تم تغيير كلمة المرور بنجاح. تنجم توّة تدخل للإدارة.";
+ el("new-password").value="";el("confirm-password").value="";
+ await db.auth.signOut();
+ show("admin");
+});
 
 async function sendData(table){
 if(!db){alert("الاتصال بقاعدة البيانات غير متوفر حالياً. تأكد من الإنترنت.");return;}
