@@ -233,7 +233,7 @@ async function renderAdmin(){
    const desc=row.description||row.details||"";
    const city=row.city||row.region||"";
    const status=row.status||"pending";
-   return `<div class="entry"><b>${adminEscape(title)}</b><p>${adminEscape(desc)}</p><small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(status)} | رقم: ${adminEscape(row.id)}</small><div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div></div>`;
+   return `<div class="entry"><b>${adminEscape(title)}</b><p>${adminEscape(desc)}</p><small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(status)} | رقم: ${adminEscape(row.id)}</small><div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div></div>`;
   }).join("");
  }
  host.innerHTML=htmlOut;
@@ -259,7 +259,7 @@ el("admin-logout").addEventListener("click",async()=>{await db.auth.signOut();aw
 document.addEventListener("click",async event=>{
  const action=event.target.closest("[data-admin-action]");
  if(!action)return;
- const table=action.dataset.table,id=action.dataset.id,status=action.dataset.adminAction;
+ const table=action.dataset.adminTable,id=action.dataset.id,status=action.dataset.adminAction;
  action.disabled=true;
  const {error}=await db.from(table).update({status}).eq("id",id);
  if(error){alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من صلاحيات الإدارة.");action.disabled=false;return;}
