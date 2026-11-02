@@ -131,7 +131,7 @@ function val(id){const node=el(id);return node ? node.value.trim() : ""}
 function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
 
 function show(id){
-const allowed=["home","services","jobs","realty","market","ask","saved"];
+const allowed=["home","services","jobs","realty","market","ask","saved","admin"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 window.scrollTo({top:0,behavior:"auto"});
