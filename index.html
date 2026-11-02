@@ -3,209 +3,200 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>اقضيلي سحابي متكامل</title>
+<title>اقضيلي</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f2f7f6;color:#173b38;font:16px Tahoma,Arial;line-height:1.7}header{background:linear-gradient(135deg,#087f75,#14566a);color:white;text-align:center;padding:24px}nav{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;background:white;padding:12px}button{font:inherit;cursor:pointer;border:0;border-radius:9px;padding:9px 12px;background:#087f75;color:white}nav button{background:#e3f3ef;color:#087f75}main{max-width:900px;margin:auto;padding:16px}.box,.card{background:white;border:1px solid #dce8e5;border-radius:14px;padding:16px;margin-bottom:12px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.card{text-align:center}.icon{font-size:30px}label{display:block;margin-top:10px;font-weight:bold}input,select,textarea{width:100%;padding:10px;border:1px solid #cbdad6;border-radius:8px;font:inherit}textarea{min-height:70px}.row{display:flex;gap:10px} .row>*{flex:1;min-width:0}.hidden{display:none!important}.note{background:#fff6df;color:#75591b;padding:12px;border-radius:10px;font-size:13px}.muted{font-size:13px;color:#647875}.entry{padding:12px;border:1px solid #e3f3ef;border-radius:8px;margin-bottom:10px;background:#fafdfc}footer{text-align:center;padding:20px;color:#647875}@media(max-width:420px){.row{display:block}}
+*{box-sizing:border-box}
+body{margin:0;background:#f2f7f6;color:#173b38;font:16px Tahoma,Arial;line-height:1.7}
+header{background:linear-gradient(135deg,#087f75,#14566a);color:white;text-align:center;padding:24px}
+nav{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;background:white;padding:12px}
+button{font:inherit;cursor:pointer;border:0;border-radius:9px;padding:9px 12px;background:#087f75;color:white}
+nav button{background:#e3f3ef;color:#087f75}
+nav button:focus,button:focus{outline:3px solid #f0b84b;outline-offset:2px}
+main{max-width:900px;margin:auto;padding:16px}
+.box,.card{background:white;border:1px solid #dce8e5;border-radius:14px;padding:16px;margin-bottom:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.card{text-align:center}.icon{font-size:30px}
+label{display:block;margin-top:10px;font-weight:bold}
+input,select,textarea{width:100%;padding:10px;border:1px solid #cbdad6;border-radius:8px;font:inherit}
+textarea{min-height:70px}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.hidden{display:none!important}
+.note{background:#fff6df;color:#75591b;padding:12px;border-radius:10px;font-size:13px}
+.muted{font-size:13px;color:#647875}
+.entry{padding:12px;border:1px solid #e3f3ef;border-radius:8px;margin-bottom:10px;background:#fafdfc;overflow-wrap:anywhere}
+footer{text-align:center;padding:20px;color:#647875}
+@media(max-width:420px){.row{display:block}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header><h1>اقضيلي</h1><div>خدماتك وفرصتك وعقارك في بلاصة وحدة</div><small>نبدأوا بصفاقس ونتوسعوا لكل تونس</small></header>
-<nav><button onclick="window.show('home')">الرئيسية</button><button onclick="window.show('services')">الخدمات</button><button onclick="show('jobs')">فرص العمل</button><button onclick="show('realty')">العقارات</button><button onclick="show('market')">السوق</button><button onclick="show('ask')">اسأل اقضيلي</button><button onclick="show('saved')">المنشورات الحية</button></nav>
+
+<nav aria-label="القائمة الرئيسية">
+<button type="button" data-page="home">الرئيسية</button>
+<button type="button" data-page="services">الخدمات</button>
+<button type="button" data-page="jobs">فرص العمل</button>
+<button type="button" data-page="realty">العقارات</button>
+<button type="button" data-page="market">السوق</button>
+<button type="button" data-page="ask">اسأل اقضيلي</button>
+<button type="button" data-page="saved">المنشورات الحية</button>
+</nav>
+
 <main>
-<p class="note">تطبيق اقضيلي السحابي: الإعلانات تُحفظ في قاعدة البيانات الحية مباشرة وتظهر للجميع في الحين!</p>
+<p class="note">منصة اقضيلي: تنجم تنشر طلب خدمة أو فرصة عمل أو إعلان عقاري أو منتج. النشر السحابي يتطلب اتصالاً بقاعدة البيانات.</p>
 
 <section id="home">
-  <div class="box"><h2>مرحبا بيك في اقضيلي 👋</h2><p>نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.</p></div>
-  <div class="cards">
-    <div class="card"><div class="icon">🛠️</div><h3>الخدمات والمشاوير</h3><p>توصيل، بحث عن مختصين، وقضاء مصالح.</p><button onclick="show('services')">ادخل</button></div>
-    <div class="card"><div class="icon">💼</div><h3>فرص العمل</h3><p>فتّش على خدمة أو أضف عرض انتداب.</p><button onclick="show('jobs')">ادخل</button></div>
-    <div class="card"><div class="icon">🏠</div><h3>العقارات</h3><p>ديار ومحلات وأراضٍ للبيع والكراء.</p><button onclick="show('realty')">ادخل</button></div>
-    <div class="card"><div class="icon">🛒</div><h3>سوق اقضيلي</h3><p>بيع واشري واعرض منتجاتك مجاناً.</p><button onclick="show('market')">ادخل</button></div>
-  </div>
+<div class="box"><h2>مرحبا بيك في اقضيلي 👋</h2><p>نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.</p></div>
+<div class="cards">
+<div class="card"><div class="icon">🛠️</div><h3>الخدمات والمشاوير</h3><p>توصيل، بحث عن مختصين، وقضاء مصالح.</p><button type="button" data-page="services">ادخل</button></div>
+<div class="card"><div class="icon">💼</div><h3>فرص العمل</h3><p>فتّش على خدمة أو أضف عرض انتداب.</p><button type="button" data-page="jobs">ادخل</button></div>
+<div class="card"><div class="icon">🏠</div><h3>العقارات</h3><p>ديار ومحلات وأراضٍ للبيع والكراء.</p><button type="button" data-page="realty">ادخل</button></div>
+<div class="card"><div class="icon">🛒</div><h3>سوق اقضيلي</h3><p>بيع واشري واعرض منتجاتك مجاناً.</p><button type="button" data-page="market">ادخل</button></div>
+</div>
 </section>
 
 <section id="services" class="hidden">
-  <h2>طلب خدمة</h2>
-  <div class="box">
-    <label>نوع الخدمة</label>
-    <select id="st">
-      <option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option>
-    </select>
-    <label>التفاصيل</label><textarea id="sd" required></textarea>
-    <div class="row">
-      <div><label>المنطقة</label><input id="sa" value="صفاقس" required></div>
-      <div><label>الوقت المناسب</label><input id="sw"></div>
-    </div>
-    <label>رقم الهاتف</label><input id="sc" type="tel" required placeholder="أدخل رقم هاتفك">
-    <button style="margin-top:15px" onclick="sendData('services')">حفظ الطلب</button>
-  </div>
-</section>
+<h2>طلب خدمة</h2><div class="box">
+<label>نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
+<label>التفاصيل</label><textarea id="sd"></textarea>
+<div class="row"><div><label>المنطقة</label><input id="sa" value="صفاقس"></div><div><label>الوقت المناسب</label><input id="sw"></div></div>
+<label>رقم الهاتف</label><input id="sc" type="tel" placeholder="أدخل رقم هاتفك">
+<button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
+</div></section>
 
 <section id="jobs" class="hidden">
-  <h2>فرص العمل</h2>
-  <div class="box">
-    <label>نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
-    <label>المهنة أو الوظيفة</label><input id="jt" required>
-    <div class="row">
-      <div><label>المنطقة</label><input id="ja" value="صفاقس" required></div>
-      <div><label>نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div>
-    </div>
-    <label>التفاصيل والأجر</label><textarea id="ji" required></textarea>
-    <label>وسيلة تواصل</label><input id="jc" required>
-    <button style="margin-top:15px" onclick="sendData('jobs')">حفظ الإعلان</button>
-  </div>
-</section>
+<h2>فرص العمل</h2><div class="box">
+<label>نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
+<label>المهنة أو الوظيفة</label><input id="jt">
+<div class="row"><div><label>المنطقة</label><input id="ja" value="صفاقس"></div><div><label>نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
+<label>التفاصيل والأجر</label><textarea id="ji"></textarea><label>وسيلة تواصل</label><input id="jc">
+<button type="button" class="send" data-table="jobs" style="margin-top:15px">حفظ الإعلان</button>
+</div></section>
+
 <section id="realty" class="hidden">
-  <h2>العقارات بيع وكراء</h2>
-  <div class="box">
-    <label>نوع العملية</label>
-    <select id="rt"><option>نبحث عن كراء</option><option>نبحث عن شراء</option><option>عرض كراء</option><option>عرض بيع</option></select>
-    <label>نوع العقار</label>
-    <select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
-    <div class="row">
-      <div><label>المنطقة</label><input id="ra" value="صفاقس" required></div>
-      <div><label>السعر بالدينار</label><input id="r_price" type="number" min="0"></div>
-    </div>
-    <div class="row">
-      <div><label>المساحة م²</label><input id="size" type="number" min="0"></div>
-      <div><label>عدد الغرف</label><input id="rooms" type="number" min="0"></div>
-    </div>
-    <label>الوصف</label><textarea id="ri" required></textarea>
-    <label>وسيلة تواصل</label><input id="rc" required>
-    <button style="margin-top:15px" onclick="sendData('realty')">حفظ الطلب أو الإعلان</button>
-  </div>
-</section>
+<h2>العقارات بيع وكراء</h2><div class="box">
+<label>نوع العملية</label><select id="rt"><option>نبحث عن كراء</option><option>نبحث عن شراء</option><option>عرض كراء</option><option>عرض بيع</option></select>
+<label>نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
+<div class="row"><div><label>المنطقة</label><input id="ra" value="صفاقس"></div><div><label>السعر بالدينار</label><input id="r_price" type="number" min="0"></div></div>
+<div class="row"><div><label>المساحة م²</label><input id="size" type="number" min="0"></div><div><label>عدد الغرف</label><input id="rooms" type="number" min="0"></div></div>
+<label>الوصف</label><textarea id="ri"></textarea><label>وسيلة تواصل</label><input id="rc">
+<button type="button" class="send" data-table="realty" style="margin-top:15px">حفظ الطلب أو الإعلان</button>
+</div></section>
 
-<section id="market" class="hidden">
-  <div class="box">
-    <h2>🛒 سوق اقضيلي المفتوح</h2>
-    <label>نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
-    <label>صنف المنتج</label>
-    <select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
-    <label>اسم المنتج</label><input id="mn" required>
-    <label>السعر بالدينار</label><input id="mp" type="number" min="0">
-    <label>المنطقة</label><input id="ma" value="تونس" required>
-    <label>الوصف</label><textarea id="md" required></textarea>
-    <label>رقم التواصل</label><input id="mphone" required>
-    <button style="margin-top:15px" type="button" onclick="sendData('market')">إرسال الإعلان</button>
-  </div>
-  <div id="market-list"></div>
-</section>
+<section id="market" class="hidden"><div class="box">
+<h2>🛒 سوق اقضيلي المفتوح</h2>
+<label>نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
+<label>صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
+<label>اسم المنتج</label><input id="mn"><label>السعر بالدينار</label><input id="mp" type="number" min="0"><label>المنطقة</label><input id="ma" value="تونس"><label>الوصف</label><textarea id="md"></textarea><label>رقم التواصل</label><input id="mphone" type="tel">
+<button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
+</div><div id="market-list"></div></section>
 
-<section id="ask" class="hidden">
-  <div class="box"><h2>اسأل اقضيلي</h2><label>اكتب سؤالك</label><textarea id="q"></textarea><button style="margin-top:10px" onclick="askAI()">إرسال</button><p id="answer" class="hidden" style="background:#e3f3ef; padding:10px; border-radius:8px; margin-top:10px;"></p></div>
-</section>
+<section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label>اكتب سؤالك</label><textarea id="q"></textarea><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
 
-<section id="saved" class="hidden">
-  <div class="box">
-    <h2>المنشورات الحية السحابية العامة</h2>
-    <h3>🔄 طلبات الخدمات</h3><div id="sl"></div>
-    <h3>💼 إعلانات العمل</h3><div id="jl"></div>
-    <h3>🏠 العقارات المتوفرة</h3><div id="rl"></div>
-  </div>
-</section>
+<section id="saved" class="hidden"><div class="box">
+<h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><div id="sl"></div>
+<h3>💼 إعلانات العمل</h3><div id="jl"></div>
+<h3>🏠 العقارات المتوفرة</h3><div id="rl"></div>
+<p class="muted">إذا ما ظهرتش إعلانات، يمكن قاعدة البيانات فارغة أو إعدادات القراءة غير مفعّلة.</p>
+</div></section>
 </main>
-<footer>اقضيلي © 2026 — نسخة سحابية كاملة</footer>
+<footer>اقضيلي © 2026</footer>
 
 <script>
-const SUPABASE_URL = "https://djzapiwxxuligpdbskfm.supabase.co";
-const KEY = "sb_publishable_IO1BB--ciapq2gJBjYxr3g_Yv4um_9n";
+(function(){
+"use strict";
+const SUPABASE_URL="https://djzapiwxxuligpdbskfm.supabase.co";
+const SUPABASE_KEY="sb_publishable_IO1BB--ciapq2gJBjYxr3g_Yv4um_9n";
+let db=null;
 
-let supabase = null;
+function el(id){return document.getElementById(id)}
+function val(id){const node=el(id);return node ? node.value.trim() : ""}
+function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
 
-try {
-  if (window.supabase && window.supabase.createClient) {
-    supabase = window.supabase.createClient(SUPABASE_URL, KEY);
-  }
-} catch (error) {
-  console.error("Supabase error:", error);
+function show(id){
+const allowed=["home","services","jobs","realty","market","ask","saved"];
+if(!allowed.includes(id)) return;
+allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
+window.scrollTo({top:0,behavior:"auto"});
+if(id==="saved" || id==="market") loadData();
+}
+window.show=show;
+
+document.addEventListener("click",function(event){
+const pageButton=event.target.closest("[data-page]");
+if(pageButton){show(pageButton.dataset.page);return;}
+const sendButton=event.target.closest("[data-table]");
+if(sendButton){sendData(sendButton.dataset.table);}
+});
+
+function connect(){
+try{
+if(window.supabase && typeof window.supabase.createClient==="function"){
+db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+}
+}catch(error){console.error("Supabase connection setup:",error);}
+}
+connect();
+
+async function sendData(table){
+if(!db){alert("الاتصال بقاعدة البيانات غير متوفر حالياً. تأكد من الإنترنت.");return;}
+let data={},required=[];
+if(table==="services"){
+data={service_type:val("st"),details:val("sd"),region:val("sa"),suitable_time:val("sw"),phone:val("sc")};required=["sd","sc"];
+}else if(table==="jobs"){
+data={ad_type:val("jk"),job_title:val("jt"),region:val("ja"),job_type:val("jn"),details_salary:val("ji"),contact_info:val("jc")};required=["jt","jc"];
+}else if(table==="realty"){
+data={process_type:val("rt"),property_type:val("rp"),region:val("ra"),price:Number(val("r_price"))||0,area:Number(val("size"))||0,rooms_count:parseInt(val("rooms"),10)||0,description:val("ri"),contact_info:val("rc")};required=["ri","rc"];
+}else if(table==="market"){
+data={ad_type:val("mt"),category:val("mc"),product_name:val("mn"),price:Number(val("mp"))||0,region:val("ma"),description:val("md"),contact_phone:val("mphone")};required=["mn","mphone"];
+}else{return;}
+if(required.some(id=>!val(id))){alert("الرجاء تعمير الخانات المطلوبة.");return;}
+try{
+const result=await db.from(table).insert([data]);
+if(result.error){console.error("Insert error:",result.error);alert("ما نجّمش نحفظ الإعلان. راجع إعدادات الجدول والحقول في Supabase.");return;}
+alert("تم النشر بنجاح!");
+required.forEach(id=>{if(["sd","jt","ji","ri","mn","md"].includes(id))el(id).value="";});
+if(table==="services"){el("sc").value="";}
+if(table==="jobs"){el("jc").value="";}
+if(table==="realty"){el("rc").value="";el("r_price").value="";el("size").value="";el("rooms").value="";}
+if(table==="market"){el("mp").value="";el("mphone").value="";}
+await loadData();
+}catch(error){console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
 }
 
-window.show = function(id){
-  const sections = ['home','services','jobs','realty','market','ask','saved'];
-
-  sections.forEach(function(x){
-    const section = document.getElementById(x);
-    if(section){
-      section.classList.toggle('hidden', x !== id);
-    }
-  });
-
-  window.scrollTo(0,0);
-};
-
-function val(id){return document.getElementById(id).value.trim()}
-
-async function sendData(table) {
-  if (!supabase) {
-    alert('الاتصال بقاعدة البيانات غير متوفر حالياً.');
-    return;
-  }
-  let data = {};
-  if(table==='services') {
-    if(!val('sd') || !val('sc')) { alert('الرجاء تعبئة التفاصيل ورقم الهاتف!'); return; }
-    data={service_type:val('st'), details:val('sd'), region:val('sa'), suitable_time:val('sw'), phone:val('sc')};
-  }
-  if(table==='jobs') {
-    if(!val('jt') || !val('jc')) { alert('الرجاء تعبئة العنوان ووسيلة التواصل!'); return; }
-    data={ad_type:val('jk'), job_title:val('jt'), region:val('ja'), job_type:val('jn'), details_salary:val('ji'), contact_info:val('jc')};
-  }
-  if(table==='realty') {
-    if(!val('ri') || !val('rc')) { alert('الرجاء تعبئة الوصف ووسيلة التواصل!'); return; }
-    data={process_type:val('rt'), property_type:val('rp'), region:val('ra'), price:parseFloat(val('r_price'))||0, area:parseFloat(val('size'))||0, rooms_count:parseInt(val('rooms'))||0, description:val('ri'), contact_info:val('rc')};
-  }
-  if(table==='market') {
-    if(!val('mn') || !val('mphone')) { alert('الرجاء إدخال اسم المنتج ورقم التواصل!'); return; }
-    data={ad_type:val('mt'), category:val('mc'), product_name:val('mn'), price:parseFloat(val('mp'))||0, region:val('ma'), description:val('md'), contact_phone:val('mphone')};
-  }
-
-  const { error } = await supabase.from(table).insert([data]);
-  if(error) {
-    alert('خطأ في الحفظ! تأكد من البيانات والاتصال بالشبكة.');
-    console.error(error);
-  } else {
-    alert('تم النشر السحابي بنجاح!');
-    if(table==='services') { document.getElementById('sd').value=''; document.getElementById('sc').value=''; }
-    if(table==='jobs') { document.getElementById('jt').value=''; document.getElementById('ji').value=''; document.getElementById('jc').value=''; }
-    if(table==='realty') { document.getElementById('ri').value=''; document.getElementById('rc').value=''; document.getElementById('r_price').value=''; document.getElementById('size').value=''; document.getElementById('rooms').value=''; }
-    if(table==='market') { document.getElementById('mn').value=''; document.getElementById('mp').value=''; document.getElementById('md').value=''; document.getElementById('mphone').value=''; }
-    loadData();
-  }
+function renderList(id,rows,makeHtml){
+const target=el(id);if(!target)return;
+target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="muted">ما فماش منشورات حالياً.</p>';
 }
-
-async function loadData() {
-  if (!supabase) return;
-  const { data: m } = await supabase.from('market').select('*').order('id', { ascending: false });
-  if(m && document.getElementById('market-list')) { 
-    document.getElementById('market-list').innerHTML = m.map(x=>`<div class="entry"><b>[${x.ad_type}] ${x.product_name}</b> - <span style="color:#087f75">${x.price} د.ت</span><br><small>الصنف: ${x.category} | 📍 ${x.region}</small><br>${x.description}<br><small>📞 تواصل: ${x.contact_phone}</small></div>`).join(''); 
-  }
-  
-  const { data: s } = await supabase.from('services').select('*').order('id', { ascending: false });
-  if(s && document.getElementById('sl')) { 
-    document.getElementById('sl').innerHTML = s.map(x=>`<div class="entry"><b>طلب خدمة: ${x.service_type}</b> (📍 ${x.region})<br>${x.details}<br><small>⏰ الوقت: ${x.suitable_time} | 📞 هاتف: ${x.phone}</small></div>`).join(''); 
-  }
-
-  const { data: j } = await supabase.from('jobs').select('*').order('id', { ascending: false });
-  if(j && document.getElementById('jl')) { 
-    document.getElementById('jl').innerHTML = j.map(x=>`<div class="entry"><b>${x.job_title} [${x.ad_type}]</b> - نوع العمل: ${x.job_type} (📍 ${x.region})<br>${x.details_salary}<br><small>📞 تواصل: ${x.contact_info}</small></div>`).join(''); 
-  }
-
-  const { data: r } = await supabase.from('properties').select('*').order('id', { ascending: false });
-  if(r && document.getElementById('rl')) { 
-    document.getElementById('rl').innerHTML = r.map(x=>`<div class="entry"><b>${x.process_type} (${x.property_type})</b> - <span style="color:#087f75">${x.price} د.ت</span><br><small>المساحة: ${x.area} م² | عدد الغرف: ${x.rooms_count} | 📍 ${x.region}</small><br>${x.description}<br><small>📞 تواصل: ${x.contact_info}</small></div>`).join(''); 
-  }
+async function loadData(){
+if(!db)return;
+try{
+const [market,services,jobs,realty]=await Promise.all([
+db.from("market").select("*").order("id",{ascending:false}),
+db.from("services").select("*").order("id",{ascending:false}),
+db.from("jobs").select("*").order("id",{ascending:false}),
+db.from("realty").select("*").order("id",{ascending:false})
+]);
+if(market.error)console.warn("market:",market.error);
+if(services.error)console.warn("services:",services.error);
+if(jobs.error)console.warn("jobs:",jobs.error);
+if(realty.error)console.warn("realty:",realty.error);
+renderList("market-list",market.data,(x)=>`<div class="entry"><b>[${safe(x.ad_type)}] ${safe(x.product_name)}</b> - <span>${safe(x.price)} د.ت</span><br><small>الصنف: ${safe(x.category)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}<br><small>📞 تواصل: ${safe(x.contact_phone)}</small></div>`);
+renderList("sl",services.data,(x)=>`<div class="entry"><b>طلب خدمة: ${safe(x.service_type)}</b> (📍 ${safe(x.region)})<br>${safe(x.details)}<br><small>⏰ الوقت: ${safe(x.suitable_time)} | 📞 هاتف: ${safe(x.phone)}</small></div>`);
+renderList("jl",jobs.data,(x)=>`<div class="entry"><b>${safe(x.job_title)} [${safe(x.ad_type)}]</b> - نوع العمل: ${safe(x.job_type)} (📍 ${safe(x.region)})<br>${safe(x.details_salary)}<br><small>📞 تواصل: ${safe(x.contact_info)}</small></div>`);
+renderList("rl",realty.data,(x)=>`<div class="entry"><b>${safe(x.process_type)} (${safe(x.property_type)})</b> - ${safe(x.price)} د.ت<br><small>المساحة: ${safe(x.area)} م² | عدد الغرف: ${safe(x.rooms_count)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}<br><small>📞 تواصل: ${safe(x.contact_info)}</small></div>`);
+}catch(error){console.error("Load error:",error);}
 }
+window.loadData=loadData;
 
-function askAI() {
-  const q = val('q');
-  if(!q) return;
-  document.getElementById('answer').classList.remove('hidden');
-  document.getElementById('answer').innerText = "مرحباً بك في اقضيلي! جاري ربط مساعد الذكاء الاصطناعي التونسي لخدمتك قريباً للإجابة عن: " + q;
-}
+el("ask-button").addEventListener("click",function(){
+const question=val("q");if(!question){alert("اكتب سؤالك أولاً.");return;}
+const answer=el("answer");answer.classList.remove("hidden");
+answer.textContent="مرحبا بيك في اقضيلي! مساعد الأسئلة الذكي مازال قيد الإعداد. سؤالك هو: "+question;
+});
 
-window.onload = function(){ show('home'); };
+document.addEventListener("DOMContentLoaded",function(){show("home");});
+if(document.readyState!=="loading")show("home");
+})();
 </script>
 </body>
 </html>
-
