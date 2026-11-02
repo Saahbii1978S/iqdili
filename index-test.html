@@ -125,7 +125,7 @@ document.addEventListener("click",function(event){
 const pageButton=event.target.closest("[data-page]");
 if(pageButton){show(pageButton.dataset.page);return;}
 const sendButton=event.target.closest("[data-table]");
-if(sendButton){sendData(sendButton.dataset.table);}
+if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textContent;sendButton.disabled=true;sendButton.textContent="جاري الحفظ...";sendData(sendButton.dataset.table).finally(()=>{sendButton.disabled=false;sendButton.textContent=oldText;});}
 });
 
 function connect(){
@@ -163,8 +163,9 @@ await loadData();
 }catch(error){console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
 }
 
-function renderList(id,rows,makeHtml){
+function renderList(id,rows,makeHtml,error){
 const target=el(id);if(!target)return;
+if(error){target.innerHTML='<p class="muted">تعذّر تحميل المنشورات. تثبّت من الاتصال وإعدادات قاعدة البيانات ثم عاود المحاولة.</p>';return;}
 target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="muted">ما فماش منشورات حالياً.</p>';
 }
 async function loadData(){
@@ -180,10 +181,10 @@ if(market.error)console.warn("market:",market.error);
 if(services.error)console.warn("services:",services.error);
 if(jobs.error)console.warn("jobs:",jobs.error);
 if(realty.error)console.warn("realty:",realty.error);
-renderList("market-list",market.data,(x)=>`<div class="entry"><b>[${safe(x.ad_type)}] ${safe(x.product_name)}</b> - <span>${safe(x.price)} د.ت</span><br><small>الصنف: ${safe(x.category)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}<br></div>`);
-renderList("sl",services.data,(x)=>`<div class="entry"><b>طلب خدمة: ${safe(x.service_type)}</b> (📍 ${safe(x.region)})<br>${safe(x.details)}<br><small>⏰ الوقت: ${safe(x.suitable_time)}</small></div>`);
-renderList("jl",jobs.data,(x)=>`<div class="entry"><b>${safe(x.job_title)} [${safe(x.ad_type)}]</b> - نوع العمل: ${safe(x.job_type)} (📍 ${safe(x.region)})<br>${safe(x.details_salary)}<br></div>`);
-renderList("rl",realty.data,(x)=>`<div class="entry"><b>${safe(x.process_type)} (${safe(x.property_type)})</b> - ${safe(x.price)} د.ت<br><small>المساحة: ${safe(x.area)} م² | عدد الغرف: ${safe(x.rooms_count)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}</div>`);
+renderList("market-list",market.data,(x)=>`<div class="entry"><b>[${safe(x.ad_type)}] ${safe(x.product_name)}</b> - <span>${safe(x.price)} د.ت</span><br><small>الصنف: ${safe(x.category)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}<br></div>`,market.error);
+renderList("sl",services.data,(x)=>`<div class="entry"><b>طلب خدمة: ${safe(x.service_type)}</b> (📍 ${safe(x.region)})<br>${safe(x.details)}<br><small>⏰ الوقت: ${safe(x.suitable_time)}</small></div>`,services.error);
+renderList("jl",jobs.data,(x)=>`<div class="entry"><b>${safe(x.job_title)} [${safe(x.ad_type)}]</b> - نوع العمل: ${safe(x.job_type)} (📍 ${safe(x.region)})<br>${safe(x.details_salary)}<br></div>`,jobs.error);
+renderList("rl",realty.data,(x)=>`<div class="entry"><b>${safe(x.process_type)} (${safe(x.property_type)})</b> - ${safe(x.price)} د.ت<br><small>المساحة: ${safe(x.area)} م² | عدد الغرف: ${safe(x.rooms_count)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}</div>`,realty.error);
 }catch(error){console.error("Load error:",error);}
 }
 window.loadData=loadData;
