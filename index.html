@@ -117,7 +117,7 @@ const allowed=["home","services","jobs","realty","market","ask","saved"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 window.scrollTo({top:0,behavior:"auto"});
-if(id==="saved" || id==="market") loadData();
+if(["saved","market","services","jobs","realty"].includes(id)) loadData();
 }
 window.show=show;
 
@@ -185,7 +185,7 @@ renderList("market-list",market.data,(x)=>`<div class="entry"><b>[${safe(x.ad_ty
 renderList("sl",services.data,(x)=>`<div class="entry"><b>طلب خدمة: ${safe(x.service_type)}</b> (📍 ${safe(x.region)})<br>${safe(x.details)}<br><small>⏰ الوقت: ${safe(x.suitable_time)}</small></div>`,services.error);
 renderList("jl",jobs.data,(x)=>`<div class="entry"><b>${safe(x.job_title)} [${safe(x.ad_type)}]</b> - نوع العمل: ${safe(x.job_type)} (📍 ${safe(x.region)})<br>${safe(x.details_salary)}<br></div>`,jobs.error);
 renderList("rl",realty.data,(x)=>`<div class="entry"><b>${safe(x.process_type)} (${safe(x.property_type)})</b> - ${safe(x.price)} د.ت<br><small>المساحة: ${safe(x.area)} م² | عدد الغرف: ${safe(x.rooms_count)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}</div>`,realty.error);
-}catch(error){console.error("Load error:",error);}
+}catch(error){console.error("Load error:",error);["market-list","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
 window.loadData=loadData;
 
