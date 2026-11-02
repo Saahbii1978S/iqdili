@@ -172,6 +172,9 @@ db.auth.onAuthStateChange((event)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
 });
 }
+// Fallback for Supabase recovery links that return the recovery type in the URL hash.
+const recoveryParams=new URLSearchParams(window.location.hash.replace(/^#/,""));
+if(recoveryParams.get("type")==="recovery"){show("reset-password");}
 el("save-new-password").addEventListener("click",async()=>{
  const password=val("new-password"),confirm=val("confirm-password"),message=el("reset-password-message"),button=el("save-new-password");
  if(password.length<8){message.textContent="كلمة المرور يلزمها 8 أحرف على الأقل.";return;}
@@ -318,8 +321,13 @@ button.disabled=false;button.textContent="إرسال";
 }
 });
 
-document.addEventListener("DOMContentLoaded",function(){show("home");});
-if(document.readyState!=="loading")show("home");
+function showInitialPage(){
+ const params=new URLSearchParams(window.location.hash.replace(/^#/,""));
+ if(params.get("type")==="recovery")show("reset-password");
+ else if(!document.querySelector("section:not(.hidden)"))show("home");
+}
+document.addEventListener("DOMContentLoaded",showInitialPage);
+if(document.readyState!=="loading")showInitialPage();
 })();
 </script>
 </body>
