@@ -39,6 +39,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <button type="button" data-page="market">السوق</button>
 <button type="button" data-page="ask">اسأل اقضيلي</button>
 <button type="button" data-page="saved">المنشورات الحية</button>
+<button type="button" data-page="admin">الإدارة</button>
 </nav>
 
 <main>
@@ -98,6 +99,23 @@ footer{text-align:center;padding:20px;color:#647875}
 <h3>🏠 العقارات المتوفرة</h3><div id="rl"></div>
 <p class="muted">إذا ما ظهرتش إعلانات، يمكن قاعدة البيانات فارغة أو إعدادات القراءة غير مفعّلة.</p>
 </div></section>
+
+<section id="admin" class="hidden">
+<div class="box"><h2>لوحة إدارة اقضيلي</h2>
+<div id="admin-login">
+<p>الدخول خاص بمسؤول المنصة فقط.</p>
+<label>البريد الإلكتروني</label><input id="admin-email" type="email" autocomplete="username">
+<label>كلمة المرور</label><input id="admin-password" type="password" autocomplete="current-password">
+<button type="button" id="admin-login-button" style="margin-top:12px">دخول الإدارة</button>
+<p id="admin-login-message" class="muted"></p>
+</div>
+<div id="admin-panel" class="hidden">
+<p id="admin-welcome" class="muted"></p>
+<button type="button" id="admin-refresh">تحديث الطلبات</button>
+<button type="button" id="admin-logout" style="background:#647875">خروج</button>
+<div id="admin-requests" style="margin-top:15px"></div>
+</div></div>
+</section>
 </main>
 <footer>اقضيلي © 2026</footer>
 
@@ -118,6 +136,7 @@ if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 window.scrollTo({top:0,behavior:"auto"});
 if(["saved","market","services","jobs","realty"].includes(id)) loadData();
+if(id==="admin" && db) refreshAdminState();
 }
 window.show=show;
 
@@ -187,7 +206,66 @@ renderList("jl",jobs.data,(x)=>`<div class="entry"><b>${safe(x.job_title)} [${sa
 renderList("rl",realty.data,(x)=>`<div class="entry"><b>${safe(x.process_type)} (${safe(x.property_type)})</b> - ${safe(x.price)} د.ت<br><small>المساحة: ${safe(x.area)} م² | عدد الغرف: ${safe(x.rooms_count)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}</div>`,realty.error);
 }catch(error){console.error("Load error:",error);["market-list","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
+
 window.loadData=loadData;
+
+// لوحة الإدارة: الدخول عبر Supabase Auth، والصلاحيات الفعلية يفرضها RLS في قاعدة البيانات.
+function adminMessage(message){el("admin-login-message").textContent=message;}
+function adminEscape(value){return safe(value);}
+const adminTables=[
+ {table:"service_requests",label:"طلبات الخدمات"},
+ {table:"job_posts",label:"فرص العمل"},
+ {table:"real_estate_posts",label:"العقارات"},
+ {table:"market_posts",label:"السوق"}
+];
+async function renderAdmin(){
+ const host=el("admin-requests");
+ host.innerHTML="<p>جاري تحميل الطلبات...</p>";
+ let htmlOut="";
+ for(const item of adminTables){
+  const result=await db.from(item.table).select("*").order("created_at",{ascending:false}).limit(100);
+  if(result.error){htmlOut+=`<div class="entry"><b>${item.label}</b><p>تعذّر التحميل: ${adminEscape(result.error.message)}</p></div>`;continue;}
+  const rows=result.data||[];
+  htmlOut+=`<h3>${item.label} (${rows.length})</h3>`;
+  if(!rows.length){htmlOut+='<p class="muted">ما فماش طلبات.</p>';continue;}
+  htmlOut+=rows.map(row=>{
+   const title=row.title||row.product_name||"إعلان";
+   const desc=row.description||row.details||"";
+   const city=row.city||row.region||"";
+   const status=row.status||"pending";
+   return `<div class="entry"><b>${adminEscape(title)}</b><p>${adminEscape(desc)}</p><small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(status)} | رقم: ${adminEscape(row.id)}</small><div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div></div>`;
+  }).join("");
+ }
+ host.innerHTML=htmlOut;
+}
+async function refreshAdminState(){
+ const {data:{session}}=await db.auth.getSession();
+ const logged=!!session;
+ el("admin-login").classList.toggle("hidden",logged);
+ el("admin-panel").classList.toggle("hidden",!logged);
+ if(logged){el("admin-welcome").textContent="تم تسجيل الدخول. الصلاحيات تُتحقق منها قاعدة البيانات.";await renderAdmin();}
+}
+el("admin-login-button").addEventListener("click",async()=>{
+ const email=val("admin-email"),password=val("admin-password");
+ if(!email||!password){adminMessage("اكتب البريد الإلكتروني وكلمة المرور.");return;}
+ const b=el("admin-login-button");b.disabled=true;b.textContent="جاري التحقق...";
+ const {error}=await db.auth.signInWithPassword({email,password});
+ b.disabled=false;b.textContent="دخول الإدارة";
+ if(error){adminMessage("تعذّر الدخول. تثبّت من بيانات الدخول وصلاحية حساب الإدارة.");return;}
+ adminMessage("");await refreshAdminState();
+});
+el("admin-refresh").addEventListener("click",renderAdmin);
+el("admin-logout").addEventListener("click",async()=>{await db.auth.signOut();await refreshAdminState();});
+document.addEventListener("click",async event=>{
+ const action=event.target.closest("[data-admin-action]");
+ if(!action)return;
+ const table=action.dataset.table,id=action.dataset.id,status=action.dataset.adminAction;
+ action.disabled=true;
+ const {error}=await db.from(table).update({status}).eq("id",id);
+ if(error){alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من صلاحيات الإدارة.");action.disabled=false;return;}
+ await renderAdmin();
+});
+
 
 el("ask-button").addEventListener("click",async function(){
 const question=val("q");
