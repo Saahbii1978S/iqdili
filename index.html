@@ -173,7 +173,7 @@ try{
 const [market,services,jobs,realty]=await Promise.all([
 db.from("market").select("*").order("id",{ascending:false}),
 db.from("services").select("*").order("id",{ascending:false}),
-db.from("jobs").select("*").order("id",{ascending:false}),
+db.from("services_public").select("id,created_at,service_type,details,region,suitable_time").order("id",{ascending:false}),
 db.from("realty").select("*").order("id",{ascending:false})
 ]);
 if(market.error)console.warn("market:",market.error);
@@ -181,7 +181,7 @@ if(services.error)console.warn("services:",services.error);
 if(jobs.error)console.warn("jobs:",jobs.error);
 if(realty.error)console.warn("realty:",realty.error);
 renderList("market-list",market.data,(x)=>`<div class="entry"><b>[${safe(x.ad_type)}] ${safe(x.product_name)}</b> - <span>${safe(x.price)} د.ت</span><br><small>الصنف: ${safe(x.category)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}<br><small>📞 تواصل: ${safe(x.contact_phone)}</small></div>`);
-renderList("sl",services.data,(x)=>`<div class="entry"><b>طلب خدمة: ${safe(x.service_type)}</b> (📍 ${safe(x.region)})<br>${safe(x.details)}<br><small>⏰ الوقت: ${safe(x.suitable_time)} | 📞 هاتف: ${safe(x.phone)}</small></div>`);
+renderList("sl",services.data,(x)=>`<div class="entry"><b>طلب خدمة: ${safe(x.service_type)}</b> (📍 ${safe(x.region)})<br>${safe(x.details)}<br><small>⏰ الوقت: ${safe(x.suitable_time)}</small></div>`);(x)=>`<div class="entry"><b>طلب خدمة: ${safe(x.service_type)}</b> (📍 ${safe(x.region)})<br>${safe(x.details)}<br><small>⏰ الوقت: ${safe(x.suitable_time)} | 📞 هاتف: ${safe(x.phone)}</small></div>`);
 renderList("jl",jobs.data,(x)=>`<div class="entry"><b>${safe(x.job_title)} [${safe(x.ad_type)}]</b> - نوع العمل: ${safe(x.job_type)} (📍 ${safe(x.region)})<br>${safe(x.details_salary)}<br><small>📞 تواصل: ${safe(x.contact_info)}</small></div>`);
 renderList("rl",realty.data,(x)=>`<div class="entry"><b>${safe(x.process_type)} (${safe(x.property_type)})</b> - ${safe(x.price)} د.ت<br><small>المساحة: ${safe(x.area)} م² | عدد الغرف: ${safe(x.rooms_count)} | 📍 ${safe(x.region)}</small><br>${safe(x.description)}<br><small>📞 تواصل: ${safe(x.contact_info)}</small></div>`);
 }catch(error){console.error("Load error:",error);}
