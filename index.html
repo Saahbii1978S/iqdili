@@ -231,11 +231,11 @@ data={title:val("jt"),description:val("ji"),city:val("ja"),phone:val("jc"),job_t
 required=["jt","jc"];
 }else if(table==="realty"){
 target="real_estate_posts";
-data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:Number(val("r_price"))||0,size:Number(val("size"))||0,rooms:parseInt(val("rooms"),10)||0};
+data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10)};
 required=["ri","rc"];
 }else if(table==="market"){
 target="market_posts";
-data={title:val("mn"),description:val("md"),category:val("mc"),price:Number(val("mp"))||0,city:val("ma"),phone:val("mphone"),listing_type:val("mt")};
+data={title:val("mn"),description:val("md"),category:val("mc"),price:val("mp")===""?null:Number(val("mp")),city:val("ma"),phone:val("mphone"),listing_type:val("mt")};
 required=["mn","mphone"];
 }else{return;}
 if(required.some(id=>!val(id))){alert("الرجاء تعمير الخانات المطلوبة.");return;}
@@ -269,11 +269,11 @@ db.from("service_requests").select("id,created_at,title,description,city").eq("s
 db.from("job_posts").select("id,created_at,title,description,city,job_type,work_nature").eq("status","approved").order("created_at",{ascending:false}),
 db.from("real_estate_posts").select("id,created_at,title,property_type,listing_type,city,price,size,rooms,description").eq("status","approved").order("created_at",{ascending:false})
 ]);
-renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+safe(x.price)+' د.ت<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
+renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
 renderList("market-live",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+safe(x.price)+' د.ت<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
 renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+'</div>',services.error);
 renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - نوع العمل: '+safe(x.job_type)+' ('+safe(x.work_nature)+') 📍 '+safe(x.city)+'<br>'+safe(x.description)+'</div>',jobs.error);
-renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+safe(x.price)+' د.ت<br><small>المساحة: '+safe(x.size)+' م² | عدد الغرف: '+safe(x.rooms)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
+renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
 }catch(error){console.error("Load error:",error);["market-list","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
 
