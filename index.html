@@ -225,19 +225,19 @@ let target="",data={},required=[];
 if(table==="services"){
 target="service_requests";
 data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\n"+val("sd")),city:val("sa"),phone:val("sc")};
-required=["sd","sc"];
+required=["sd","sc","sa"];
 }else if(table==="jobs"){
 target="job_posts";
 data={title:val("jt"),description:val("ji"),city:val("ja"),phone:val("jc"),job_type:val("jk"),work_nature:val("jn")};
-required=["jt","jc"];
+required=["jt","jc","ja"];
 }else if(table==="realty"){
 target="real_estate_posts";
 data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10)};
-required=["ri","rc"];
+required=["ri","rc","ra"];
 }else if(table==="market"){
 target="market_posts";
 data={title:val("mn"),description:val("md"),category:val("mc"),price:val("mp")===""?null:Number(val("mp")),city:val("ma"),phone:val("mphone"),listing_type:val("mt")};
-required=["mn","mphone"];
+required=["mn","mphone","ma"];
 }else{return;}
 if(required.some(id=>!val(id))){alert("الرجاء تعمير الخانات المطلوبة.");return;}
 const phoneDigits=String(data.phone||"").replace(/\D/g,"");
