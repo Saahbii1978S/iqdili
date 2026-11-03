@@ -269,7 +269,7 @@ target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="
 async function loadData(){
 if(!db){
  const message="خدمة قاعدة البيانات غير متوفرة حالياً. تثبّت من الاتصال وعاود المحاولة.";
- ["market-list","market-live","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML="<p class=\\"muted\\">"+safe(message)+"</p>";});
+ ["market-list","market-live","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">'+safe(message)+'</p>';});
  setupListingSearch();
  return;
 }
