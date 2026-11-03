@@ -212,15 +212,22 @@ el("save-new-password").addEventListener("click",async()=>{
  const password=val("new-password"),confirm=val("confirm-password"),message=el("reset-password-message"),button=el("save-new-password");
  if(password.length<8){message.textContent="كلمة المرور يلزمها 8 أحرف على الأقل.";return;}
  if(password!==confirm){message.textContent="كلمتا المرور موش متطابقتين.";return;}
- if(!db){message.textContent="الاتصال بخدمة الحسابات غير متوفر. عاود بعد التثبت من الإنترنت." ;return;}
+ if(!db){message.textContent="الاتصال بخدمة الحسابات غير متوفر. عاود بعد التثبت من الإنترنت.";return;}
  button.disabled=true;button.textContent="جاري الحفظ...";
- const {error}=await db.auth.updateUser({password});
- button.disabled=false;button.textContent="حفظ كلمة المرور";
- if(error){message.textContent="ما نجّمش نبدّل كلمة المرور. افتح رابط الاسترجاع الجديد وعاود.";return;}
- message.textContent="تم تغيير كلمة المرور بنجاح. تنجم توّة تدخل للإدارة.";
- el("new-password").value="";el("confirm-password").value="";
- await db.auth.signOut();
- show("admin");
+ try{
+  const {error}=await db.auth.updateUser({password});
+  if(error){message.textContent="ما نجّمش نبدّل كلمة المرور. افتح رابط الاسترجاع الجديد وعاود.";return;}
+  message.textContent="تم تغيير كلمة المرور بنجاح. تنجم توّة تدخل للإدارة.";
+  el("new-password").value="";el("confirm-password").value="";
+  try{await db.auth.signOut();}
+  catch(signOutError){console.warn("Password updated; sign-out could not be confirmed:",signOutError);}
+  show("admin");
+ }catch(error){
+  console.error("Password update error:",error);
+  message.textContent="صار خطأ في الاتصال أثناء تغيير كلمة المرور. تثبّت من الإنترنت وعاود.";
+ }finally{
+  button.disabled=false;button.textContent="حفظ كلمة المرور";
+ }
 });
 
 async function sendData(table){
