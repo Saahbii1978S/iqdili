@@ -71,7 +71,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <label>نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
 <label>المهنة أو الوظيفة</label><input id="jt">
 <div class="row"><div><label>المنطقة</label><input id="ja" value="صفاقس"></div><div><label>نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
-<label>التفاصيل والأجر</label><textarea id="ji"></textarea><label>وسيلة تواصل</label><input id="jc">
+<label>التفاصيل والأجر</label><textarea id="ji"></textarea><label>رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" placeholder="أدخل رقم هاتفك">
 <button type="button" class="send" data-table="jobs" style="margin-top:15px">حفظ الإعلان</button>
 </div></section>
 
@@ -81,7 +81,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <label>نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
 <div class="row"><div><label>المنطقة</label><input id="ra" value="صفاقس"></div><div><label>السعر بالدينار</label><input id="r_price" type="number" min="0"></div></div>
 <div class="row"><div><label>المساحة م²</label><input id="size" type="number" min="0"></div><div><label>عدد الغرف</label><input id="rooms" type="number" min="0"></div></div>
-<label>الوصف</label><textarea id="ri"></textarea><label>وسيلة تواصل</label><input id="rc">
+<label>الوصف</label><textarea id="ri"></textarea><label>رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" placeholder="أدخل رقم هاتفك">
 <button type="button" class="send" data-table="realty" style="margin-top:15px">حفظ الطلب أو الإعلان</button>
 </div></section>
 
@@ -89,7 +89,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <h2>🛒 سوق اقضيلي المفتوح</h2>
 <label>نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label>صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
-<label>اسم المنتج</label><input id="mn"><label>السعر بالدينار</label><input id="mp" type="number" min="0"><label>المنطقة</label><input id="ma" value="تونس"><label>الوصف</label><textarea id="md"></textarea><label>رقم التواصل</label><input id="mphone" type="tel">
+<label>اسم المنتج</label><input id="mn"><label>السعر بالدينار</label><input id="mp" type="number" min="0"><label>المنطقة</label><input id="ma" value="صفاقس"><label>الوصف</label><textarea id="md"></textarea><label>رقم التواصل</label><input id="mphone" type="tel">
 <button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
 </div><div id="market-list"></div></section>
 
@@ -242,12 +242,15 @@ if(required.some(id=>!val(id))){alert("الرجاء تعمير الخانات ا
 const phoneDigits=String(data.phone||"").replace(/\D/g,"");
 if(phoneDigits.length<8||phoneDigits.length>15){alert("رقم الهاتف يلزمو بين 8 و15 رقم.");return;}
 if(String(data.title||"").trim().length>100||String(data.description||"").trim().length>1500||String(data.city||"").trim().length>80){alert("راجع طول العنوان أو الوصف أو المدينة.");return;}
+const numericFields=table==="realty"?["r_price","size","rooms"]:table==="market"?["mp"]:[];
+if(numericFields.some(id=>val(id)!==""&&(!Number.isFinite(Number(val(id)))||Number(val(id))<0))){alert("السعر والمساحة وعدد الغرف يلزمهم أرقام موجبة أو صفر.");return;}
 try{
 const result=await db.from(target).insert([{...data,status:"pending"}]);
 if(result.error){console.error("Insert error:",result.error);alert("ما نجّمش نحفظ الإعلان. "+result.error.message);return;}
 alert("وصل الإعلان للإدارة للمراجعة. يظهر للناس بعد الموافقة عليه.");
-required.forEach(id=>{if(["sd","jt","ji","ri","mn","md"].includes(id))el(id).value="";});
-["sc","jc","rc","mphone","mp","r_price","size","rooms"].forEach(id=>{if(el(id))el(id).value="";});
+required.forEach(id=>{if(el(id))el(id).value="";});
+["sd","ji","ri","md","sc","jc","rc","mphone","mp","r_price","size","rooms","sw"].forEach(id=>{if(el(id))el(id).value="";});
+["st","jk","jn","rt","rp","mt","mc"].forEach(id=>{if(el(id))el(id).selectedIndex=0;});
 await loadData();
 }catch(error){console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
 }
