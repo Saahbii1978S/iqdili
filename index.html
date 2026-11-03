@@ -356,11 +356,26 @@ async function renderAdmin(){
  host.innerHTML=htmlOut;
 }
 async function refreshAdminState(){
- const {data:{session}}=await db.auth.getSession();
- const logged=!!session;
- el("admin-login").classList.toggle("hidden",logged);
- el("admin-panel").classList.toggle("hidden",!logged);
- if(logged){el("admin-welcome").textContent="تم تسجيل الدخول. الصلاحيات تُتحقق منها قاعدة البيانات.";await renderAdmin();}
+ const login=el("admin-login"),panel=el("admin-panel"),host=el("admin-requests");
+ try{
+  if(!db)throw new Error("Auth unavailable");
+  const {data,error}=await db.auth.getSession();
+  if(error)throw error;
+  const logged=!!(data&&data.session);
+  login.classList.toggle("hidden",logged);
+  panel.classList.toggle("hidden",!logged);
+  if(logged){
+   el("admin-welcome").textContent="تم تسجيل الدخول. الصلاحيات تُتحقق منها قاعدة البيانات.";
+   await renderAdmin();
+  }
+ }catch(error){
+  console.error("Admin session refresh:",error);
+  login.classList.remove("hidden");
+  panel.classList.add("hidden");
+  if(host)host.textContent="تعذّر التثبت من جلسة الإدارة. تثبّت من الاتصال وعاود الدخول.";
+  adminMessage("ما نجّمش نتحقق من جلسة الإدارة حالياً.");
+  throw error;
+ }
 }
 el("admin-login-button").addEventListener("click",async()=>{
   const email=val("admin-email"),password=val("admin-password");
