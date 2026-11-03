@@ -91,7 +91,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <label>صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
 <label>اسم المنتج</label><input id="mn"><label>السعر بالدينار</label><input id="mp" type="number" min="0"><label>المنطقة</label><input id="ma" value="صفاقس"><label>الوصف</label><textarea id="md"></textarea><label>رقم التواصل</label><input id="mphone" type="tel">
 <button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
-</div><div id="market-list"></div></section>
+</div><div class="box"><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
 
 
 <section id="good" class="hidden">
@@ -122,10 +122,10 @@ footer{text-align:center;padding:20px;color:#647875}
 <section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label>اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
 
 <section id="saved" class="hidden"><div class="box">
-<h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><div id="sl"></div>
-<h3>💼 إعلانات العمل</h3><div id="jl"></div>
-<h3>🏠 العقارات المتوفرة</h3><div id="rl"></div>
-<h3>🛒 إعلانات السوق</h3><div id="market-live"></div>
+<h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><input id="services-search" type="search" placeholder="فتّش في طلبات الخدمات..." aria-label="البحث في طلبات الخدمات"><div id="sl" aria-live="polite"></div>
+<h3>💼 إعلانات العمل</h3><input id="jobs-search" type="search" placeholder="فتّش في فرص العمل..." aria-label="البحث في فرص العمل"><div id="jl" aria-live="polite"></div>
+<h3>🏠 العقارات المتوفرة</h3><input id="realty-search" type="search" placeholder="فتّش في العقارات..." aria-label="البحث في العقارات"><div id="rl" aria-live="polite"></div>
+<h3>🛒 إعلانات السوق</h3><input id="market-live-search" type="search" placeholder="فتّش في إعلانات السوق..." aria-label="البحث في إعلانات السوق"><div id="market-live" aria-live="polite"></div>
 <p class="muted">إذا ما ظهرتش إعلانات، يمكن قاعدة البيانات فارغة أو إعدادات القراءة غير مفعّلة.</p>
 </div></section>
 
@@ -175,7 +175,7 @@ if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
 window.scrollTo({top:0,behavior:"auto"});
-if(["saved","market","services","jobs","realty"].includes(id)) loadData();
+if(["saved","market","services","jobs","realty"].includes(id)){setupListingSearch();loadData();}
 if(id==="admin" && db) refreshAdminState();
 }
 window.show=show;
@@ -278,6 +278,19 @@ renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - 
 }catch(error){console.error("Load error:",error);["market-list","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
 
+function setupListingSearch(){
+ const pairs=[["market-search","market-list"],["services-search","sl"],["jobs-search","jl"],["realty-search","rl"],["market-live-search","market-live"]];
+ pairs.forEach(([inputId,listId])=>{
+  const input=el(inputId),list=el(listId);if(!input||!list||input.dataset.ready)return;
+  input.dataset.ready="1";
+  input.addEventListener("input",()=>{
+   const query=input.value.trim().toLocaleLowerCase();
+   list.querySelectorAll(".entry").forEach(entry=>{
+    entry.classList.toggle("hidden",!!query&&!entry.textContent.toLocaleLowerCase().includes(query));
+   });
+  });
+ });
+}
 window.loadData=loadData;
 
 // لوحة الإدارة: الدخول عبر Supabase Auth، والصلاحيات الفعلية يفرضها RLS في قاعدة البيانات.
