@@ -94,7 +94,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
 <label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any" inputmode="decimal"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80" autocomplete="address-level2"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
-</div><div class="box"><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
+</div><div class="box"><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" maxlength="100" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
 
 
 <section id="good" class="hidden">
@@ -125,10 +125,10 @@ footer{text-align:center;padding:20px;color:#647875}
 <section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label for="q">اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
 
 <section id="saved" class="hidden"><div class="box">
-<h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><input id="services-search" type="search" placeholder="فتّش في طلبات الخدمات..." aria-label="البحث في طلبات الخدمات"><div id="sl" aria-live="polite"></div>
-<h3>💼 إعلانات العمل</h3><input id="jobs-search" type="search" placeholder="فتّش في فرص العمل..." aria-label="البحث في فرص العمل"><div id="jl" aria-live="polite"></div>
-<h3>🏠 العقارات المتوفرة</h3><input id="realty-search" type="search" placeholder="فتّش في العقارات..." aria-label="البحث في العقارات"><div id="rl" aria-live="polite"></div>
-<h3>🛒 إعلانات السوق</h3><input id="market-live-search" type="search" placeholder="فتّش في إعلانات السوق..." aria-label="البحث في إعلانات السوق"><div id="market-live" aria-live="polite"></div>
+<h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><input id="services-search" maxlength="100" type="search" placeholder="فتّش في طلبات الخدمات..." aria-label="البحث في طلبات الخدمات"><div id="sl" aria-live="polite"></div>
+<h3>💼 إعلانات العمل</h3><input id="jobs-search" maxlength="100" type="search" placeholder="فتّش في فرص العمل..." aria-label="البحث في فرص العمل"><div id="jl" aria-live="polite"></div>
+<h3>🏠 العقارات المتوفرة</h3><input id="realty-search" maxlength="100" type="search" placeholder="فتّش في العقارات..." aria-label="البحث في العقارات"><div id="rl" aria-live="polite"></div>
+<h3>🛒 إعلانات السوق</h3><input id="market-live-search" maxlength="100" type="search" placeholder="فتّش في إعلانات السوق..." aria-label="البحث في إعلانات السوق"><div id="market-live" aria-live="polite"></div>
 <p class="muted">إذا ما ظهرتش إعلانات، يمكن قاعدة البيانات فارغة أو إعدادات القراءة غير مفعّلة.</p>
 </div></section>
 
@@ -136,8 +136,8 @@ footer{text-align:center;padding:20px;color:#647875}
 <section id="reset-password" class="hidden">
 <div class="box"><h2>تغيير كلمة المرور</h2>
 <p>اكتب كلمة مرور جديدة لحسابك في اقضيلي.</p>
-<label for="new-password">كلمة المرور الجديدة</label><input id="new-password" type="password" autocomplete="new-password" minlength="8">
-<label for="confirm-password">أعد كتابة كلمة المرور</label><input id="confirm-password" type="password" autocomplete="new-password" minlength="8">
+<label for="new-password">كلمة المرور الجديدة</label><input id="new-password" maxlength="128" type="password" autocomplete="new-password" minlength="8">
+<label for="confirm-password">أعد كتابة كلمة المرور</label><input id="confirm-password" maxlength="128" type="password" autocomplete="new-password" minlength="8">
 <button type="button" id="save-new-password" style="margin-top:12px">حفظ كلمة المرور</button>
 <p id="reset-password-message" class="muted"></p>
 </div></section>
@@ -146,8 +146,8 @@ footer{text-align:center;padding:20px;color:#647875}
 <div class="box"><h2>لوحة إدارة اقضيلي</h2>
 <div id="admin-login">
 <p>الدخول خاص بمسؤول المنصة فقط.</p>
-<label for="admin-email">البريد الإلكتروني</label><input id="admin-email" type="email" autocomplete="username">
-<label for="admin-password">كلمة المرور</label><input id="admin-password" type="password" autocomplete="current-password">
+<label for="admin-email">البريد الإلكتروني</label><input id="admin-email" maxlength="254" type="email" autocomplete="username">
+<label for="admin-password">كلمة المرور</label><input id="admin-password" maxlength="128" type="password" autocomplete="current-password">
 <button type="button" id="admin-login-button" style="margin-top:12px">دخول الإدارة</button>
 <p id="admin-login-message" class="muted"></p>
 </div>
