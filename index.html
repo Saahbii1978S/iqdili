@@ -267,7 +267,12 @@ if(error){target.innerHTML='<p class="muted">تعذّر تحميل المنشو�
 target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="muted">ما فماش منشورات حالياً.</p>';
 }
 async function loadData(){
-if(!db)return;
+if(!db){
+ const message="خدمة قاعدة البيانات غير متوفرة حالياً. تثبّت من الاتصال وعاود المحاولة.";
+ ["market-list","market-live","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML="<p class=\\"muted\\">"+safe(message)+"</p>";});
+ setupListingSearch();
+ return;
+}
 try{
 const [market,services,jobs,realty]=await Promise.all([
 db.from("market_posts").select("id,created_at,listing_type,category,title,price,city,description").eq("status","approved").order("created_at",{ascending:false}),
