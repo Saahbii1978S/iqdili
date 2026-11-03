@@ -10,7 +10,7 @@ body{margin:0;background:#f2f7f6;color:#173b38;font:16px Tahoma,Arial;line-heigh
 header{background:linear-gradient(135deg,#087f75,#14566a);color:white;text-align:center;padding:24px}
 nav{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;background:white;padding:12px}
 button{font:inherit;cursor:pointer;border:0;border-radius:9px;padding:9px 12px;background:#087f75;color:white}
-nav button{background:#e3f3ef;color:#087f75}
+nav button{background:#e3f3ef;color:#087f75}nav button.active{background:#087f75;color:#fff;font-weight:bold}
 nav button:focus,button:focus{outline:3px solid #f0b84b;outline-offset:2px}
 main{max-width:900px;margin:auto;padding:16px}
 .box,.card{background:white;border:1px solid #dce8e5;border-radius:14px;padding:16px;margin-bottom:12px}
@@ -173,6 +173,7 @@ function show(id){
 const allowed=["home","services","jobs","realty","market","good","ask","saved","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
+document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
 window.scrollTo({top:0,behavior:"auto"});
 if(["saved","market","services","jobs","realty"].includes(id)) loadData();
 if(id==="admin" && db) refreshAdminState();
