@@ -59,39 +59,39 @@ footer{text-align:center;padding:20px;color:#647875}
 
 <section id="services" class="hidden">
 <h2>طلب خدمة</h2><div class="box">
-<label>نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
-<label>التفاصيل</label><textarea id="sd" maxlength="1500"></textarea>
-<div class="row"><div><label>المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label>الوقت المناسب</label><input id="sw"></div></div>
-<label>رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
+<label for="st">نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
+<label for="sd">التفاصيل</label><textarea id="sd" maxlength="1500"></textarea>
+<div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw"></div></div>
+<label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
 </div></section>
 
 <section id="jobs" class="hidden">
 <h2>فرص العمل</h2><div class="box">
-<label>نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
-<label>المهنة أو الوظيفة</label><input id="jt" maxlength="100">
-<div class="row"><div><label>المنطقة</label><input id="ja" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label>نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
-<label>التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label>رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
+<label for="jk">نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
+<label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
+<div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
+<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="jobs" style="margin-top:15px">حفظ الإعلان</button>
 </div></section>
 
 <section id="realty" class="hidden">
 <h2>العقارات بيع وكراء</h2><div class="box">
-<label>نوع العملية</label><select id="rt"><option>نبحث عن كراء</option><option>نبحث عن شراء</option><option>عرض كراء</option><option>عرض بيع</option></select>
-<label>نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
-<div class="row"><div><label>المنطقة</label><input id="ra" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label>السعر بالدينار</label><input id="r_price" type="number" min="0"></div></div>
-<div class="row"><div><label>المساحة م²</label><input id="size" type="number" min="0"></div><div><label>عدد الغرف</label><input id="rooms" type="number" min="0" step="1" inputmode="numeric"></div></div>
-<label>الوصف</label><textarea id="ri" maxlength="1500"></textarea><label>رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
+<label for="rt">نوع العملية</label><select id="rt"><option>نبحث عن كراء</option><option>نبحث عن شراء</option><option>عرض كراء</option><option>عرض بيع</option></select>
+<label for="rp">نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
+<div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0"></div></div>
+<div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1" inputmode="numeric"></div></div>
+<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="realty" style="margin-top:15px">حفظ الطلب أو الإعلان</button>
 </div></section>
 
 <section id="market" class="hidden"><div class="box">
 <h2>🛒 سوق اقضيلي المفتوح</h2>
-<label>نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
-<label>صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
-<label>اسم المنتج</label><input id="mn" maxlength="100"><label>السعر بالدينار</label><input id="mp" type="number" min="0"><label>المنطقة</label><input id="ma" value="صفاقس" maxlength="80" autocomplete="address-level2"><label>الوصف</label><textarea id="md" maxlength="1500"></textarea><label>رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
+<label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
+<label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
+<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80" autocomplete="address-level2"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
-</div><div class="box"><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
+</div><div class="box"><label for="market-search" for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
 
 
 <section id="good" class="hidden">
@@ -119,7 +119,7 @@ footer{text-align:center;padding:20px;color:#647875}
 </div>
 </section>
 
-<section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label>اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
+<section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label for="q">اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
 
 <section id="saved" class="hidden"><div class="box">
 <h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><input id="services-search" type="search" placeholder="فتّش في طلبات الخدمات..." aria-label="البحث في طلبات الخدمات"><div id="sl" aria-live="polite"></div>
@@ -133,8 +133,8 @@ footer{text-align:center;padding:20px;color:#647875}
 <section id="reset-password" class="hidden">
 <div class="box"><h2>تغيير كلمة المرور</h2>
 <p>اكتب كلمة مرور جديدة لحسابك في اقضيلي.</p>
-<label>كلمة المرور الجديدة</label><input id="new-password" type="password" autocomplete="new-password" minlength="8">
-<label>أعد كتابة كلمة المرور</label><input id="confirm-password" type="password" autocomplete="new-password" minlength="8">
+<label for="new-password">كلمة المرور الجديدة</label><input id="new-password" type="password" autocomplete="new-password" minlength="8">
+<label for="confirm-password">أعد كتابة كلمة المرور</label><input id="confirm-password" type="password" autocomplete="new-password" minlength="8">
 <button type="button" id="save-new-password" style="margin-top:12px">حفظ كلمة المرور</button>
 <p id="reset-password-message" class="muted"></p>
 </div></section>
@@ -143,8 +143,8 @@ footer{text-align:center;padding:20px;color:#647875}
 <div class="box"><h2>لوحة إدارة اقضيلي</h2>
 <div id="admin-login">
 <p>الدخول خاص بمسؤول المنصة فقط.</p>
-<label>البريد الإلكتروني</label><input id="admin-email" type="email" autocomplete="username">
-<label>كلمة المرور</label><input id="admin-password" type="password" autocomplete="current-password">
+<label for="admin-email">البريد الإلكتروني</label><input id="admin-email" type="email" autocomplete="username">
+<label for="admin-password">كلمة المرور</label><input id="admin-password" type="password" autocomplete="current-password">
 <button type="button" id="admin-login-button" style="margin-top:12px">دخول الإدارة</button>
 <p id="admin-login-message" class="muted"></p>
 </div>
