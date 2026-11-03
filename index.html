@@ -63,8 +63,8 @@ footer{text-align:center;padding:20px;color:#647875}
 <section id="services" class="hidden">
 <h2>طلب خدمة</h2><div class="box">
 <label for="st">نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
-<label for="sd">التفاصيل</label><textarea id="sd" maxlength="1500"></textarea>
-<div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw"></div></div>
+<label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
+<div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
 <label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
 </div></section>
@@ -94,7 +94,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
 <label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any" inputmode="decimal"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80" autocomplete="address-level2"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
-</div><div class="box"><label for="market-search" for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
+</div><div class="box"><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
 
 
 <section id="good" class="hidden">
