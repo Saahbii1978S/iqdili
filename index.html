@@ -310,7 +310,7 @@ if(numericFields.some(id=>val(id)!==""&&(!Number.isFinite(Number(val(id)))||Numb
 if(table==="realty" && val("rooms")!=="" && !Number.isInteger(Number(val("rooms")))){alert("عدد الغرف يلزمو يكون عدد صحيح، من غير فاصلة.");return;}
 try{
 const result=await db.from(target).insert([{...data,status:"pending"}]);
-if(result.error){console.error("Insert error:",result.error);alert("ما نجّمش نحفظ الإعلان. "+result.error.message);return;}
+if(result.error){console.error("Insert error:",result.error);alert("ما نجّمش نحفظ الإعلان حالياً. تثبّت من المعلومات والاتصال، وإذا تتعاود المشكلة تواصل مع إدارة المنصة.");return;}
 alert("وصل الإعلان للإدارة للمراجعة. يظهر للناس بعد الموافقة عليه.");
 required.forEach(id=>{if(el(id))el(id).value="";});
 ["sd","ji","ri","md","sc","jc","rc","mphone","mp","r_price","size","rooms","sw"].forEach(id=>{if(el(id))el(id).value="";});
