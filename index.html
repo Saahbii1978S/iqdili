@@ -212,6 +212,7 @@ el("save-new-password").addEventListener("click",async()=>{
  const password=val("new-password"),confirm=val("confirm-password"),message=el("reset-password-message"),button=el("save-new-password");
  if(password.length<8){message.textContent="كلمة المرور يلزمها 8 أحرف على الأقل.";return;}
  if(password!==confirm){message.textContent="كلمتا المرور موش متطابقتين.";return;}
+ if(!db){message.textContent="الاتصال بخدمة الحسابات غير متوفر. عاود بعد التثبت من الإنترنت." ;return;}
  button.disabled=true;button.textContent="جاري الحفظ...";
  const {error}=await db.auth.updateUser({password});
  button.disabled=false;button.textContent="حفظ كلمة المرور";
@@ -350,6 +351,7 @@ async function refreshAdminState(){
 }
 el("admin-login-button").addEventListener("click",async()=>{
  const email=val("admin-email"),password=val("admin-password");
+ if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
  if(!email||!password){adminMessage("اكتب البريد الإلكتروني وكلمة المرور.");return;}
  const b=el("admin-login-button");b.disabled=true;b.textContent="جاري التحقق...";
  const {error}=await db.auth.signInWithPassword({email,password});
@@ -357,8 +359,8 @@ el("admin-login-button").addEventListener("click",async()=>{
  if(error){adminMessage("تعذّر الدخول. تثبّت من بيانات الدخول وصلاحية حساب الإدارة.");return;}
  adminMessage("");await refreshAdminState();
 });
-el("admin-refresh").addEventListener("click",renderAdmin);
-el("admin-logout").addEventListener("click",async()=>{await db.auth.signOut();await refreshAdminState();});
+el("admin-refresh").addEventListener("click",()=>{if(db)renderAdmin();else adminMessage("خدمة الحسابات غير متوفرة حالياً.");});
+el("admin-logout").addEventListener("click",async()=>{if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً.");return;}await db.auth.signOut();await refreshAdminState();});
 document.addEventListener("click",async event=>{
  const action=event.target.closest("[data-admin-action]");
  if(!action)return;
