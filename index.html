@@ -82,8 +82,8 @@ footer{text-align:center;padding:20px;color:#647875}
 <h2>العقارات بيع وكراء</h2><div class="box">
 <label for="rt">نوع العملية</label><select id="rt"><option>نبحث عن كراء</option><option>نبحث عن شراء</option><option>عرض كراء</option><option>عرض بيع</option></select>
 <label for="rp">نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
-<div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0"></div></div>
-<div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1" inputmode="numeric"></div></div>
+<div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any" inputmode="decimal"></div></div>
+<div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any" inputmode="decimal"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1" inputmode="numeric"></div></div>
 <label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="realty" style="margin-top:15px">حفظ الطلب أو الإعلان</button>
 </div></section>
@@ -92,7 +92,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <h2>🛒 سوق اقضيلي المفتوح</h2>
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
-<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80" autocomplete="address-level2"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
+<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any" inputmode="decimal"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80" autocomplete="address-level2"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
 </div><div class="box"><label for="market-search" for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
 
