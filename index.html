@@ -223,7 +223,7 @@ if(!db){alert("الاتصال بقاعدة البيانات غير متوفر ح
 let target="",data={},required=[];
 if(table==="services"){
 target="service_requests";
-data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\\n"+val("sd")),city:val("sa"),phone:val("sc")};
+data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\n"+val("sd")),city:val("sa"),phone:val("sc")};
 required=["sd","sc"];
 }else if(table==="jobs"){
 target="job_posts";
@@ -239,7 +239,7 @@ data={title:val("mn"),description:val("md"),category:val("mc"),price:Number(val(
 required=["mn","mphone"];
 }else{return;}
 if(required.some(id=>!val(id))){alert("الرجاء تعمير الخانات المطلوبة.");return;}
-const phoneDigits=String(data.phone||"").replace(/\\D/g,"");
+const phoneDigits=String(data.phone||"").replace(/\D/g,"");
 if(phoneDigits.length<8||phoneDigits.length>15){alert("رقم الهاتف يلزمو بين 8 و15 رقم.");return;}
 if(String(data.title||"").trim().length>100||String(data.description||"").trim().length>1500||String(data.city||"").trim().length>80){alert("راجع طول العنوان أو الوصف أو المدينة.");return;}
 try{
