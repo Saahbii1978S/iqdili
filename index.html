@@ -427,8 +427,16 @@ const response=await fetch(SUPABASE_URL+"/functions/v1/ask-iqdili",{
 method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},
 body:JSON.stringify({question})
 });
-const result=await response.json();
-if(!response.ok)throw new Error(result.error||"تعذّر الحصول على الإجابة.");
+const responseText=await response.text();
+let result={};
+try{result=responseText?JSON.parse(responseText):{};}catch(parseError){
+ console.error("Ask response parsing:",parseError);
+ throw new Error("وصل رد غير مفهوم من الخدمة. عاود المحاولة بعد شوية.");
+}
+if(!response.ok){
+ console.error("Ask service response:",response.status,result.error||"No error detail");
+ throw new Error(response.status===429?"الأسئلة كثيرة في الوقت هذا. استنّى شوية وعاود.":response.status>=500?"خدمة الإجابة فيها عطب مؤقت. عاود بعد شوية.":result.error||"تعذّر الحصول على الإجابة.");
+}
 answer.textContent=result.answer||"ما وصلتناش إجابة واضحة. عاود المحاولة.";
 }catch(error){
 answer.textContent=error.message||"صار مشكل في الاتصال. عاود بعد شوية.";
