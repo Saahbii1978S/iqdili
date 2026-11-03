@@ -416,8 +416,8 @@ el("admin-login-button").addEventListener("click",async()=>{
 
 
 el("ask-button").addEventListener("click",async function(){
-const question=val("q");
-if(!question){alert("اكتب سؤالك أولاً.");return;}
+const question=val("q").trim();
+if(!question){alert("اكتب سؤالك أولاً، وما تبعثش فراغات فقط.");return;}
 if(question.length>1000){alert("السؤال طويل برشة. اختصره إلى 1000 حرف.");return;}
 const button=el("ask-button"), answer=el("answer");
 button.disabled=true;button.textContent="نحضّرلك الإجابة...";
@@ -437,7 +437,11 @@ if(!response.ok){
  console.error("Ask service response:",response.status,result.error||"No error detail");
  throw new Error(response.status===429?"الأسئلة كثيرة في الوقت هذا. استنّى شوية وعاود.":response.status>=500?"خدمة الإجابة فيها عطب مؤقت. عاود بعد شوية.":result.error||"تعذّر الحصول على الإجابة.");
 }
-answer.textContent=result.answer||"ما وصلتناش إجابة واضحة. عاود المحاولة.";
+if(typeof result.answer!=="string"||!result.answer.trim()){
+ answer.textContent="ما وصلتناش إجابة واضحة. عاود المحاولة.";
+}else{
+ answer.textContent=result.answer.trim().slice(0,6000);
+}
 }catch(error){
 answer.textContent=error.message||"صار مشكل في الاتصال. عاود بعد شوية.";
 }finally{
