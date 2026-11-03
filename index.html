@@ -168,6 +168,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <label for="admin-email">البريد الإلكتروني</label><input id="admin-email" maxlength="254" type="email" autocomplete="username">
 <label for="admin-password">كلمة المرور</label><input id="admin-password" maxlength="128" type="password" autocomplete="current-password">
 <button type="button" id="admin-login-button" style="margin-top:12px">دخول الإدارة</button>
+<button type="button" id="admin-forgot-password" style="margin-top:8px;background:#647875">نسيت كلمة السر؟ ابعثلي رابط استرجاع</button>
 <p id="admin-login-message" class="muted"></p>
 </div>
 <div id="admin-panel" class="hidden">
@@ -440,6 +441,20 @@ async function refreshAdminState(){
   throw error;
  }
 }
+el("admin-forgot-password").addEventListener("click",async()=>{
+  const email=val("admin-email"),button=el("admin-forgot-password");
+  if(!email){adminMessage("اكتب البريد الإلكتروني أولاً، وبعد اضغط على استرجاع كلمة السر.");return;}
+  if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
+  button.disabled=true;button.textContent="جاري إرسال الرابط...";
+  try{
+   const redirectTo=window.location.origin+window.location.pathname+"#type=recovery";
+   const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
+   if(error){console.error("Password recovery request:",error);adminMessage("ما نجّمش نبعث رابط الاسترجاع. تثبّت من البريد والاتصال، وعاود بعد شوية.");return;}
+   adminMessage("إذا البريد مربوط بحساب، توصلك رسالة فيها رابط استرجاع. تثبّت من الوارد والرسائل غير المرغوب فيها.");
+  }catch(error){console.error("Password recovery error:",error);adminMessage("صار خطأ أثناء طلب رابط الاسترجاع. عاود بعد شوية.");}
+  finally{button.disabled=false;button.textContent="نسيت كلمة السر؟ ابعثلي رابط استرجاع";}
+ });
+
 el("admin-login-button").addEventListener("click",async()=>{
   const email=val("admin-email"),password=val("admin-password");
   if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
