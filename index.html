@@ -389,10 +389,15 @@ el("admin-login-button").addEventListener("click",async()=>{
   const action=event.target.closest("[data-admin-action]");
   if(!action)return;
   const table=action.dataset.adminTable,id=action.dataset.id,status=action.dataset.adminAction;
+  const allowedTables=["service_requests","job_posts","real_estate_posts","market_posts"];
+  if(!allowedTables.includes(table)||!["approved","rejected"].includes(status)||!id){
+   alert("العملية غير صالحة. حدّث صفحة الإدارة وعاود.");
+   return;
+  }
   if(!db){alert("خدمة الإدارة غير متوفرة حالياً. تثبّت من الإنترنت.");return;}
   action.disabled=true;
   try{
-   const {error}=await db.from(table).update({status}).eq("id",id);
+   const {error}=await db.from(table).update({status}).eq("id",id).eq("status","pending");
    if(error){console.error("Admin status update:",error);alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من الصلاحيات والاتصال.");return;}
    await renderAdmin();
   }catch(error){
