@@ -179,7 +179,7 @@ allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggl
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
 window.scrollTo({top:0,behavior:"auto"});
 if(["saved","market","services","jobs","realty"].includes(id)){setupListingSearch();loadData();}
-if(id==="admin" && db) refreshAdminState();
+if(id==="admin" && db) refreshAdminState().catch(()=>{});
 }
 window.show=show;
 
