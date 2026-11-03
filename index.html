@@ -223,7 +223,7 @@ if(!db){alert("الاتصال بقاعدة البيانات غير متوفر ح
 let target="",data={},required=[];
 if(table==="services"){
 target="service_requests";
-data={title:val("st"),description:val("sd"),city:val("sa"),phone:val("sc")};
+data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\\n"+val("sd")),city:val("sa"),phone:val("sc")};
 required=["sd","sc"];
 }else if(table==="jobs"){
 target="job_posts";
@@ -239,6 +239,9 @@ data={title:val("mn"),description:val("md"),category:val("mc"),price:Number(val(
 required=["mn","mphone"];
 }else{return;}
 if(required.some(id=>!val(id))){alert("الرجاء تعمير الخانات المطلوبة.");return;}
+const phoneDigits=String(data.phone||"").replace(/\\D/g,"");
+if(phoneDigits.length<8||phoneDigits.length>15){alert("رقم الهاتف يلزمو بين 8 و15 رقم.");return;}
+if(String(data.title||"").trim().length>100||String(data.description||"").trim().length>1500||String(data.city||"").trim().length>80){alert("راجع طول العنوان أو الوصف أو المدينة.");return;}
 try{
 const result=await db.from(target).insert([{...data,status:"pending"}]);
 if(result.error){console.error("Insert error:",result.error);alert("ما نجّمش نحفظ الإعلان. "+result.error.message);return;}
@@ -297,9 +300,11 @@ async function renderAdmin(){
    const desc=row.description||row.details||"";
    const city=row.city||row.region||"";
    const status=row.status||"pending";
+   const statusLabel={pending:"في انتظار المراجعة",approved:"مقبول",rejected:"مرفوض"}[status]||status;
    const phone=String(row.phone||"").trim();
    const phoneHtml=phone ? '<p>📞 <a href="tel:'+phone.replace(/[^+0-9]/g,"") + '">' + adminEscape(phone) + '</a></p>' : "";
-   return `<div class="entry"><b>${adminEscape(title)}</b><p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(status)} | رقم: ${adminEscape(row.id)}</small><div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div></div>`;
+   const actions=status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : "";
+   return `<div class="entry"><b>${adminEscape(title)}</b><p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(statusLabel)} | رقم: ${adminEscape(row.id)}</small>${actions}</div>`;
   }).join("");
  }
  host.innerHTML=htmlOut;
