@@ -37,6 +37,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <button type="button" data-page="jobs">فرص العمل</button>
 <button type="button" data-page="realty">العقارات</button>
 <button type="button" data-page="market">السوق</button>
+<button type="button" data-page="good">باب الخير ❤️</button>
 <button type="button" data-page="ask">اسأل اقضيلي</button>
 <button type="button" data-page="saved">المنشورات الحية</button>
 <button type="button" data-page="admin">الإدارة</button>
@@ -52,6 +53,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <div class="card"><div class="icon">💼</div><h3>فرص العمل</h3><p>فتّش على خدمة أو أضف عرض انتداب.</p><button type="button" data-page="jobs">ادخل</button></div>
 <div class="card"><div class="icon">🏠</div><h3>العقارات</h3><p>ديار ومحلات وأراضٍ للبيع والكراء.</p><button type="button" data-page="realty">ادخل</button></div>
 <div class="card"><div class="icon">🛒</div><h3>سوق اقضيلي</h3><p>بيع واشري واعرض منتجاتك مجاناً.</p><button type="button" data-page="market">ادخل</button></div>
+<div class="card"><div class="icon">❤️</div><h3>باب الخير</h3><p>مساعدة، تطوّع، تعليم وتبرّع آمن.</p><button type="button" data-page="good">ساهم بالخير</button></div>
 </div>
 </section>
 
@@ -90,6 +92,32 @@ footer{text-align:center;padding:20px;color:#647875}
 <label>اسم المنتج</label><input id="mn"><label>السعر بالدينار</label><input id="mp" type="number" min="0"><label>المنطقة</label><input id="ma" value="تونس"><label>الوصف</label><textarea id="md"></textarea><label>رقم التواصل</label><input id="mphone" type="tel">
 <button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
 </div><div id="market-list"></div></section>
+
+
+<section id="good" class="hidden">
+<div class="box">
+<h2>❤️ باب الخير – اقضيلي للخير</h2>
+<p>مساحة لتسهيل فعل الخير والتعاون بين الناس في تونس، مع احترام كرامة المحتاج وخصوصيته.</p>
+<div class="cards">
+<div class="card"><div class="icon">🥫</div><h3>قفة خير</h3><p>المساهمة بمواد غذائية أو توجيه العائلات إلى مبادرات موثوقة.</p></div>
+<div class="card"><div class="icon">👕</div><h3>كسوة ومستلزمات</h3><p>تقديم ملابس وأحذية وأغراض نظيفة ما عادش أصحابها يحتاجوها.</p></div>
+<div class="card"><div class="icon">🤝</div><h3>تطوّع ومساعدة</h3><p>مرافقة كبار السن، قضاء شؤونهم، أو المساعدة في أعمال تطوعية.</p></div>
+<div class="card"><div class="icon">📚</div><h3>تعليم مجاني</h3><p>دروس دعم ومساعدة تلامذة وطلبة من غير مقابل.</p></div>
+<div class="card"><div class="icon">💼</div><h3>فرصة عمل</h3><p>التعريف بفرص عمل حقيقية ومساعدة الباحثين عن شغل.</p></div>
+<div class="card"><div class="icon">🩺</div><h3>مستلزمات صحية</h3><p>تسهيل التبرّع بالمستلزمات غير الدوائية وبطرق آمنة.</p></div>
+</div>
+</div>
+<div class="box">
+<h3>كيفاش نعملوا الخير بأمان؟</h3>
+<ul>
+<li>ما ننشروش اسم أو صورة أو عنوان شخص محتاج من غير موافقته.</li>
+<li>ما نحوّلوش أموال لحسابات مجهولة، ونتثبتوا من الجمعيات والحملات قبل التبرّع.</li>
+<li>ما نتداولوش الأدوية بين الأفراد؛ التبرّع بالمستلزمات الصحية يكون بطريقة قانونية وآمنة.</li>
+<li>نحافظوا على كرامة الناس، وما نطلبوش منهم يصوّروا فقرهم لإثبات حاجتهم.</li>
+</ul>
+<p class="note">ملاحظة: هذا القسم في نسخته الحالية للتعريف بمجالات الخير وإرشادات السلامة فقط. استقبال طلبات المساعدة أو التبرعات ونشرها للعموم لم يتم تفعيله بعد، إلى حين إعداد آلية تحقق وحماية للخصوصية.</p>
+</div>
+</section>
 
 <section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label>اكتب سؤالك</label><textarea id="q"></textarea><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
 
@@ -141,7 +169,7 @@ function val(id){const node=el(id);return node ? node.value.trim() : ""}
 function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
 
 function show(id){
-const allowed=["home","services","jobs","realty","market","ask","saved","admin","reset-password"];
+const allowed=["home","services","jobs","realty","market","good","ask","saved","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 window.scrollTo({top:0,behavior:"auto"});
