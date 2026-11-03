@@ -246,7 +246,15 @@ required=["mn","mphone","ma"];
 if(required.some(id=>!val(id))){alert("الرجاء تعمير الخانات المطلوبة.");return;}
 const phoneDigits=String(data.phone||"").replace(/\D/g,"");
 if(phoneDigits.length<8||phoneDigits.length>15){alert("رقم الهاتف يلزمو بين 8 و15 رقم.");return;}
-if(String(data.title||"").trim().length>100||String(data.description||"").trim().length>1500||String(data.city||"").trim().length>80){alert("راجع طول العنوان أو الوصف أو المدينة.");return;}
+const fieldLimits={st:100,sd:1500,sw:80,sc:20,jt:100,ji:1500,ja:80,jc:20,jk:60,jn:60,rt:40,rp:60,ri:1500,ra:80,rc:20,mn:100,md:1500,mc:60,ma:80,mphone:20};
+if(Object.entries(fieldLimits).some(([id,max])=>val(id).trim().length>max)){
+ alert("بعض الخانات طويلة أكثر من اللازم. اختصر النص وعاود المحاولة.");
+ return;
+}
+if(String(data.title||"").trim().length>100||String(data.description||"").trim().length>1500||String(data.city||"").trim().length>80){
+ alert("راجع طول العنوان أو الوصف أو المدينة.");
+ return;
+}
 const numericFields=table==="realty"?["r_price","size","rooms"]:table==="market"?["mp"]:[];
 if(numericFields.some(id=>val(id)!==""&&(!Number.isFinite(Number(val(id)))||Number(val(id))<0))){alert("السعر والمساحة وعدد الغرف يلزمهم أرقام موجبة أو صفر.");return;}
 if(table==="realty" && val("rooms")!=="" && !Number.isInteger(Number(val("rooms")))){alert("عدد الغرف يلزمو يكون عدد صحيح، من غير فاصلة.");return;}
