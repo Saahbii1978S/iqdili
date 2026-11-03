@@ -355,18 +355,37 @@ async function refreshAdminState(){
  if(logged){el("admin-welcome").textContent="تم تسجيل الدخول. الصلاحيات تُتحقق منها قاعدة البيانات.";await renderAdmin();}
 }
 el("admin-login-button").addEventListener("click",async()=>{
- const email=val("admin-email"),password=val("admin-password");
- if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
- if(!email||!password){adminMessage("اكتب البريد الإلكتروني وكلمة المرور.");return;}
- const b=el("admin-login-button");b.disabled=true;b.textContent="جاري التحقق...";
- const {error}=await db.auth.signInWithPassword({email,password});
- b.disabled=false;b.textContent="دخول الإدارة";
- if(error){adminMessage("تعذّر الدخول. تثبّت من بيانات الدخول وصلاحية حساب الإدارة.");return;}
- adminMessage("");await refreshAdminState();
-});
-el("admin-refresh").addEventListener("click",()=>{if(db)renderAdmin();else adminMessage("خدمة الحسابات غير متوفرة حالياً.");});
-el("admin-logout").addEventListener("click",async()=>{if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً.");return;}await db.auth.signOut();await refreshAdminState();});
-document.addEventListener("click",async event=>{
+  const email=val("admin-email"),password=val("admin-password");
+  if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
+  if(!email||!password){adminMessage("اكتب البريد الإلكتروني وكلمة المرور.");return;}
+  const b=el("admin-login-button");b.disabled=true;b.textContent="جاري التحقق...";
+  try{
+   const {error}=await db.auth.signInWithPassword({email,password});
+   if(error){adminMessage("تعذّر الدخول. تثبّت من بيانات الدخول وصلاحية حساب الإدارة.");return;}
+   adminMessage("");await refreshAdminState();
+  }catch(error){
+   console.error("Admin login error:",error);
+   adminMessage("صار خطأ في الاتصال أثناء الدخول. تثبّت من الإنترنت وعاود.");
+  }finally{b.disabled=false;b.textContent="دخول الإدارة";}
+ });
+ el("admin-refresh").addEventListener("click",async()=>{
+  if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً.");return;}
+  const b=el("admin-refresh");b.disabled=true;
+  try{await renderAdmin();}
+  catch(error){console.error("Admin refresh error:",error);adminMessage("تعذّر تحديث الطلبات. تثبّت من الاتصال وعاود.");}
+  finally{b.disabled=false;}
+ });
+ el("admin-logout").addEventListener("click",async()=>{
+  if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً.");return;}
+  const b=el("admin-logout");b.disabled=true;
+  try{
+   const {error}=await db.auth.signOut();
+   if(error){adminMessage("تعذّر الخروج من الحساب. عاود المحاولة.");return;}
+   await refreshAdminState();
+  }catch(error){console.error("Admin logout error:",error);adminMessage("صار خطأ في الاتصال أثناء الخروج.");}
+  finally{b.disabled=false;}
+ });
+ document.addEventListener("click",async event=>{
  const action=event.target.closest("[data-admin-action]");
  if(!action)return;
  const table=action.dataset.adminTable,id=action.dataset.id,status=action.dataset.adminAction;
