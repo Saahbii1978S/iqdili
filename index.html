@@ -119,7 +119,7 @@ footer{text-align:center;padding:20px;color:#647875}
 </div>
 </section>
 
-<section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label>اكتب سؤالك</label><textarea id="q"></textarea><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
+<section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label>اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
 
 <section id="saved" class="hidden"><div class="box">
 <h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><div id="sl"></div>
@@ -344,6 +344,7 @@ document.addEventListener("click",async event=>{
 el("ask-button").addEventListener("click",async function(){
 const question=val("q");
 if(!question){alert("اكتب سؤالك أولاً.");return;}
+if(question.length>1000){alert("السؤال طويل برشة. اختصره إلى 1000 حرف.");return;}
 const button=el("ask-button"), answer=el("answer");
 button.disabled=true;button.textContent="نحضّرلك الإجابة...";
 answer.classList.remove("hidden");answer.textContent="قاعد نفهم في سؤالك...";
