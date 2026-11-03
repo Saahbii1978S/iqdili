@@ -28,6 +28,14 @@ textarea{min-height:70px}.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
 .entry{padding:12px;border:1px solid #e3f3ef;border-radius:8px;margin-bottom:10px;background:#fafdfc;overflow-wrap:anywhere}
 footer{text-align:center;padding:20px;color:#647875}
 @media(max-width:420px){.row{display:block}}
+.good-topics details.card{cursor:pointer}
+.good-topics details.card summary{list-style:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.good-topics details.card summary::-webkit-details-marker{display:none}
+.good-topics details.card summary h3{margin:0;flex:1}
+.good-topics details.card .icon{margin:0}
+.good-topics details.card .topic-hint{font-size:12px;color:#087f75}
+.good-topics details.card[open]{outline:2px solid #b8ddd5}
+.good-topics details.card[open] .topic-hint{display:none}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -101,13 +109,13 @@ footer{text-align:center;padding:20px;color:#647875}
 <div class="box">
 <h2>❤️ باب الخير – الخير يجمعنا</h2>
 <p>مساحة تونسية تشجّع على التعاون والتراحم، وتقرّب بين اللي يحب يعاون واللي ينجم يقدّم مساعدة، مع حفظ كرامة الناس وخصوصيتهم.</p>
-<div class="cards">
-<div class="card"><div class="icon">🥫</div><h3>قفة ومواد غذائية</h3><p>ساهم بمواد غذائية أساسية وسليمة، بالتنسيق المباشر مع جمعية أو مبادرة محلية موثوقة.</p></div>
-<div class="card"><div class="icon">👕</div><h3>كسوة وأغراض</h3><p>قدّم ملابس وأحذية نظيفة وصالحة للاستعمال، واتفق مسبقاً على طريقة ومكان التسليم.</p></div>
-<div class="card"><div class="icon">🤝</div><h3>تطوّع ومساندة</h3><p>خصّص وقتك لمرافقة كبير سن، أو قضاء شؤون، أو المشاركة في نشاط تطوعي قريب منك.</p></div>
-<div class="card"><div class="icon">📚</div><h3>تعليم ودروس دعم</h3><p>عاون تلميذ أو طالب في مادة تتقنها، حضورياً أو عن بعد، من غير مقابل.</p></div>
-<div class="card"><div class="icon">💼</div><h3>مساعدة على العمل</h3><p>شارك فرصة شغل واضحة أو عاون شخصاً في إعداد سيرة ذاتية والبحث عن عمل.</p><button type="button" data-page="jobs">شوف قسم فرص العمل</button></div>
-<div class="card"><div class="icon">🩺</div><h3>مستلزمات صحية</h3><p>وجّه المستلزمات غير الدوائية إلى جهة صحية أو جمعية موثوقة تقبلها وفق الإجراءات المعمول بها.</p></div>
+<div class="cards good-topics">
+<details class="card"><summary><span class="icon">🥫</span><h3>قفة ومواد غذائية</h3><span class="topic-hint">اضغط للتفاصيل</span></summary><p>ساهم بمواد غذائية أساسية وسليمة، بالتنسيق المباشر مع جمعية أو مبادرة محلية موثوقة.</p><p><strong>شنوّة تنجم تعمل؟</strong> حضّر قفة فيها مواد أساسية غير منتهية الصلوحية، واتفق مع جهة موثوقة على التسليم.</p></details>
+<details class="card"><summary><span class="icon">👕</span><h3>كسوة وأغراض</h3><span class="topic-hint">اضغط للتفاصيل</span></summary><p>قدّم ملابس وأحذية نظيفة وصالحة للاستعمال، واتفق مسبقاً على طريقة ومكان التسليم.</p><p><strong>شنوّة تنجم تعمل؟</strong> فرز الملابس حسب المقاس والنوع، وتغليفها بطريقة محترمة ونظيفة.</p></details>
+<details class="card"><summary><span class="icon">🤝</span><h3>تطوّع ومساندة</h3><span class="topic-hint">اضغط للتفاصيل</span></summary><p>خصّص وقتك لمرافقة كبير سن، أو قضاء شؤون، أو المشاركة في نشاط تطوعي قريب منك.</p><p><strong>شنوّة تنجم تعمل؟</strong> اعرض وقتك ومهارتك على جمعية أو مبادرة محلية معروفة.</p></details>
+<details class="card"><summary><span class="icon">📚</span><h3>تعليم ودروس دعم</h3><span class="topic-hint">اضغط للتفاصيل</span></summary><p>عاون تلميذ أو طالب في مادة تتقنها، حضورياً أو عن بعد، من غير مقابل.</p><p><strong>شنوّة تنجم تعمل؟</strong> حدّد المادة والمستوى والوقت اللي تنجم تخصّصه للتدريس.</p></details>
+<details class="card"><summary><span class="icon">💼</span><h3>مساعدة على العمل</h3><span class="topic-hint">اضغط للتفاصيل</span></summary><p>شارك فرصة شغل واضحة أو عاون شخصاً في إعداد سيرة ذاتية والبحث عن عمل.</p><button type="button" data-page="jobs">شوف قسم فرص العمل</button></details>
+<details class="card"><summary><span class="icon">🩺</span><h3>مستلزمات صحية</h3><span class="topic-hint">اضغط للتفاصيل</span></summary><p>وجّه المستلزمات غير الدوائية إلى جهة صحية أو جمعية موثوقة تقبلها وفق الإجراءات المعمول بها.</p><p><strong>مهم:</strong> ما تتداولوش الأدوية بين الأفراد، واستشيروا جهة صحية مختصة.</p></details>
 </div>
 </div>
 <div class="box">
