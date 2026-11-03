@@ -308,8 +308,20 @@ function filterListing(inputId,listId){
   if(match)visible++;
  });
  let notice=list.querySelector("[data-search-empty]");
- if(query&&entries.length&&visible===0){
-  if(!notice){notice=document.createElement("p");notice.className="muted";notice.dataset.searchEmpty="1";notice.textContent="ما لقيناش نتيجة مطابقة. جرّب كلمة أخرى.";list.appendChild(notice);}
+ if(query&&visible===0){
+  if(!notice){
+   notice=document.createElement("p");
+   notice.className="muted";
+   notice.dataset.searchEmpty="1";
+   notice.textContent=entries.length
+    ?"ما لقيناش نتيجة مطابقة. جرّب كلمة أخرى."
+    :"ما فماش إعلانات منشورة في القائمة حالياً للبحث فيها.";
+   list.appendChild(notice);
+  }else{
+   notice.textContent=entries.length
+    ?"ما لقيناش نتيجة مطابقة. جرّب كلمة أخرى."
+    :"ما فماش إعلانات منشورة في القائمة حالياً للبحث فيها.";
+  }
  }else if(notice){notice.remove();}
 }
 function setupListingSearch(){
