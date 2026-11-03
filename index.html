@@ -481,10 +481,12 @@ el("admin-login-button").addEventListener("click",async()=>{
    return;
   }
   if(!db){alert("خدمة الإدارة غير متوفرة حالياً. تثبّت من الإنترنت.");return;}
+  if(status==="rejected" && !window.confirm("متأكد تحب ترفض الإعلان؟"))return;
   action.disabled=true;
   try{
-   const {error}=await db.from(table).update({status}).eq("id",id).eq("status","pending");
+   const {data,error}=await db.from(table).update({status}).eq("id",id).eq("status","pending").select("id");
    if(error){console.error("Admin status update:",error);alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من الصلاحيات والاتصال.");return;}
+   if(!data||data.length===0){alert("الإعلان تبدّلت حالته من قبل أو ما عادش موجوداً ضمن الطلبات المعلّقة. حدّث القائمة.");await renderAdmin();return;}
    await renderAdmin();
   }catch(error){
    console.error("Admin action error:",error);
