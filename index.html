@@ -278,17 +278,27 @@ renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - 
 }catch(error){console.error("Load error:",error);["market-list","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
 
+function filterListing(inputId,listId){
+ const input=el(inputId),list=el(listId);if(!input||!list)return;
+ const query=input.value.trim().toLocaleLowerCase();
+ const entries=[...list.querySelectorAll(".entry")];
+ let visible=0;
+ entries.forEach(entry=>{
+  const match=!query||entry.textContent.toLocaleLowerCase().includes(query);
+  entry.classList.toggle("hidden",!match);
+  if(match)visible++;
+ });
+ let notice=list.querySelector("[data-search-empty]");
+ if(query&&entries.length&&visible===0){
+  if(!notice){notice=document.createElement("p");notice.className="muted";notice.dataset.searchEmpty="1";notice.textContent="ما لقيناش نتيجة مطابقة. جرّب كلمة أخرى.";list.appendChild(notice);}
+ }else if(notice){notice.remove();}
+}
 function setupListingSearch(){
  const pairs=[["market-search","market-list"],["services-search","sl"],["jobs-search","jl"],["realty-search","rl"],["market-live-search","market-live"]];
  pairs.forEach(([inputId,listId])=>{
-  const input=el(inputId),list=el(listId);if(!input||!list||input.dataset.ready)return;
-  input.dataset.ready="1";
-  input.addEventListener("input",()=>{
-   const query=input.value.trim().toLocaleLowerCase();
-   list.querySelectorAll(".entry").forEach(entry=>{
-    entry.classList.toggle("hidden",!!query&&!entry.textContent.toLocaleLowerCase().includes(query));
-   });
-  });
+  const input=el(inputId);if(!input)return;
+  if(!input.dataset.ready){input.dataset.ready="1";input.addEventListener("input",()=>filterListing(inputId,listId));}
+  filterListing(inputId,listId);
  });
 }
 window.loadData=loadData;
