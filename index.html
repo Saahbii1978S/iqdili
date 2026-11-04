@@ -338,10 +338,10 @@ if(!db){
 }
 try{
 const [market,services,jobs,realty]=await Promise.all([
-db.from("market_posts_public").select("id,created_at,listing_type,category,title,price,city,description").order("created_at",{ascending:false}),
-db.from("service_requests_public").select("id,created_at,title,description,city").order("created_at",{ascending:false}),
-db.from("job_posts_public").select("id,created_at,title,description,city,job_type,work_nature").order("created_at",{ascending:false}),
-db.from("real_estate_posts_public").select("id,created_at,title,property_type,listing_type,city,price,size,rooms,description").order("created_at",{ascending:false})
+db.rpc("public_market_posts").order("created_at",{ascending:false}),
+db.rpc("public_service_requests").order("created_at",{ascending:false}),
+db.rpc("public_job_posts").order("created_at",{ascending:false}),
+db.rpc("public_real_estate_posts").order("created_at",{ascending:false})
 ]);
 renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
 renderList("market-live",market.data,(x)=>'<div class="entry"><b>[' + safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
