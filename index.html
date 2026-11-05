@@ -279,6 +279,15 @@ if(id==="admin" && db) refreshAdminState().catch(()=>{});
 }
 window.show=show;
 
+// ربط أزرار القائمة مباشرةً لتحسين التوافق مع شاشات Android المدمجة في السيارات.
+document.querySelectorAll("nav [data-page]").forEach(button=>{
+ button.addEventListener("click",event=>{
+  event.preventDefault();
+  event.stopPropagation();
+  show(button.dataset.page);
+ });
+});
+
 const serviceForm=el("service-form");
 const serviceFormToggle=el("toggle-service-form");
 const serviceFormClose=el("close-service-form");
