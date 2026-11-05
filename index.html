@@ -387,7 +387,7 @@ const target=el(id);if(!target)return;
 if(error){target.innerHTML='<p class="muted">تعذّر تحميل المنشورات. تثبّت من الاتصال وإعدادات قاعدة البيانات ثم عاود المحاولة.</p>';return;}
 target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="muted">ما فماش منشورات حالياً.</p>';
 }
-async function loadData(){
+async async function loadData(){
 if(!db){
  const message="خدمة قاعدة البيانات غير متوفرة حالياً. تثبّت من الاتصال وعاود المحاولة.";
  ["market-list","market-live","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">'+safe(message)+'</p>';});
