@@ -279,6 +279,18 @@ if(id==="admin" && db) refreshAdminState().catch(()=>{});
 }
 window.show=show;
 
+// التقاط ضغطات التنقّل في مرحلة الالتقاط قبل أي مستمع آخر؛ هذا أكثر توافقاً
+// مع أجهزة Android TV وشاشات السيارات التي قد تتعامل مع أحداث النقر بشكل مختلف.
+document.addEventListener("click",event=>{
+ const target=event.target;
+ const button=target && typeof target.closest==="function" ? target.closest("[data-page]") : null;
+ if(!button) return;
+ const page=button.dataset.page;
+ if(!page) return;
+ event.preventDefault();
+ show(page);
+},true);
+
 // ربط أزرار القائمة مباشرةً لتحسين التوافق مع شاشات Android المدمجة في السيارات.
 document.querySelectorAll("nav [data-page]").forEach(button=>{
  button.addEventListener("click",event=>{
