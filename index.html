@@ -252,9 +252,12 @@ connect();
 // The SDK must never block the page UI. Retry the database connection after
 // deferred/async external scripts have finished loading.
 window.addEventListener("load",connect,{once:true});
-// Fallback for Supabase recovery links that return the recovery type in the URL hash.
-const recoveryParams=new URLSearchParams(window.location.hash.replace(/^#/,""));
-if(recoveryParams.get("type")==="recovery"){show("reset-password");}
+// Keep the recovery marker in the query string; Supabase uses the URL hash for auth tokens.
+const recoveryQuery=new URLSearchParams(window.location.search);
+const recoveryHash=new URLSearchParams(window.location.hash.replace(/^#/,""));
+if(recoveryQuery.get("recovery")==="1" || recoveryHash.get("type")==="recovery"){
+ show("reset-password");
+}
 el("save-new-password").addEventListener("click",async()=>{
  const password=val("new-password"),confirm=val("confirm-password"),message=el("reset-password-message"),button=el("save-new-password");
  if(password.length<8){message.textContent="كلمة المرور يلزمها 8 أحرف على الأقل.";return;}
@@ -450,7 +453,7 @@ el("admin-forgot-password").addEventListener("click",async()=>{
   if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
   button.disabled=true;button.textContent="جاري إرسال الرابط...";
   try{
-   const redirectTo=window.location.origin+window.location.pathname+"#type=recovery";
+   const redirectTo=window.location.origin+window.location.pathname+"?recovery=1";
    const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
    if(error){console.error("Password recovery request:",error);adminMessage("ما نجّمش نبعث رابط الاسترجاع. تثبّت من البريد والاتصال، وعاود بعد شوية.");return;}
    adminMessage("إذا البريد مربوط بحساب، توصلك رسالة فيها رابط استرجاع. تثبّت من الوارد والرسائل غير المرغوب فيها.");
@@ -573,8 +576,9 @@ button.disabled=false;button.textContent="إرسال";
 });
 
 function showInitialPage(){
- const params=new URLSearchParams(window.location.hash.replace(/^#/,""));
- if(params.get("type")==="recovery")show("reset-password");
+ const query=new URLSearchParams(window.location.search);
+ const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));
+ if(query.get("recovery")==="1" || hash.get("type")==="recovery")show("reset-password");
  else if(!document.querySelector("section:not(.hidden)"))show("home");
 }
 document.addEventListener("DOMContentLoaded",showInitialPage);
