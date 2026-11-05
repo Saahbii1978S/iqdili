@@ -57,6 +57,11 @@ footer{text-align:center;padding:24px 16px;color:var(--muted);border-top:1px sol
  .cards{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
  .box,.card{padding:22px}
 }
+nav{scrollbar-width:thin;scrollbar-color:#b8dcd3 transparent}
+nav button{min-height:42px}
+nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+@media(hover:none){button:hover,.cards .card:hover{transform:none;box-shadow:none}}
 @media(max-width:600px){header{padding:29px 14px 26px}nav{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:thin}nav button{flex:0 0 auto;font-size:14px}main{padding:15px 12px 28px}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{padding:13px 10px}.row{display:block}.box{padding:15px}}
 @media(max-width:360px){.cards{grid-template-columns:1fr}}
 .good-topics details.card{cursor:pointer}
@@ -670,7 +675,7 @@ function showInitialPage(){
  const query=new URLSearchParams(window.location.search);
  const hash=new URLSearchParams(window.location.hash.replace(/^#/,""));
  if(query.get("recovery")==="1" || hash.get("type")==="recovery")show("reset-password");
- else if(!document.querySelector("section:not(.hidden)"))show("home");
+ else show("home");
 }
 document.addEventListener("DOMContentLoaded",showInitialPage);
 if(document.readyState!=="loading")showInitialPage();
