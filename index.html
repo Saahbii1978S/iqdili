@@ -192,6 +192,21 @@ function el(id){return document.getElementById(id)}
 function val(id){const node=el(id);return node ? node.value.trim() : ""}
 function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
 
+// عدّاد أحرف مباشر لمساعدة المستخدم على احترام حدود النص قبل الإرسال.
+["sd","ji","ri","md","q"].forEach(id=>{
+ const field=el(id);
+ if(!field || !field.maxLength || field.maxLength<0) return;
+ const counter=document.createElement("p");
+ counter.className="muted";
+ counter.style.margin="4px 0 10px";
+ counter.textContent=field.value.length+" / "+field.maxLength+" حرف";
+ field.insertAdjacentElement("afterend",counter);
+ field.addEventListener("input",()=>{
+  counter.textContent=field.value.length+" / "+field.maxLength+" حرف";
+ });
+});
+
+
 function show(id){
 const allowed=["home","services","jobs","realty","market","good","ask","saved","admin","reset-password"];
 if(!allowed.includes(id)) return;
