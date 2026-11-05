@@ -316,9 +316,10 @@ target="market_posts";
 data={title:val("mn"),description:val("md"),category:val("mc"),price:val("mp")===""?null:Number(val("mp")),city:val("ma"),phone:val("mphone"),listing_type:val("mt")};
 required=["mn","mphone","ma"];
 }else{return;}
-if(required.some(id=>!val(id))){alert("الرجاء تعمير الخانات المطلوبة.");return;}
+const missingField=required.find(id=>!val(id));
+if(missingField){alert("الرجاء تعمير الخانات المطلوبة.");el(missingField)?.focus();return;}
 const phoneDigits=String(data.phone||"").replace(/\D/g,"");
-if(phoneDigits.length<8||phoneDigits.length>15){alert("رقم الهاتف يلزمو بين 8 و15 رقم.");return;}
+if(phoneDigits.length<8||phoneDigits.length>15){alert("رقم الهاتف يلزمو بين 8 و15 رقم.");const phoneField=table==="services"?"sc":table==="jobs"?"jc":table==="realty"?"rc":"mphone";el(phoneField)?.focus();return;}
 const fieldLimits={st:100,sd:1500,sw:40,sc:20,jt:100,ji:1500,ja:80,jc:20,jk:60,jn:60,rt:40,rp:60,ri:1500,ra:80,rc:20,mn:100,md:1500,mc:60,ma:80,mphone:20};
 if(Object.entries(fieldLimits).some(([id,max])=>val(id).trim().length>max)){
  alert("بعض الخانات طويلة أكثر من اللازم. اختصر النص وعاود المحاولة.");
