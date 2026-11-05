@@ -428,6 +428,7 @@ required.forEach(id=>{if(el(id))el(id).value="";});
 ["sd","ji","ri","md","sc","jc","rc","mphone","mp","r_price","size","rooms","sw"].forEach(id=>{if(el(id))el(id).value="";});
 ["sd","ji","ri","md","q","jt","mn"].forEach(id=>{const field=el(id),counter=el("counter-"+id);if(field&&counter)counter.textContent=field.value.length+" / "+field.maxLength+" حرف";});
 ["sa","ja","ra","ma"].forEach(id=>{if(el(id))el(id).value="صفاقس";});
+["spublic","jpublic","rpublic","mpublic"].forEach(id=>{if(el(id))el(id).checked=false;});
 ["st","jk","jn","rt","rp","mt","mc"].forEach(id=>{if(el(id))el(id).selectedIndex=0;});
 await loadData();
 }catch(error){console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
