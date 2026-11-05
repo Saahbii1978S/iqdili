@@ -208,7 +208,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <h3>💼 إعلانات العمل</h3><input id="jobs-search" maxlength="100" type="search" placeholder="فتّش في فرص العمل..." aria-label="البحث في فرص العمل"><div id="jl" aria-live="polite"></div>
 <h3>🏠 العقارات المتوفرة</h3><input id="realty-search" maxlength="100" type="search" placeholder="فتّش في العقارات..." aria-label="البحث في العقارات"><div id="rl" aria-live="polite"></div>
 <h3>🛒 إعلانات السوق</h3><input id="market-live-search" maxlength="100" type="search" placeholder="فتّش في إعلانات السوق..." aria-label="البحث في إعلانات السوق"><div id="market-live" aria-live="polite"></div>
-<p class="muted">إذا ما ظهرتش إعلانات، يمكن قاعدة البيانات فارغة أو إعدادات القراءة غير مفعّلة.</p>
+<p class="muted">إذا ما ظهرتش إعلانات، يمكن ما فماش إعلانات مقبولة حالياً. الإعلانات المعلّقة أو المرفوضة ما تظهرش للعموم.</p>
 </div></section>
 
 
@@ -441,7 +441,7 @@ target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="
 async function loadData(){
 if(!db){
  const message="خدمة قاعدة البيانات غير متوفرة حالياً. تثبّت من الاتصال وعاود المحاولة.";
- ["market-list","market-live","sl","jl","rl","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">'+safe(message)+'</p>';});
+ ["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">'+safe(message)+'</p>';});
  setupListingSearch();
  return;
 }
@@ -461,7 +461,7 @@ renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - ن
 renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
 renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
 setupListingSearch();
-}catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
+}catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
 
 function filterListing(inputId,listId){
