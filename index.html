@@ -108,13 +108,27 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 </section>
 
 <section id="services" class="hidden">
-<h2>طلب خدمة</h2><div class="box">
+<h2>الخدمات وطلبات المساعدة</h2>
+<div class="box">
+<p>هنا تلقى طلبات الخدمات المنشورة والمقبولة. الطلبات اللي مازالت في المراجعة أو المرفوضة ما تظهرش للعموم.</p>
+<label for="services-search">🔎 فتّش في طلبات الخدمات</label><input id="services-search" maxlength="100" type="search" placeholder="اكتب نوع الخدمة أو المنطقة..." aria-label="البحث في الخدمات المنشورة">
+<div id="sl" aria-live="polite"><p class="muted">جاري تحميل الخدمات...</p></div>
+</div>
+<div class="box">
+<h3>تحب تطلب خدمة؟</h3>
+<p class="muted">اضغط على الزر وافتح استمارة نشر طلب جديد.</p>
+<button type="button" id="toggle-service-form" aria-expanded="false">اطلب خدمة جديدة</button>
+</div>
+<div id="service-form" class="hidden">
+<h2>نشر طلب خدمة</h2><div class="box">
 <label for="st">نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
 <label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
 <div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
 <label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
-</div></section>
+<button type="button" id="close-service-form" style="margin-top:10px;background:#647875">إغلاق الاستمارة</button>
+</div></div>
+</section>
 
 <section id="jobs" class="hidden">
 <h2>فرص العمل</h2><div class="box">
@@ -255,6 +269,29 @@ if(["saved","market","services","jobs","realty"].includes(id)){setupListingSearc
 if(id==="admin" && db) refreshAdminState().catch(()=>{});
 }
 window.show=show;
+
+const serviceForm=el("service-form");
+const serviceFormToggle=el("toggle-service-form");
+const serviceFormClose=el("close-service-form");
+if(serviceForm&&serviceFormToggle){
+ serviceFormToggle.addEventListener("click",()=>{
+  const opening=serviceForm.classList.contains("hidden");
+  serviceForm.classList.toggle("hidden",!opening);
+  serviceFormToggle.setAttribute("aria-expanded",String(opening));
+  serviceFormToggle.textContent=opening?"إخفاء استمارة طلب الخدمة":"اطلب خدمة جديدة";
+  if(opening)serviceForm.scrollIntoView({behavior:"smooth",block:"start"});
+ });
+}
+if(serviceForm&&serviceFormClose){
+ serviceFormClose.addEventListener("click",()=>{
+  serviceForm.classList.add("hidden");
+  if(serviceFormToggle){
+   serviceFormToggle.setAttribute("aria-expanded","false");
+   serviceFormToggle.textContent="اطلب خدمة جديدة";
+  }
+  serviceFormToggle?.focus();
+ });
+}
 
 const shareGoodButton=el("share-good");
 if(shareGoodButton){
