@@ -302,8 +302,10 @@ authListenerInstalled=true;
 }catch(error){console.error("Supabase connection setup:",error);}
 }
 connect();
-// The SDK must never block the page UI. Retry the database connection after
-// deferred/async external scripts have finished loading.
+// The SDK must never block the page UI. Retry when either the SDK itself or
+// the page finishes loading; async CDN loading can complete after window.load.
+const supabaseSdkScript=document.querySelector('script[src*="supabase-js"]');
+if(supabaseSdkScript)supabaseSdkScript.addEventListener("load",connect,{once:true});
 window.addEventListener("load",connect,{once:true});
 // Keep the recovery marker in the query string; Supabase uses the URL hash for auth tokens.
 const recoveryQuery=new URLSearchParams(window.location.search);
