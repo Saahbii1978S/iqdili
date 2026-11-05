@@ -131,31 +131,40 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 </section>
 
 <section id="jobs" class="hidden">
-<h2>فرص العمل</h2><div class="box">
+<h2>فرص العمل والإعلانات المهنية</h2>
+<div class="box"><p>هنا تلقى عروض الانتداب وفرص العمل المنشورة والمقبولة. الإعلانات المعلّقة أو المرفوضة ما تظهرش للعموم.</p>
+<label for="public-jobs-search">🔎 فتّش في فرص العمل</label><input id="public-jobs-search" maxlength="100" type="search" placeholder="اكتب المهنة أو المنطقة...">
+<div id="public-jobs-list" aria-live="polite"><p class="muted">جاري تحميل فرص العمل...</p></div></div>
+<div class="box"><h3>تحب تنشر فرصة أو تبحث عن عمل؟</h3><button type="button" data-toggle-form="job-form">أضف إعلان عمل</button></div>
+<div id="job-form" class="hidden"><div class="box"><h3>نشر إعلان عمل</h3>
 <label for="jk">نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
 <label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
-<div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
-<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
-<button type="button" class="send" data-table="jobs" style="margin-top:15px">حفظ الإعلان</button>
-</div></section>
+<div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
+<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك">
+<button type="button" class="send" data-table="jobs">حفظ الإعلان</button><button type="button" data-close-form="job-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="realty" class="hidden">
-<h2>العقارات بيع وكراء</h2><div class="box">
+<h2>العقارات للبيع والكراء</h2>
+<div class="box"><p>هنا تلقى عروض العقارات وطلبات البيع والكراء المقبولة والمنشورة للعموم.</p>
+<label for="public-realty-search">🔎 فتّش في العقارات</label><input id="public-realty-search" maxlength="100" type="search" placeholder="اكتب نوع العقار أو المنطقة...">
+<div id="public-realty-list" aria-live="polite"><p class="muted">جاري تحميل العقارات...</p></div></div>
+<div class="box"><h3>تحب تنشر إعلان عقاري؟</h3><button type="button" data-toggle-form="realty-form">أضف إعلان عقاري</button></div>
+<div id="realty-form" class="hidden"><div class="box"><h3>نشر إعلان عقاري</h3>
 <label for="rt">نوع العملية</label><select id="rt"><option>نبحث عن كراء</option><option>نبحث عن شراء</option><option>عرض كراء</option><option>عرض بيع</option></select>
 <label for="rp">نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
-<div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any" inputmode="decimal"></div></div>
-<div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any" inputmode="decimal"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1" inputmode="numeric"></div></div>
-<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
-<button type="button" class="send" data-table="realty" style="margin-top:15px">حفظ الطلب أو الإعلان</button>
-</div></section>
+<div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
+<div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1"></div></div>
+<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك">
+<button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
-<section id="market" class="hidden"><div class="box">
-<h2>🛒 سوق اقضيلي المفتوح</h2>
+<section id="market" class="hidden"><h2>🛒 سوق اقضيلي المفتوح</h2>
+<div class="box"><p>تصفّح المنتجات والإعلانات المقبولة المنشورة للعموم.</p><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" maxlength="100" type="search" placeholder="اكتب اسم منتج أو منطقة..."><div id="market-list" aria-live="polite"><p class="muted">جاري تحميل إعلانات السوق...</p></div></div>
+<div class="box"><h3>تحب تعرض منتج أو تفتّش على حاجة؟</h3><button type="button" data-toggle-form="market-form">أضف إعلان للسوق</button></div>
+<div id="market-form" class="hidden"><div class="box"><h3>نشر إعلان في السوق</h3>
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
-<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any" inputmode="decimal"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80" autocomplete="address-level2"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
-<button type="button" class="send" data-table="market" style="margin-top:15px">إرسال الإعلان</button>
-</div><div class="box"><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" maxlength="100" type="search" placeholder="اكتب اسم منتج أو منطقة..." autocomplete="off"></div><div id="market-list" aria-live="polite"></div></section>
+<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك">
+<button type="button" class="send" data-table="market">إرسال الإعلان</button><button type="button" data-close-form="market-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 
 <section id="good" class="hidden">
@@ -293,6 +302,7 @@ if(serviceForm&&serviceFormClose){
  });
 }
 
+document.querySelectorAll("[data-toggle-form]").forEach(button=>{button.dataset.label=button.textContent;});
 const shareGoodButton=el("share-good");
 if(shareGoodButton){
  shareGoodButton.addEventListener("click",async()=>{
@@ -320,6 +330,8 @@ if(shareGoodButton){
 document.addEventListener("click",function(event){
 const pageButton=event.target.closest("[data-page]");
 if(pageButton){show(pageButton.dataset.page);return;}
+const toggle=event.target.closest("[data-toggle-form]");if(toggle){const form=el(toggle.dataset.toggleForm);if(form){const opening=form.classList.contains("hidden");form.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"إخفاء الاستمارة":toggle.dataset.label;if(opening)form.scrollIntoView({behavior:"smooth",block:"start"});}return;}
+const closer=event.target.closest("[data-close-form]");if(closer){const form=el(closer.dataset.closeForm);if(form){form.classList.add("hidden");const opener=document.querySelector('[data-toggle-form="'+closer.dataset.closeForm+'"]');if(opener){opener.setAttribute("aria-expanded","false");opener.textContent=opener.dataset.label;opener.focus();}}return;}
 const sendButton=event.target.closest("[data-table]");
 if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textContent;sendButton.disabled=true;sendButton.textContent="جاري الحفظ...";sendData(sendButton.dataset.table).finally(()=>{sendButton.disabled=false;sendButton.textContent=oldText;});}
 });
@@ -429,7 +441,7 @@ target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="
 async function loadData(){
 if(!db){
  const message="خدمة قاعدة البيانات غير متوفرة حالياً. تثبّت من الاتصال وعاود المحاولة.";
- ["market-list","market-live","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">'+safe(message)+'</p>';});
+ ["market-list","market-live","sl","jl","rl","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">'+safe(message)+'</p>';});
  setupListingSearch();
  return;
 }
@@ -444,7 +456,9 @@ renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listi
 renderList("market-live",market.data,(x)=>'<div class="entry"><b>[' + safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
 renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+'</div>',services.error);
 renderList("public-services-list",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+'</div>',services.error);
+renderList("public-jobs-list",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+safe(x.job_type)+' | '+safe(x.work_nature)+' 📍 '+safe(x.city)+'<br>'+safe(x.description)+'</div>',jobs.error);
 renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - نوع العمل: '+safe(x.job_type)+' ('+safe(x.work_nature)+') 📍 '+safe(x.city)+'<br>'+safe(x.description)+'</div>',jobs.error);
+renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
 renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
 setupListingSearch();
 }catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
@@ -478,7 +492,7 @@ function filterListing(inputId,listId){
  }else if(notice){notice.remove();}
 }
 function setupListingSearch(){
- const pairs=[["market-search","market-list"],["services-search","sl"],["public-services-search","public-services-list"],["jobs-search","jl"],["realty-search","rl"],["market-live-search","market-live"]];
+ const pairs=[["market-search","market-list"],["public-jobs-search","public-jobs-list"],["public-realty-search","public-realty-list"],["services-search","sl"],["public-services-search","public-services-list"],["jobs-search","jl"],["realty-search","rl"],["market-live-search","market-live"]];
  pairs.forEach(([inputId,listId])=>{
   const input=el(inputId);if(!input)return;
   if(!input.dataset.ready){input.dataset.ready="1";input.addEventListener("input",()=>filterListing(inputId,listId));}
