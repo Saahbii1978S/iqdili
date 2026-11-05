@@ -111,8 +111,8 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <h2>الخدمات وطلبات المساعدة</h2>
 <div class="box">
 <p>هنا تلقى طلبات الخدمات المنشورة والمقبولة. الطلبات اللي مازالت في المراجعة أو المرفوضة ما تظهرش للعموم.</p>
-<label for="services-search">🔎 فتّش في طلبات الخدمات</label><input id="services-search" maxlength="100" type="search" placeholder="اكتب نوع الخدمة أو المنطقة..." aria-label="البحث في الخدمات المنشورة">
-<div id="sl" aria-live="polite"><p class="muted">جاري تحميل الخدمات...</p></div>
+<label for="public-services-search">🔎 فتّش في طلبات الخدمات</label><input id="public-services-search" maxlength="100" type="search" placeholder="اكتب نوع الخدمة أو المنطقة..." aria-label="البحث في الخدمات المنشورة">
+<div id="public-services-list" aria-live="polite"><p class="muted">جاري تحميل الخدمات...</p></div>
 </div>
 <div class="box">
 <h3>تحب تطلب خدمة؟</h3>
@@ -443,6 +443,7 @@ db.rpc("public_real_estate_posts").order("created_at",{ascending:false})
 renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
 renderList("market-live",market.data,(x)=>'<div class="entry"><b>[' + safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
 renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+'</div>',services.error);
+renderList("public-services-list",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+'</div>',services.error);
 renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - نوع العمل: '+safe(x.job_type)+' ('+safe(x.work_nature)+') 📍 '+safe(x.city)+'<br>'+safe(x.description)+'</div>',jobs.error);
 renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
 setupListingSearch();
@@ -477,7 +478,7 @@ function filterListing(inputId,listId){
  }else if(notice){notice.remove();}
 }
 function setupListingSearch(){
- const pairs=[["market-search","market-list"],["services-search","sl"],["jobs-search","jl"],["realty-search","rl"],["market-live-search","market-live"]];
+ const pairs=[["market-search","market-list"],["services-search","sl"],["public-services-search","public-services-list"],["jobs-search","jl"],["realty-search","rl"],["market-live-search","market-live"]];
  pairs.forEach(([inputId,listId])=>{
   const input=el(inputId);if(!input)return;
   if(!input.dataset.ready){input.dataset.ready="1";input.addEventListener("input",()=>filterListing(inputId,listId));}
