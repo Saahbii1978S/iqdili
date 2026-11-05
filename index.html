@@ -235,7 +235,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <p id="admin-welcome" class="muted"></p>
 <button type="button" id="admin-refresh">تحديث الطلبات</button>
 <button type="button" id="admin-logout" style="background:#647875">خروج</button>
-<div style="margin-top:15px"><label for="admin-search">🔎 البحث في الطلبات</label><input id="admin-search" type="search" maxlength="120" placeholder="فتّش بالعنوان أو الوصف أو المنطقة أو الرقم..." autocomplete="off"><div class="row" style="gap:10px;flex-wrap:wrap;margin-top:10px"><div style="flex:1;min-width:145px"><label for="admin-category-filter">القسم</label><select id="admin-category-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الأقسام</option><option value="service_requests">الخدمات</option><option value="job_posts">فرص العمل</option><option value="real_estate_posts">العقارات</option><option value="market_posts">السوق</option></select></div><div style="flex:1;min-width:145px"><label for="admin-status-filter">الحالة</label><select id="admin-status-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الحالات</option><option value="pending">في انتظار المراجعة</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option></select></div></div><p class="muted">التنبيه «يحتمل تجريبي» آلي حسب كلمات في الإعلان، ويلزم مراجعة بشرية قبل أي قرار.</p></div><div id="admin-requests" style="margin-top:15px"></div>
+<div style="margin-top:15px"><label for="admin-search">🔎 البحث في الطلبات</label><input id="admin-search" type="search" maxlength="120" placeholder="فتّش بالعنوان أو الوصف أو المنطقة أو الرقم..." autocomplete="off"><div class="row" style="gap:10px;flex-wrap:wrap;margin-top:10px"><div style="flex:1;min-width:145px"><label for="admin-category-filter">القسم</label><select id="admin-category-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الأقسام</option><option value="service_requests">الخدمات</option><option value="job_posts">فرص العمل</option><option value="real_estate_posts">العقارات</option><option value="market_posts">السوق</option></select></div><div style="flex:1;min-width:145px"><label for="admin-status-filter">الحالة</label><select id="admin-status-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الحالات</option><option value="pending">في انتظار المراجعة</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option><option value="unpublished">ملغى النشر</option></select></div></div><p class="muted">التنبيه «يحتمل تجريبي» آلي حسب كلمات في الإعلان، ويلزم مراجعة بشرية قبل أي قرار.</p></div><div id="admin-requests" style="margin-top:15px"></div>
 </div></div>
 </section>
 </main>
@@ -532,13 +532,13 @@ async function renderAdmin(){
     const desc=row.description||row.details||"";
     const city=row.city||row.region||"";
     const status=row.status||"pending";
-    const statusLabel={pending:"في انتظار المراجعة",approved:"مقبول",rejected:"مرفوض"}[status]||status;
+    const statusLabel={pending:"في انتظار المراجعة",approved:"مقبول ومنشور",rejected:"مرفوض",unpublished:"ملغى النشر"}[status]||status;
     const phone=String(row.phone||"").trim();
     const phoneHtml=phone ? '<p>📞 <a href="tel:'+phone.replace(/[^+0-9]/g,"") + '">' + adminEscape(phone) + '</a></p>' : "";
     const searchable=[title,desc,city,row.id,phone].join(" ").toLocaleLowerCase();
     const likelyDemo=/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(searchable);
     const demoLabel=likelyDemo ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">يحتمل أنّه تجريبي — راجع المحتوى</span>' : "";
-    const actions=status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : "";
+    const actions=status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "";
     return `<div class="entry" data-admin-entry data-admin-category="${item.table}" data-admin-status="${adminEscape(status)}" data-search-text="${adminEscape(searchable)}" data-likely-demo="${likelyDemo ? "yes" : "no"}"><b>${adminEscape(title)}</b><br>${demoLabel}<p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(statusLabel)} | رقم: ${adminEscape(row.id)}</small>${actions}</div>`;
    }).join("");
    htmlOut+="</section>";
@@ -654,17 +654,17 @@ el("admin-login-button").addEventListener("click",async()=>{
   if(!action)return;
   const table=action.dataset.adminTable,id=action.dataset.id,status=action.dataset.adminAction;
   const allowedTables=["service_requests","job_posts","real_estate_posts","market_posts"];
-  if(!allowedTables.includes(table)||!["approved","rejected"].includes(status)||!id){
+  if(!allowedTables.includes(table)||!["approved","rejected","unpublished"].includes(status)||!id){
    alert("العملية غير صالحة. حدّث صفحة الإدارة وعاود.");
    return;
   }
   if(!db){alert("خدمة الإدارة غير متوفرة حالياً. تثبّت من الإنترنت.");return;}
-  if(status==="rejected" && !window.confirm("متأكد تحب ترفض الإعلان؟"))return;
+  if(status==="rejected" && !window.confirm("متأكد تحب ترفض الإعلان؟"))return;\n   if(status==="unpublished" && !window.confirm("متأكد تحب تلغي نشر الإعلان؟ الإعلان يختفي من المنشورات الحية وتبقى بياناته محفوظة."))return;
   action.disabled=true;
   try{
-   const {data,error}=await db.from(table).update({status}).eq("id",id).eq("status","pending").select("id");
+   const expectedStatus=status==="unpublished"?"approved":"pending";\n    const {data,error}=await db.from(table).update({status}).eq("id",id).eq("status",expectedStatus).select("id");
    if(error){console.error("Admin status update:",error);alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من الصلاحيات والاتصال.");return;}
-   if(!data||data.length===0){alert("الإعلان تبدّلت حالته من قبل أو ما عادش موجوداً ضمن الطلبات المعلّقة. حدّث القائمة.");await renderAdmin();return;}
+   if(!data||data.length===0){alert("الإعلان تبدّلت حالته من قبل أو ما عادش موجوداً بالحالة المطلوبة. حدّث القائمة.");await renderAdmin();return;}
    await renderAdmin();
   }catch(error){
    console.error("Admin action error:",error);
