@@ -175,7 +175,7 @@ footer{text-align:center;padding:20px;color:#647875}
 <p id="admin-welcome" class="muted"></p>
 <button type="button" id="admin-refresh">تحديث الطلبات</button>
 <button type="button" id="admin-logout" style="background:#647875">خروج</button>
-<div id="admin-requests" style="margin-top:15px"></div>
+<div style="margin-top:15px"><label for="admin-search">🔎 البحث في الطلبات</label><input id="admin-search" type="search" maxlength="120" placeholder="فتّش بالعنوان أو الوصف أو المنطقة أو الرقم..." autocomplete="off"><p class="muted">التنبيه «يحتمل تجريبي» آلي حسب كلمات في الإعلان، ويلزم مراجعة بشرية قبل أي قرار.</p></div><div id="admin-requests" style="margin-top:15px"></div>
 </div></div>
 </section>
 </main>
@@ -419,12 +419,26 @@ async function renderAdmin(){
    const statusLabel={pending:"في انتظار المراجعة",approved:"مقبول",rejected:"مرفوض"}[status]||status;
    const phone=String(row.phone||"").trim();
    const phoneHtml=phone ? '<p>📞 <a href="tel:'+phone.replace(/[^+0-9]/g,"") + '">' + adminEscape(phone) + '</a></p>' : "";
+   const searchable=[title,desc,city,row.id,phone].join(" ").toLocaleLowerCase();
+   const likelyDemo=/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(searchable);
+   const demoLabel=likelyDemo ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">يحتمل أنّه تجريبي — راجع المحتوى</span>' : "";
    const actions=status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : "";
-   return `<div class="entry"><b>${adminEscape(title)}</b><p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(statusLabel)} | رقم: ${adminEscape(row.id)}</small>${actions}</div>`;
+   return `<div class="entry" data-admin-entry data-search-text="${adminEscape(searchable)}" data-likely-demo="${likelyDemo ? "yes" : "no"}"><b>${adminEscape(title)}</b><br>${demoLabel}<p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(statusLabel)} | رقم: ${adminEscape(row.id)}</small>${actions}</div>`;
   }).join("");
  }
  host.innerHTML=htmlOut;
+ applyAdminSearch();
 }
+function applyAdminSearch(){
+ const input=el("admin-search");
+ const query=input ? input.value.trim().toLocaleLowerCase() : "";
+ document.querySelectorAll("[data-admin-entry]").forEach(entry=>{
+  const matches=!query || (entry.dataset.searchText||"").includes(query);
+  entry.classList.toggle("hidden",!matches);
+ });
+}
+const adminSearch=el("admin-search");
+if(adminSearch)adminSearch.addEventListener("input",applyAdminSearch);
 async function refreshAdminState(){
  const login=el("admin-login"),panel=el("admin-panel"),host=el("admin-requests");
  try{
