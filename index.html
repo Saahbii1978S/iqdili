@@ -479,18 +479,30 @@ async function refreshAdminState(){
   const {data,error}=await db.auth.getSession();
   if(error)throw error;
   const logged=!!(data&&data.session);
-  login.classList.toggle("hidden",logged);
-  panel.classList.toggle("hidden",!logged);
-  if(logged){
-   el("admin-welcome").textContent="تم تسجيل الدخول. الصلاحيات تُتحقق منها قاعدة البيانات.";
-   await renderAdmin();
+  if(!logged){
+   login.classList.remove("hidden");
+   panel.classList.add("hidden");
+   return;
   }
+  const {data:isAdmin,error:adminError}=await db.rpc("is_admin");
+  if(adminError)throw adminError;
+  const allowed=isAdmin===true;
+  login.classList.toggle("hidden",allowed);
+  panel.classList.toggle("hidden",!allowed);
+  if(!allowed){
+   adminMessage("الحساب هذا مسجّل دخول، أمّا ما عندوش صلاحية الإدارة.");
+   if(host)host.textContent="";
+   return;
+  }
+  adminMessage("");
+  el("admin-welcome").textContent="تم التثبت من صلاحية الإدارة بنجاح.";
+  await renderAdmin();
  }catch(error){
-  console.error("Admin session refresh:",error);
+  console.error("Admin authorization check:",error);
   login.classList.remove("hidden");
   panel.classList.add("hidden");
-  if(host)host.textContent="تعذّر التثبت من جلسة الإدارة. تثبّت من الاتصال وعاود الدخول.";
-  adminMessage("ما نجّمش نتحقق من جلسة الإدارة حالياً.");
+  if(host)host.textContent="تعذّر التثبت من صلاحية الإدارة. تثبّت من الاتصال وعاود الدخول.";
+  adminMessage("ما نجّمش نتحقق من صلاحية الإدارة حالياً.");
   throw error;
  }
 }
