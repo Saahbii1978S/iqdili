@@ -124,7 +124,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <label for="st">نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
 <label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
 <div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
-<label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20">
+<label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
 <button type="button" id="close-service-form" style="margin-top:10px;background:#647875">إغلاق الاستمارة</button>
 </div></div>
@@ -140,7 +140,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <label for="jk">نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
 <label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
 <div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
-<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك">
+<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <button type="button" class="send" data-table="jobs">حفظ الإعلان</button><button type="button" data-close-form="job-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="realty" class="hidden">
@@ -154,7 +154,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <label for="rp">نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
 <div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
 <div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1"></div></div>
-<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك">
+<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="market" class="hidden"><h2>🛒 سوق اقضيلي المفتوح</h2>
@@ -163,7 +163,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <div id="market-form" class="hidden"><div class="box"><h3>نشر إعلان في السوق</h3>
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
-<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك">
+<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="mpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <button type="button" class="send" data-table="market">إرسال الإعلان</button><button type="button" data-close-form="market-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 
@@ -389,19 +389,19 @@ if(!db){alert("الاتصال بقاعدة البيانات غير متوفر ح
 let target="",data={},required=[];
 if(table==="services"){
 target="service_requests";
-data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\n"+val("sd")),city:val("sa"),phone:val("sc")};
+data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\n"+val("sd")),city:val("sa"),phone:val("sc"),contact_public:!!el("spublic")?.checked};
 required=["sd","sc","sa"];
 }else if(table==="jobs"){
 target="job_posts";
-data={title:val("jt"),description:val("ji"),city:val("ja"),phone:val("jc"),job_type:val("jk"),work_nature:val("jn")};
+data={title:val("jt"),description:val("ji"),city:val("ja"),phone:val("jc"),job_type:val("jk"),work_nature:val("jn"),contact_public:!!el("jpublic")?.checked};
 required=["jt","jc","ja"];
 }else if(table==="realty"){
 target="real_estate_posts";
-data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10)};
+data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10),contact_public:!!el("rpublic")?.checked};
 required=["ri","rc","ra"];
 }else if(table==="market"){
 target="market_posts";
-data={title:val("mn"),description:val("md"),category:val("mc"),price:val("mp")===""?null:Number(val("mp")),city:val("ma"),phone:val("mphone"),listing_type:val("mt")};
+data={title:val("mn"),description:val("md"),category:val("mc"),price:val("mp")===""?null:Number(val("mp")),city:val("ma"),phone:val("mphone"),listing_type:val("mt"),contact_public:!!el("mpublic")?.checked};
 required=["mn","mphone","ma"];
 }else{return;}
 const missingField=required.find(id=>!val(id));
@@ -433,6 +433,12 @@ await loadData();
 }catch(error){console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
 }
 
+function contactActions(phone){
+ const raw=String(phone||"").trim(), digits=raw.replace(/\D/g,"");
+ if(!raw||digits.length<8||digits.length>15)return "";
+ const tel=raw.replace(/[^+0-9]/g,"");
+ return '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a href="tel:'+tel+'">📞 اتصل</a><a href="https://wa.me/'+digits+'" target="_blank" rel="noopener noreferrer">واتساب</a></div>';
+}
 function renderList(id,rows,makeHtml,error){
 const target=el(id);if(!target)return;
 if(error){target.innerHTML='<p class="muted">تعذّر تحميل المنشورات. تثبّت من الاتصال وإعدادات قاعدة البيانات ثم عاود المحاولة.</p>';return;}
@@ -452,14 +458,14 @@ db.rpc("public_service_requests").order("created_at",{ascending:false}),
 db.rpc("public_job_posts").order("created_at",{ascending:false}),
 db.rpc("public_real_estate_posts").order("created_at",{ascending:false})
 ]);
-renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
-renderList("market-live",market.data,(x)=>'<div class="entry"><b>[' + safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',market.error);
-renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+'</div>',services.error);
-renderList("public-services-list",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+'</div>',services.error);
-renderList("public-jobs-list",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+safe(x.job_type)+' | '+safe(x.work_nature)+' 📍 '+safe(x.city)+'<br>'+safe(x.description)+'</div>',jobs.error);
-renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - نوع العمل: '+safe(x.job_type)+' ('+safe(x.work_nature)+') 📍 '+safe(x.city)+'<br>'+safe(x.description)+'</div>',jobs.error);
-renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
-renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+'</div>',realty.error);
+renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+contactActions(x.phone)+'</div>',market.error);
+renderList("market-live",market.data,(x)=>'<div class="entry"><b>[' + safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+contactActions(x.phone)+'</div>',market.error);
+renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+contactActions(x.phone)+'</div>',services.error);
+renderList("public-services-list",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+contactActions(x.phone)+'</div>',services.error);
+renderList("public-jobs-list",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+safe(x.job_type)+' | '+safe(x.work_nature)+' 📍 '+safe(x.city)+'<br>'+safe(x.description)+contactActions(x.phone)+'</div>',jobs.error);
+renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - نوع العمل: '+safe(x.job_type)+' ('+safe(x.work_nature)+') 📍 '+safe(x.city)+'<br>'+safe(x.description)+contactActions(x.phone)+'</div>',jobs.error);
+renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+contactActions(x.phone)+'</div>',realty.error);
+renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+contactActions(x.phone)+'</div>',realty.error);
 setupListingSearch();
 }catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
