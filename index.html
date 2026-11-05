@@ -394,7 +394,7 @@ required=["sd","sc","sa"];
 }else if(table==="jobs"){
 target="job_posts";
 data={title:val("jt"),description:val("ji"),city:val("ja"),phone:val("jc"),job_type:val("jk"),work_nature:val("jn"),contact_public:!!el("jpublic")?.checked};
-required=["jt","jc","ja"];
+required=["jt","ji","jc","ja"];
 }else if(table==="realty"){
 target="real_estate_posts";
 data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10),contact_public:!!el("rpublic")?.checked};
@@ -402,7 +402,7 @@ required=["ri","rc","ra"];
 }else if(table==="market"){
 target="market_posts";
 data={title:val("mn"),description:val("md"),category:val("mc"),price:val("mp")===""?null:Number(val("mp")),city:val("ma"),phone:val("mphone"),listing_type:val("mt"),contact_public:!!el("mpublic")?.checked};
-required=["mn","mphone","ma"];
+required=["mn","md","mphone","ma"];
 }else{return;}
 const missingField=required.find(id=>!val(id));
 if(missingField){alert("الرجاء تعمير الخانات المطلوبة.");el(missingField)?.focus();return;}
