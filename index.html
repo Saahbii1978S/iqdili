@@ -197,6 +197,7 @@ function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&a
  const field=el(id);
  if(!field || !field.maxLength || field.maxLength<0) return;
  const counter=document.createElement("p");
+ counter.id="counter-"+id;
  counter.className="muted";
  counter.style.margin="4px 0 10px";
  counter.textContent=field.value.length+" / "+field.maxLength+" حرف";
@@ -336,6 +337,7 @@ if(result.error){console.error("Insert error:",result.error);alert("ما نجّ�
 alert("وصل الإعلان للإدارة للمراجعة. يظهر للناس بعد الموافقة عليه.");
 required.forEach(id=>{if(el(id))el(id).value="";});
 ["sd","ji","ri","md","sc","jc","rc","mphone","mp","r_price","size","rooms","sw"].forEach(id=>{if(el(id))el(id).value="";});
+["sd","ji","ri","md","q"].forEach(id=>{const field=el(id),counter=el("counter-"+id);if(field&&counter)counter.textContent=field.value.length+" / "+field.maxLength+" حرف";});
 ["sa","ja","ra","ma"].forEach(id=>{if(el(id))el(id).value="صفاقس";});
 ["st","jk","jn","rt","rp","mt","mc"].forEach(id=>{if(el(id))el(id).selectedIndex=0;});
 await loadData();
