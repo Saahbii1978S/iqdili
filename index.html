@@ -538,7 +538,32 @@ if(!response.ok){
 if(typeof result.answer!=="string"||!result.answer.trim()){
  answer.textContent="ما وصلتناش إجابة واضحة. عاود المحاولة.";
 }else{
- answer.textContent=result.answer.trim().slice(0,6000);
+ answer.replaceChildren();
+ answer.append(document.createTextNode(result.answer.trim().slice(0,6000)));
+ if(Array.isArray(result.sources)&&result.sources.length){
+  const sourceBox=document.createElement("div");
+  sourceBox.style.marginTop="10px";
+  sourceBox.style.paddingTop="8px";
+  sourceBox.style.borderTop="1px solid #cbdad6";
+  const heading=document.createElement("strong");
+  heading.textContent="المصدر الرسمي:";
+  sourceBox.appendChild(heading);
+  result.sources.slice(0,3).forEach(source=>{
+   try{
+    const url=new URL(source.url);
+    if(url.protocol!=="https:"||url.hostname!=="www.commune-tunis.gov.tn")return;
+    const link=document.createElement("a");
+    link.href=url.href;
+    link.target="_blank";
+    link.rel="noopener noreferrer";
+    link.textContent=String(source.title||"فتح المصدر").slice(0,120);
+    link.style.display="block";
+    link.style.marginTop="4px";
+    sourceBox.appendChild(link);
+   }catch(_){}
+  });
+  if(sourceBox.querySelector("a"))answer.appendChild(sourceBox);
+ }
 }
 }catch(error){
 answer.textContent=error.message||"صار مشكل في الاتصال. عاود بعد شوية.";
