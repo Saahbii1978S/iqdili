@@ -124,7 +124,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <label for="st">نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
 <label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
 <div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
-<label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="simage">صورة الخدمة (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="simage" type="file" accept="image/jpeg,image/png,image/webp"><div id="simage-preview" class="muted" aria-live="polite"></div><label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
 <button type="button" id="close-service-form" style="margin-top:10px;background:#647875">إغلاق الاستمارة</button>
 </div></div>
@@ -140,7 +140,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <label for="jk">نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
 <label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
 <div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
-<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jimage">صورة الإعلان (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="jimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="jimage-preview" class="muted" aria-live="polite"></div><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <button type="button" class="send" data-table="jobs">حفظ الإعلان</button><button type="button" data-close-form="job-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="realty" class="hidden">
@@ -154,7 +154,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <label for="rp">نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
 <div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
 <div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1"></div></div>
-<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="rimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="market" class="hidden"><h2>🛒 سوق اقضيلي المفتوح</h2>
@@ -398,15 +398,15 @@ if(!db){alert("الاتصال بقاعدة البيانات غير متوفر ح
 let target="",data={},required=[];
 if(table==="services"){
 target="service_requests";
-data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\n"+val("sd")),city:val("sa"),phone:val("sc"),contact_public:!!el("spublic")?.checked};
+data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\n"+val("sd")),city:val("sa"),phone:val("sc"),image_urls:[],contact_public:!!el("spublic")?.checked};
 required=["sd","sc","sa"];
 }else if(table==="jobs"){
 target="job_posts";
-data={title:val("jt"),description:val("ji"),city:val("ja"),phone:val("jc"),job_type:val("jk"),work_nature:val("jn"),contact_public:!!el("jpublic")?.checked};
+data={title:val("jt"),description:val("ji"),city:val("ja"),phone:val("jc"),job_type:val("jk"),work_nature:val("jn"),image_urls:[],contact_public:!!el("jpublic")?.checked};
 required=["jt","ji","jc","ja"];
 }else if(table==="realty"){
 target="real_estate_posts";
-data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10),contact_public:!!el("rpublic")?.checked};
+data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10),image_urls:[],contact_public:!!el("rpublic")?.checked};
 required=["ri","rc","ra"];
 }else if(table==="market"){
 target="market_posts";
@@ -441,6 +441,19 @@ if(table==="market" && marketImageInput && marketImageInput.files && marketImage
  if(upload.error){console.error("Image upload error:",upload.error);alert("ما نجّمش نرفع الصورة. جرّب صورة أصغر أو عاود المحاولة.");return;}
  data.image_urls=[upload.data.path];
 }
+const listingImageFields={services:{input:"simage",folder:"services"},jobs:{input:"jimage",folder:"jobs"},realty:{input:"rimage",folder:"realty"}};
+const imageConfig=listingImageFields[table];
+if(imageConfig){
+ const input=el(imageConfig.input),file=input&&input.files&&input.files[0];
+ if(file){
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728){alert("الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.");return;}
+  const extension={"image/jpeg":"jpg","image/png":"png","image/webp":"webp"}[file.type];
+  const uniqueName=(window.crypto&&typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():Date.now()+"-"+Math.random().toString(36).slice(2);
+  const upload=await db.storage.from("listing-images").upload(imageConfig.folder+"/"+uniqueName+"."+extension,file,{cacheControl:"3600",upsert:false,contentType:file.type});
+  if(upload.error){console.error("Listing image upload error:",upload.error);alert("ما نجّمش نرفع الصورة. جرّب صورة أصغر أو عاود المحاولة.");return;}
+  data.image_urls=[upload.data.path];
+ }
+}
 const result=await db.from(target).insert([{...data,status:"pending"}]);
 if(result.error){console.error("Insert error:",result.error);alert("ما نجّمش نحفظ الإعلان حالياً. تثبّت من المعلومات والاتصال، وإذا تتعاود المشكلة تواصل مع إدارة المنصة.");return;}
 alert("وصل الإعلان للإدارة للمراجعة. يظهر للناس بعد الموافقة عليه.");
@@ -451,11 +464,21 @@ required.forEach(id=>{if(el(id))el(id).value="";});
 ["spublic","jpublic","rpublic","mpublic"].forEach(id=>{if(el(id))el(id).checked=false;});
 if(marketImageInput)marketImageInput.value="";
 if(el("mimage-preview"))el("mimage-preview").textContent="";
+["simage","jimage","rimage"].forEach(id=>{if(el(id))el(id).value="";const preview=el(id+"-preview");if(preview)preview.textContent="";});
 ["st","jk","jn","rt","rp","mt","mc"].forEach(id=>{if(el(id))el(id).selectedIndex=0;});
 await loadData();
 }catch(error){console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
 }
 
+function listingImageHtml(paths,title,folder){
+ if(!Array.isArray(paths)||!paths.length)return "";
+ return paths.slice(0,1).map(path=>{
+  const clean=String(path||"");
+  if(!clean.startsWith(folder+"/")||!(/\.(jpg|jpeg|png|webp)$/i).test(clean))return "";
+  const url=SUPABASE_URL+"/storage/v1/object/public/listing-images/"+clean.split("/").map(encodeURIComponent).join("/");
+  return '<a href="'+url+'" target="_blank" rel="noopener noreferrer" aria-label="تكبير صورة الإعلان"><img src="'+url+'" alt="صورة '+safe(title)+'" loading="lazy" style="display:block;max-width:100%;width:220px;max-height:190px;object-fit:contain;border-radius:12px;margin:10px 0;border:1px solid #dce5e1"></a>';
+ }).join("");
+}
 function marketImageHtml(paths,title){
  if(!Array.isArray(paths)||!paths.length)return "";
  return paths.slice(0,1).map(path=>{
@@ -466,6 +489,19 @@ function marketImageHtml(paths,title){
  }).join("");
 }
 const marketImageInput=el("mimage");
+function setupImagePreview(inputId){
+ const input=el(inputId),preview=el(inputId+"-preview");
+ if(!input||!preview)return;
+ input.addEventListener("change",()=>{
+  const file=input.files&&input.files[0];
+  if(!file){preview.textContent="";return;}
+  if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728){input.value="";preview.textContent="الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.";return;}
+  const localUrl=URL.createObjectURL(file);
+  preview.innerHTML='<img src="'+localUrl+'" alt="معاينة الصورة المختارة" style="display:block;max-width:180px;max-height:140px;object-fit:contain;border-radius:10px;margin-top:8px">';
+  preview.insertAdjacentHTML("beforeend",'<p class="muted">الصورة جاهزة للإرسال مع الإعلان.</p>');
+ });
+}
+["simage","jimage","rimage"].forEach(setupImagePreview);
 if(marketImageInput){
  marketImageInput.addEventListener("change",()=>{
   const file=marketImageInput.files&&marketImageInput.files[0],preview=el("mimage-preview");
@@ -508,12 +544,12 @@ db.rpc("public_real_estate_posts").order("created_at",{ascending:false})
 ]);
 renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+marketImageHtml(x.image_urls,x.title)+contactActions(x.phone)+'</div>',market.error);
 renderList("market-live",market.data,(x)=>'<div class="entry"><b>[' + safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+marketImageHtml(x.image_urls,x.title)+contactActions(x.phone)+'</div>',market.error);
-renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+contactActions(x.phone)+'</div>',services.error);
-renderList("public-services-list",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+contactActions(x.phone)+'</div>',services.error);
-renderList("public-jobs-list",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+safe(x.job_type)+' | '+safe(x.work_nature)+' 📍 '+safe(x.city)+'<br>'+safe(x.description)+contactActions(x.phone)+'</div>',jobs.error);
-renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - نوع العمل: '+safe(x.job_type)+' ('+safe(x.work_nature)+') 📍 '+safe(x.city)+'<br>'+safe(x.description)+contactActions(x.phone)+'</div>',jobs.error);
-renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+contactActions(x.phone)+'</div>',realty.error);
-renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+contactActions(x.phone)+'</div>',realty.error);
+renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'services')+contactActions(x.phone)+'</div>',services.error);
+renderList("public-services-list",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'services')+contactActions(x.phone)+'</div>',services.error);
+renderList("public-jobs-list",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+safe(x.job_type)+' | '+safe(x.work_nature)+' 📍 '+safe(x.city)+'<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'jobs')+contactActions(x.phone)+'</div>',jobs.error);
+renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - نوع العمل: '+safe(x.job_type)+' ('+safe(x.work_nature)+') 📍 '+safe(x.city)+'<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'jobs')+contactActions(x.phone)+'</div>',jobs.error);
+renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'realty')+contactActions(x.phone)+'</div>',realty.error);
+renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'realty')+contactActions(x.phone)+'</div>',realty.error);
 setupListingSearch();
 }catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
