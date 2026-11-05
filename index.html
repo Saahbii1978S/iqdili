@@ -659,10 +659,12 @@ el("admin-login-button").addEventListener("click",async()=>{
    return;
   }
   if(!db){alert("خدمة الإدارة غير متوفرة حالياً. تثبّت من الإنترنت.");return;}
-  if(status==="rejected" && !window.confirm("متأكد تحب ترفض الإعلان؟"))return;\n   if(status==="unpublished" && !window.confirm("متأكد تحب تلغي نشر الإعلان؟ الإعلان يختفي من المنشورات الحية وتبقى بياناته محفوظة."))return;
+  if(status==="rejected" && !window.confirm("متأكد تحب ترفض الإعلان؟"))return;
+   if(status==="unpublished" && !window.confirm("متأكد تحب تلغي نشر الإعلان؟ الإعلان يختفي من المنشورات الحية وتبقى بياناته محفوظة."))return;
   action.disabled=true;
   try{
-   const expectedStatus=status==="unpublished"?"approved":"pending";\n    const {data,error}=await db.from(table).update({status}).eq("id",id).eq("status",expectedStatus).select("id");
+   const expectedStatus=status==="unpublished"?"approved":"pending";
+    const {data,error}=await db.from(table).update({status}).eq("id",id).eq("status",expectedStatus).select("id");
    if(error){console.error("Admin status update:",error);alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من الصلاحيات والاتصال.");return;}
    if(!data||data.length===0){alert("الإعلان تبدّلت حالته من قبل أو ما عادش موجوداً بالحالة المطلوبة. حدّث القائمة.");await renderAdmin();return;}
    await renderAdmin();
