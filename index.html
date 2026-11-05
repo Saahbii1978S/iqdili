@@ -49,6 +49,14 @@ textarea{min-height:90px;resize:vertical}
 .muted{font-size:13px;color:var(--muted)}
 .entry{padding:14px;border:1px solid #e3f0ec;border-radius:12px;margin-bottom:10px;background:#fbfefd;overflow-wrap:anywhere}
 footer{text-align:center;padding:24px 16px;color:var(--muted);border-top:1px solid var(--line);background:#fff}
+@media(min-width:900px){
+ main{max-width:1280px;padding:28px 28px 48px}
+ header{padding:44px 24px 40px}
+ nav{gap:10px;padding:13px 18px}
+ nav button{min-height:46px;padding:10px 18px;font-size:16px}
+ .cards{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+ .box,.card{padding:22px}
+}
 @media(max-width:600px){header{padding:29px 14px 26px}nav{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:thin}nav button{flex:0 0 auto;font-size:14px}main{padding:15px 12px 28px}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{padding:13px 10px}.row{display:block}.box{padding:15px}}
 @media(max-width:360px){.cards{grid-template-columns:1fr}}
 .good-topics details.card{cursor:pointer}
