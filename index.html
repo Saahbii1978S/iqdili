@@ -88,21 +88,21 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <button type="button" data-page="realty">العقارات</button>
 <button type="button" data-page="market">السوق</button>
 <button type="button" data-page="good">باب الخير ❤️</button>
-<button type="button" data-page="ask">اسأل اقضيلي</button>
+<button type="button" data-page="ask">اسأل أحلى توانسة</button>
 <button type="button" data-page="saved">المنشورات الحية</button>
 <button type="button" data-page="admin">الإدارة</button>
 </nav>
 
 <main>
-<p class="note">منصة اقضيلي: تنجم تنشر طلب خدمة أو فرصة عمل أو إعلان عقاري أو منتج. النشر السحابي يتطلب اتصالاً بقاعدة البيانات.</p>
+<p class="note">منصة أحلى توانسة: تنجم تنشر طلب خدمة أو فرصة عمل أو إعلان عقاري أو منتج. النشر السحابي يتطلب اتصالاً بقاعدة البيانات.</p>
 
 <section id="home">
-<div class="box"><h2>مرحبا بيك في اقضيلي 👋</h2><p>نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.</p></div>
+<div class="box"><h2>مرحبا بيك في أحلى توانسة 👋</h2><p>نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.</p></div>
 <div class="cards">
 <div class="card"><div class="icon">🛠️</div><h3>الخدمات والمشاوير</h3><p>توصيل، بحث عن مختصين، وقضاء مصالح.</p><button type="button" data-page="services">ادخل</button></div>
 <div class="card"><div class="icon">💼</div><h3>فرص العمل</h3><p>فتّش على خدمة أو أضف عرض انتداب.</p><button type="button" data-page="jobs">ادخل</button></div>
 <div class="card"><div class="icon">🏠</div><h3>العقارات</h3><p>ديار ومحلات وأراضٍ للبيع والكراء.</p><button type="button" data-page="realty">ادخل</button></div>
-<div class="card"><div class="icon">🛒</div><h3>سوق اقضيلي</h3><p>بيع واشري واعرض منتجاتك مجاناً.</p><button type="button" data-page="market">ادخل</button></div>
+<div class="card"><div class="icon">🛒</div><h3>سوق أحلى توانسة</h3><p>بيع واشري واعرض منتجاتك مجاناً.</p><button type="button" data-page="market">ادخل</button></div>
 <div class="card"><div class="icon">❤️</div><h3>باب الخير</h3><p>مبادرات خيرية، تطوّع، تعليم ومساندة الناس بالعمل.</p><button type="button" data-page="good">ساهم بالخير</button></div>
 </div>
 </section>
@@ -157,7 +157,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 <label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="rimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
-<section id="market" class="hidden"><h2>🛒 سوق اقضيلي المفتوح</h2>
+<section id="market" class="hidden"><h2>🛒 سوق أحلى توانسة المفتوح</h2>
 <div class="box"><p>تصفّح المنتجات والإعلانات المقبولة المنشورة للعموم.</p><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" maxlength="100" type="search" placeholder="اكتب اسم منتج أو منطقة..."><div id="market-list" aria-live="polite"><p class="muted">جاري تحميل إعلانات السوق...</p></div></div>
 <div class="box"><h3>تحب تعرض منتج أو تفتّش على حاجة؟</h3><button type="button" data-toggle-form="market-form">أضف إعلان للسوق</button></div>
 <div id="market-form" class="hidden"><div class="box"><h3>نشر إعلان في السوق</h3>
@@ -201,7 +201,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 </div>
 </section>
 
-<section id="ask" class="hidden"><div class="box"><h2>اسأل اقضيلي</h2><label for="q">اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
+<section id="ask" class="hidden"><div class="box"><h2>اسأل أحلى توانسة</h2><label for="q">اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
 
 <section id="saved" class="hidden"><div class="box">
 <h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><input id="services-search" maxlength="100" type="search" placeholder="فتّش في طلبات الخدمات..." aria-label="البحث في طلبات الخدمات"><div id="sl" aria-live="polite"></div>
@@ -239,7 +239,7 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 </div></div>
 </section>
 </main>
-<footer>اقضيلي © 2026</footer>
+<footer>أحلى توانسة © 2026</footer>
 
 <script>
 (function(){
@@ -327,7 +327,7 @@ document.querySelectorAll("[data-toggle-form]").forEach(button=>{button.dataset.
 const shareGoodButton=el("share-good");
 if(shareGoodButton){
  shareGoodButton.addEventListener("click",async()=>{
-  const shareText="باب الخير ❤️ من منصة اقضيلي: مبادرات للتطوع والتعليم ومساعدة الناس بكرامة وأمان. تعرّف على القسم وشاركه: "+window.location.href;
+  const shareText="باب الخير ❤️ من منصة أحلى توانسة: مبادرات للتطوع والتعليم ومساعدة الناس بكرامة وأمان. تعرّف على القسم وشاركه: "+window.location.href;
   const status=el("share-good-status");
   shareGoodButton.disabled=true;
   try{
