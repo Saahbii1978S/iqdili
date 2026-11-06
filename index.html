@@ -242,9 +242,38 @@ button:disabled{filter:grayscale(.15)}
 
 </style>
 <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* Compact unified top bar: Tunisia flag, app identity and live clock */
+header{padding:18px 16px 20px!important}
+header .topbar{position:relative;display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,30px);max-width:1100px;margin:0 auto 12px!important;direction:rtl}
+header .topbar .tunisia-flag-wrap{flex:0 0 auto;width:clamp(62px,10vw,92px);margin:0!important;line-height:0}
+header .topbar .tunisia-flag-wave{display:block;width:100%;height:auto;filter:drop-shadow(0 4px 7px #8f14272b)}
+header .topbar-brand{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;margin:0!important}
+header .topbar-brand h1{font-size:clamp(25px,5vw,43px);line-height:1.2;margin:0!important;white-space:nowrap}
+header .topbar-brand .brand-fr{font-size:clamp(11px,2vw,16px);letter-spacing:2px;margin:2px 0 0!important}
+header .topbar .live-clock{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;margin:0!important;padding:7px 12px;border-radius:14px}
+header .topbar .live-clock .clock-time{font-size:clamp(18px,3.3vw,26px);line-height:1.2}
+header .topbar .live-clock .clock-date{font-size:11px;white-space:nowrap}
+header .topbar~div{margin-top:5px!important;font-size:clamp(14px,2.5vw,18px)!important}
+header small{display:inline-block;margin-top:5px!important}
+@media(max-width:520px){
+ header{padding:14px 9px 16px!important}
+ header .topbar{gap:8px;justify-content:space-between}
+ header .topbar .tunisia-flag-wrap{width:52px}
+ header .topbar-brand h1{font-size:clamp(20px,5.8vw,29px)}
+ header .topbar-brand .brand-fr{font-size:10px;letter-spacing:1px}
+ header .topbar .live-clock{padding:6px 8px;border-radius:11px}
+ header .topbar .live-clock .clock-time{font-size:18px;letter-spacing:0}
+ header .topbar .live-clock .clock-date{font-size:9px}
+}
+@media(max-width:350px){header .topbar{gap:5px}header .topbar .tunisia-flag-wrap{width:44px}header .topbar-brand h1{font-size:19px}header .topbar .live-clock{padding:5px 6px}}
+</style>
 </head>
 <body>
-<header><div class="tunisia-flag-wrap" aria-label="علم تونس يرفرف" role="img">
+<header>
+<div class="topbar">
+  <div class="tunisia-flag-wrap" aria-label="علم تونس يرفرف" role="img">
 <svg class="tunisia-flag-wave" viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
 <defs><clipPath id="tn-flag-clip"><path d="M8 7 Q48 1 88 7 T172 7 L172 103 Q130 97 88 103 T8 103Z"/></clipPath></defs>
 <g clip-path="url(#tn-flag-clip)">
@@ -254,7 +283,13 @@ button:disabled{filter:grayscale(.15)}
 <path d="M111 34 L116 46 L129 47 L119 56 L122 69 L111 62 L100 69 L103 56 L93 47 L106 46Z" fill="#e70013"/>
 <path d="M8 7 Q48 1 88 7 T172 7" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>
 </g>
-</svg></div><h1>أحلى توانسة</h1><div class="brand-fr" lang="fr" dir="ltr">AHLA TOUNSA</div><div>خدماتك وفرصتك وعقارك في بلاصة وحدة</div><small>نبدأوا بصفاقس ونتوسعوا لكل تونس</small><div class="live-clock" role="timer" aria-label="الساعة والتاريخ بتوقيت تونس"><span class="clock-time" id="clock-time">--:--:--</span><span class="clock-date" id="clock-date">توقيت تونس</span></div></header>
+</svg></div>
+  <div class="topbar-brand"><h1>أحلى توانسة</h1><div class="brand-fr" lang="fr" dir="ltr">AHLA TOUNSA</div></div>
+  <div class="live-clock" role="timer" aria-label="الساعة والتاريخ بتوقيت تونس"><span class="clock-time" id="clock-time">--:--:--</span><span class="clock-date" id="clock-date">توقيت تونس</span></div>
+</div>
+<div>خدماتك وفرصتك وعقارك في بلاصة وحدة</div>
+<small>نبدأوا بصفاقس ونتوسعوا لكل تونس</small>
+</header>
 
 <nav aria-label="القائمة الرئيسية">
 <button type="button" data-page="home">الرئيسية</button>
