@@ -616,6 +616,53 @@ hr{border-color:#eee7e8!important}
 .live-clock{border-color:#e6d6d8!important}
 </style>
 
+
+<style>
+/* Readability upgrade: larger, clearer text across the whole app */
+html{font-size:20px}
+body{font-size:21px!important;line-height:1.85!important}
+header h1{font-size:clamp(32px,6vw,48px)!important}
+header .brand-fr{font-size:clamp(14px,2.4vw,18px)!important}
+header div:not(.brand-fr){font-size:clamp(18px,3vw,22px)!important}
+nav button{font-size:17px!important;min-height:48px!important;padding:11px 17px!important}
+main section>h2,section>h2{font-size:clamp(25px,3.5vw,31px)!important;line-height:1.55!important}
+.box h2,#home>.box:first-child h2{font-size:clamp(25px,3.5vw,32px)!important}
+.box h3,.card h3,.cards .card h3{font-size:21px!important;line-height:1.55!important}
+.box p,.card p,.cards .card p,.entry{font-size:18px!important;line-height:1.85!important}
+button{font-size:18px!important;line-height:1.5!important;padding:12px 18px!important}
+label{font-size:18px!important;line-height:1.6!important}
+input,select,textarea{font-size:18px!important;line-height:1.65!important;padding:13px 14px!important}
+.note{font-size:16px!important;line-height:1.8!important}
+.muted,small{font-size:15px!important;line-height:1.7!important}
+.entry b,.entry strong{font-size:19px!important}
+.live-clock .clock-time{font-size:clamp(23px,4vw,31px)!important}
+.live-clock .clock-date{font-size:13px!important}
+@media(max-width:600px){
+ body{font-size:20px!important;line-height:1.85!important}
+ header h1{font-size:clamp(27px,7vw,34px)!important}
+ header .brand-fr{font-size:12px!important}
+ header div:not(.brand-fr){font-size:18px!important}
+ nav button{font-size:16px!important;min-height:46px!important;padding:10px 15px!important}
+ main{padding:18px 13px 30px!important}
+ section>h2{font-size:25px!important}
+ .box h2,#home>.box:first-child h2{font-size:25px!important}
+ .box h3,.card h3,.cards .card h3{font-size:19px!important}
+ .box p,.card p,.cards .card p,.entry{font-size:17px!important;line-height:1.8!important}
+ .cards .card p{min-height:0!important}
+ .cards .card button{font-size:16px!important;padding:10px 13px!important}
+ button{font-size:17px!important;padding:11px 15px!important}
+ label,input,select,textarea{font-size:17px!important}
+ .note{font-size:15px!important}
+ .muted,small{font-size:14px!important}
+ .entry b,.entry strong{font-size:18px!important}
+}
+@media(max-width:360px){
+ body{font-size:19px!important}
+ nav button{font-size:15px!important}
+ .cards .card h3{font-size:18px!important}
+}
+</style>
+
 </head>
 <body>
 <header>
