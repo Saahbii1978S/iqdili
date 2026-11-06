@@ -403,6 +403,58 @@ button:focus-visible,nav button:focus-visible,a:focus-visible,input:focus-visibl
 }
 </style>
 
+
+<style>
+/* Larger, clearer Arabic typography and roomier sections */
+html{font-size:17px}
+body{font-size:17px!important;line-height:1.85!important}
+header .topbar-title h1{font-size:clamp(29px,5.8vw,47px)!important}
+header .topbar-title .brand-fr{font-size:clamp(13px,2vw,18px)!important}
+header>div:not(.topbar){font-size:clamp(17px,2.8vw,22px)!important}
+header small{font-size:15px!important}
+nav button{font-size:16px!important;padding:11px 17px!important;min-height:48px!important}
+main{padding-top:24px!important;padding-bottom:38px!important}
+section{margin-bottom:26px!important}
+section>h2,.box h2,main section h2{
+ font-size:clamp(25px,3.7vw,31px)!important;line-height:1.55!important
+}
+.box,.card{padding:23px!important;margin-bottom:18px!important}
+.box h3,.cards .card h3{font-size:clamp(19px,2.6vw,23px)!important;line-height:1.5!important}
+.box p,.card p,.entry,.note,.muted,label{
+ font-size:16px!important;line-height:1.85!important
+}
+.cards{gap:18px!important}
+.cards .card{min-height:245px!important}
+.cards .card .icon{width:70px!important;height:70px!important;font-size:38px!important}
+.cards .card p{min-height:60px}
+.cards .card button,button{font-size:16px!important;min-height:47px!important;padding:11px 18px!important}
+input,select,textarea{font-size:17px!important;min-height:49px!important;padding:12px 14px!important}
+textarea{min-height:120px!important}
+.live-clock .clock-time{font-size:clamp(21px,3.4vw,29px)!important}
+.live-clock .clock-date{font-size:13px!important}
+@media(max-width:600px){
+ html{font-size:16px}
+ body{font-size:16px!important;line-height:1.8!important}
+ nav button{font-size:15px!important;padding:10px 15px!important;min-height:46px!important}
+ main{padding:20px 12px 32px!important}
+ section{margin-bottom:22px!important}
+ section>h2,.box h2,main section h2{font-size:24px!important}
+ .box,.card{padding:18px!important}
+ .box h3,.cards .card h3{font-size:18px!important}
+ .box p,.card p,.entry,.note,.muted,label{font-size:15px!important}
+ .cards{gap:12px!important}
+ .cards .card{min-height:230px!important;padding:17px 12px!important}
+ .cards .card .icon{width:60px!important;height:60px!important;font-size:33px!important}
+ .cards .card p{min-height:64px}
+ .cards .card button,button{font-size:15px!important;min-height:45px!important;padding:10px 12px!important}
+ input,select,textarea{font-size:16px!important;min-height:47px!important}
+}
+@media(max-width:360px){
+ .cards{grid-template-columns:1fr!important}
+ .cards .card{min-height:0!important}
+}
+</style>
+
 </head>
 <body>
 <header>
