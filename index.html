@@ -11,6 +11,7 @@
 <title>أحلى توانسة | AHLA TOUNSA</title>
 
 <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 
 
 
@@ -395,6 +396,7 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 <label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
 <div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
 <label for="simage">صورة الخدمة (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="simage" type="file" accept="image/jpeg,image/png,image/webp"><div id="simage-preview" class="muted" aria-live="polite"></div><label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<div id="turnstile-services" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
 <button type="button" id="close-service-form" style="margin-top:10px;background:#647875">إغلاق الاستمارة</button>
 </div></div>
@@ -411,6 +413,7 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 <label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
 <div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
 <label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jimage">صورة الإعلان (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="jimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="jimage-preview" class="muted" aria-live="polite"></div><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<div id="turnstile-jobs" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="jobs">حفظ الإعلان</button><button type="button" data-close-form="job-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="realty" class="hidden">
@@ -425,6 +428,7 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 <div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
 <div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1"></div></div>
 <label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="rimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<div id="turnstile-realty" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="market" class="hidden"><h2>🛒 سوق أحلى توانسة المفتوح</h2>
@@ -434,6 +438,7 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
 <label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mimage">صورة المنتج (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="mimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="mimage-preview" class="muted" aria-live="polite"></div><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="mpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<div id="turnstile-market" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="market">إرسال الإعلان</button><button type="button" data-close-form="market-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 
@@ -677,8 +682,44 @@ el("save-new-password").addEventListener("click",async()=>{
  }
 });
 
+const TURNSTILE_SITE_KEY="0x4AAAAAAF2q6MEJsGM3QGT8";
+const turnstileWidgetIds={};
+const turnstileTokens={};
+function ensureTurnstile(table){
+ const slot=el("turnstile-"+table);
+ if(!slot){alert("تعذّر فتح خانة التحقق. حدّث الصفحة وعاود.");return false;}
+ if(turnstileTokens[table])return true;
+ if(!window.turnstile||typeof window.turnstile.render!=="function"){
+  alert("حماية الموقع مازالت تتحمّل. استنّى ثواني وعاود اضغط.");
+  return false;
+ }
+ if(turnstileWidgetIds[table]===undefined){
+  try{
+   turnstileWidgetIds[table]=window.turnstile.render(slot,{
+    sitekey:TURNSTILE_SITE_KEY,
+    callback:(token)=>{turnstileTokens[table]=token;},
+    "expired-callback":()=>{turnstileTokens[table]="";},
+    "error-callback":()=>{turnstileTokens[table]="";}
+   });
+  }catch(error){
+   console.error("Turnstile render error:",error);
+   alert("تعذّر تشغيل التحقق. حدّث الصفحة وعاود.");
+   return false;
+  }
+ }
+ alert("كمّل التحقق من Cloudflare في الخانة، وبعد اضغط على زر الإرسال مرة أخرى.");
+ return false;
+}
+function resetTurnstile(table){
+ turnstileTokens[table]="";
+ if(window.turnstile&&turnstileWidgetIds[table]!==undefined){
+  try{window.turnstile.reset(turnstileWidgetIds[table]);}catch(error){console.warn("Turnstile reset:",error);}
+ }
+}
+
 async function sendData(table){
 if(!db){alert("الاتصال بقاعدة البيانات غير متوفر حالياً. تأكد من الإنترنت.");return;}
+if(!ensureTurnstile(table))return;
 let target="",data={},required=[];
 if(table==="services"){
 target="service_requests";
@@ -738,8 +779,18 @@ if(imageConfig){
   data.image_urls=[upload.data.path];
  }
 }
-const result=await db.from(target).insert([{...data,status:"pending"}]);
-if(result.error){console.error("Insert error:",result.error);alert("ما نجّمش نحفظ الإعلان حالياً. تثبّت من المعلومات والاتصال، وإذا تتعاود المشكلة تواصل مع إدارة المنصة.");return;}
+const submitResponse=await fetch(SUPABASE_URL+"/functions/v1/submit-public-post",{
+ method:"POST",
+ headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},
+ body:JSON.stringify({table:target,data,turnstileToken:turnstileTokens[table]})
+ });
+const submitResult=await submitResponse.json().catch(()=>({}));
+resetTurnstile(table);
+if(!submitResponse.ok){
+ console.error("Protected submission error:",submitResult);
+ alert(submitResult.error||"ما نجّمش نحفظ الإعلان حالياً. تثبّت من التحقق والاتصال وعاود.");
+ return;
+}
 alert("وصل الإعلان للإدارة للمراجعة. يظهر للناس بعد الموافقة عليه.");
 required.forEach(id=>{if(el(id))el(id).value="";});
 ["sd","ji","ri","md","sc","jc","rc","mphone","mp","r_price","size","rooms","sw"].forEach(id=>{if(el(id))el(id).value="";});
