@@ -114,11 +114,68 @@ footer{margin-top:18px;background:#fff}
 @media(max-width:600px){header{padding:34px 14px 30px}nav{gap:7px;padding:9px}nav button{padding:8px 14px;min-height:40px}main{padding-top:17px}.cards{gap:10px}.cards .card{padding:16px 10px;border-radius:16px}.cards .card .icon{width:52px;height:52px;font-size:29px}.cards .card h3{font-size:16px}.cards .card p{font-size:13px;min-height:54px}.cards .card button{min-width:0;padding:8px 14px}}
 @media(min-width:1100px){main{max-width:1320px}.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
+
+/* Unified white & red visual identity inspired by Zad Al-Khair */
+:root{
+ --brand:#c51f35;--brand-dark:#8f1427;--ink:#29252a;--muted:#71666a;
+ --line:#f0d9dd;--paper:#fff;--bg:#fff7f8;--gold:#f2c4cb;
+}
+body{background:linear-gradient(180deg,#fff7f8 0%,#fff 42%,#fff7f8 100%);color:var(--ink)}
+header{
+ background:linear-gradient(125deg,#fff 0%,#fff7f8 56%,#ffe9ed 100%);
+ color:#8f1427;border-bottom:1px solid #f0cbd2;
+ box-shadow:0 8px 28px #8f142714;padding:clamp(25px,5vw,48px) 16px 24px;
+}
+header h1{color:#a9162d;text-shadow:none;font-weight:900}
+header .brand-fr{color:#c51f35}
+header div:not(.brand-fr){color:#514047}
+header small{color:#9a1c31;border-color:#eab9c2;background:#fff;font-weight:700}
+header:before,header:after{border-color:#c51f3520}
+.live-clock{
+ display:inline-flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;
+ margin:17px auto 0;padding:9px 18px;border:1px solid #e9b8c2;border-radius:18px;
+ background:#fff;color:#97172d;box-shadow:0 5px 18px #a51d3212;
+ direction:rtl;font-weight:700;line-height:1.35;
+}
+.live-clock .clock-time{font-size:clamp(23px,4vw,31px);font-weight:900;letter-spacing:1px;font-variant-numeric:tabular-nums;direction:ltr}
+.live-clock .clock-date{font-size:13px;color:#776168}
+nav{background:#ffffffed;border-bottom:1px solid #f0d9dd;box-shadow:0 5px 18px #8f14270d}
+nav button{background:#fff4f6;color:#9b1c31;border:1px solid #f0cfd5}
+nav button:hover{background:#ffe8ec}
+nav button.active,nav button[aria-current="page"]{background:linear-gradient(135deg,#cf2940,#98172d);color:#fff;border-color:transparent;box-shadow:0 4px 13px #c51f3530}
+button{background:linear-gradient(135deg,#cf2940,#98172d);color:#fff;box-shadow:0 4px 12px #c51f351c}
+button:hover{box-shadow:0 5px 14px #c51f3530}
+button:focus,nav button:focus,input:focus,select:focus,textarea:focus,:focus-visible{outline-color:#d94a60;border-color:#c51f35}
+main>.note{background:#fff4f5;color:#8f2638;border:1px solid #f0cbd2}
+.box,.card{border-color:#f0dfe2;background:#fff;box-shadow:0 7px 22px #8f14270b}
+.box h2,main section h2{color:#a51c32}
+#home>.box:first-child{background:linear-gradient(115deg,#fff0f2,#fff);box-shadow:inset -5px 0 0 #c51f35,0 7px 22px #8f14270b}
+#home>.box:first-child h2{color:#a51c32}
+#home>.box:first-child:after{opacity:.07}
+.cards .card{background:linear-gradient(160deg,#fff 0%,#fffafb 100%);border-color:#f0dfe2}
+.cards .card:before{background:linear-gradient(90deg,#c51f35,#f3aab6)}
+.cards .card .icon{background:#fff0f2}
+.cards .card h3{color:#9b1c31}
+.cards .card p,.muted{color:#75666b}
+label{color:#873044}
+input,select,textarea{border-color:#ead4d9;background:#fff;color:#29252a}
+.entry{background:#fffafb;border-color:#f0dfe2}
+.good-topics details.card[open]{outline-color:#e7a8b3}
+.good-topics details.card .topic-hint,.good-topics details.card[open] summary::after{color:#b01e35}
+footer{background:#fff;border-top-color:#f0d9dd;color:#75666b}
+@media(max-width:600px){
+ header{padding:25px 12px 22px}
+ .live-clock{margin-top:14px;padding:8px 14px;gap:8px;border-radius:15px}
+ .live-clock .clock-time{font-size:25px}
+ .live-clock .clock-date{font-size:12px}
+ nav{background:#fff;padding:9px}
+}
+
 </style>
 <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<header><h1>أحلى توانسة</h1><div class="brand-fr" lang="fr" dir="ltr">AHLA TOUNSA</div><div>خدماتك وفرصتك وعقارك في بلاصة وحدة</div><small>نبدأوا بصفاقس ونتوسعوا لكل تونس</small></header>
+<header><h1>أحلى توانسة</h1><div class="brand-fr" lang="fr" dir="ltr">AHLA TOUNSA</div><div>خدماتك وفرصتك وعقارك في بلاصة وحدة</div><small>نبدأوا بصفاقس ونتوسعوا لكل تونس</small><div class="live-clock" role="timer" aria-label="الساعة والتاريخ بتوقيت تونس"><span class="clock-time" id="clock-time">--:--:--</span><span class="clock-date" id="clock-date">توقيت تونس</span></div></header>
 
 <nav aria-label="القائمة الرئيسية">
 <button type="button" data-page="home">الرئيسية</button>
@@ -889,5 +946,23 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
+<script>
+(function(){
+ const timeNode=document.getElementById("clock-time");
+ const dateNode=document.getElementById("clock-date");
+ if(!timeNode||!dateNode)return;
+ const timeFormat=new Intl.DateTimeFormat("ar-TN",{timeZone:"Africa/Tunis",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});
+ const dateFormat=new Intl.DateTimeFormat("ar-TN",{timeZone:"Africa/Tunis",weekday:"long",day:"numeric",month:"long",year:"numeric"});
+ function refreshTunisClock(){
+  const now=new Date();
+  timeNode.textContent=timeFormat.format(now);
+  dateNode.textContent=dateFormat.format(now);
+ }
+ refreshTunisClock();
+ window.setInterval(refreshTunisClock,1000);
+})();
+</script>
+
 </body>
 </html>
