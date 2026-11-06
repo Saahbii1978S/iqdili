@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="112" fill="#087f75"/>
+<circle cx="256" cy="256" r="194" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="10"/>
+<path d="M128 183h256M128 256h256M128 329h256" stroke="#ffffff" stroke-width="18" stroke-linecap="round" opacity=".22"/>
+<text x="256" y="286" text-anchor="middle" font-family="Tahoma,Arial,sans-serif" font-size="148" font-weight="900" fill="#ffffff" direction="rtl">أحلى</text>
+<text x="256" y="374" text-anchor="middle" font-family="Arial,sans-serif" font-size="44" font-weight="700" letter-spacing="4" fill="#f5c86b">TOUNSA</text>
+</svg>
