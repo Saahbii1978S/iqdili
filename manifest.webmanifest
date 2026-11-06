@@ -1,0 +1,23 @@
+{
+  "id": "/iqdili/",
+  "name": "أحلى توانسة",
+  "short_name": "أحلى توانسة",
+  "description": "خدماتك وفرصتك وعقارك في بلاصة وحدة. منصة تونسية تبدأ من صفاقس وتتوسع لكل تونس.",
+  "lang": "ar-TN",
+  "dir": "rtl",
+  "start_url": "/iqdili/",
+  "scope": "/iqdili/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f1f7f4",
+  "theme_color": "#087f75",
+  "categories": ["business", "social"],
+  "icons": [
+    {
+      "src": "/iqdili/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
