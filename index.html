@@ -740,6 +740,95 @@ svg{fill:#555!important;stroke:#555!important}
 @media(max-width:360px){body{font-size:19px!important}nav button{font-size:15px!important}}
 </style>
 
+
+<style id="large-readable-type-v2">
+/* تكبير إضافي للقراءة مع الحفاظ على الأبيض والرمادي والفحمي */
+:root{
+ --brand:#303030!important;
+ --brand-dark:#171717!important;
+ --ink:#202020!important;
+ --muted:#555!important;
+ --line:#dedede!important;
+ --paper:#fff!important;
+ --bg:#fff!important;
+ --gold:#777!important;
+}
+html,body{background:#fff!important;color:#202020!important}
+body{font-size:23px!important;line-height:1.9!important}
+header{background:#fff!important;color:#202020!important;border-bottom:1px solid #ddd!important}
+header h1,header .brand-fr{color:#202020!important}
+header div:not(.brand-fr){color:#333!important;font-size:clamp(19px,3.2vw,24px)!important}
+header small{color:#333!important;border-color:#bbb!important;background:#fff!important;font-size:15px!important}
+.live-clock{color:#222!important;border-color:#bbb!important;background:#fff!important}
+.live-clock .clock-time{font-size:clamp(27px,4.5vw,36px)!important}
+.live-clock .clock-date{color:#555!important;font-size:15px!important}
+nav{background:#fff!important;border-bottom:1px solid #ddd!important}
+nav button,nav button.active,nav button[aria-current="page"]{
+ background:#f1f1f1!important;color:#222!important;border:1px solid #ccc!important;
+ font-size:18px!important;min-height:50px!important;padding:11px 18px!important;
+ box-shadow:none!important
+}
+button{background:#292929!important;color:#fff!important;font-size:19px!important;
+ padding:13px 20px!important;min-height:50px!important;box-shadow:none!important}
+main{max-width:1380px!important;padding-top:30px!important}
+.box,.card{padding:25px!important;border-color:#ddd!important;background:#fff!important}
+.box h2,section>h2,main section h2,.box h3,.cards .card h3{
+ color:#222!important;font-size:clamp(25px,3.8vw,32px)!important;line-height:1.55!important
+}
+section>h2{border-bottom-color:#ddd!important}
+section>h2:before{background:#555!important}
+#home>.box:first-child{background:#fff!important;box-shadow:inset -5px 0 0 #555!important}
+#home>.box:first-child h2{color:#222!important}
+.cards{gap:20px!important}
+.cards .card{background:#fff!important;border-color:#ddd!important}
+.cards .card:before{background:#777!important}
+.cards .card .icon{background:#f1f1f1!important;color:#222!important;width:70px!important;height:70px!important;font-size:39px!important}
+.cards .card h3{font-size:22px!important}
+.cards .card p,.box p,.entry,.note{font-size:19px!important;line-height:1.85!important;color:#333!important}
+label{font-size:19px!important;color:#222!important}
+input,select,textarea{font-size:19px!important;padding:15px!important;color:#222!important;border-color:#bbb!important}
+.entry{background:#fff!important;border-color:#ddd!important;padding:18px!important}
+.muted,.clock-date{font-size:16px!important;color:#555!important}
+footer{background:#fff!important;color:#555!important;font-size:17px!important;border-top-color:#ddd!important}
+a{color:#333!important}
+@media(min-width:900px){
+ body{font-size:23px!important}
+ nav button{font-size:18px!important}
+ .cards .card p{font-size:19px!important}
+}
+@media(max-width:600px){
+ body{font-size:22px!important;line-height:1.9!important}
+ header{padding:25px 12px 22px!important}
+ header h1{font-size:clamp(29px,8vw,38px)!important}
+ header .topbar-title h1{font-size:clamp(25px,7vw,34px)!important}
+ nav{gap:8px!important;padding:10px!important}
+ nav button,nav button.active,nav button[aria-current="page"]{
+  font-size:17px!important;min-height:49px!important;padding:10px 16px!important
+ }
+ main{padding:20px 12px 32px!important}
+ .box,.card{padding:19px 15px!important}
+ .cards{gap:13px!important}
+ .cards .card{padding:19px 12px!important}
+ .cards .card .icon{width:58px!important;height:58px!important;font-size:33px!important}
+ .cards .card h3{font-size:19px!important;line-height:1.55!important}
+ .cards .card p{font-size:17px!important;line-height:1.8!important;min-height:0!important}
+ .cards .card button{font-size:17px!important;padding:11px 13px!important;min-height:47px!important}
+ section>h2,.box h2,main section h2{font-size:25px!important}
+ .box h3{font-size:22px!important}
+ .box p,.entry,.note{font-size:18px!important;line-height:1.9!important}
+ label,input,select,textarea{font-size:18px!important}
+ input,select,textarea{padding:14px!important}
+ button{font-size:18px!important;min-height:48px!important;padding:12px 16px!important}
+ .muted{font-size:15px!important}
+ footer{font-size:16px!important}
+}
+@media(max-width:360px){
+ .cards{grid-template-columns:1fr!important}
+ .cards .card h3{font-size:21px!important}
+ .cards .card p{font-size:18px!important}
+}
+</style>
+
 </head>
 <body>
 <header>
