@@ -1047,6 +1047,10 @@ const question=val("q").trim();
 if(!question){alert("اكتب سؤالك أولاً، وما تبعثش فراغات فقط.");return;}
 if(question.length>1000){alert("السؤال طويل برشة. اختصره إلى 1000 حرف.");return;}
 const button=el("ask-button"), answer=el("answer");
+answer.style.direction="rtl";
+answer.style.textAlign="right";
+answer.style.whiteSpace="pre-wrap";
+answer.style.lineHeight="1.8";
 button.disabled=true;button.textContent="نحضّرلك الإجابة...";
 answer.classList.remove("hidden");answer.textContent="قاعد نفهم في سؤالك...";
 try{
