@@ -342,15 +342,6 @@ document.addEventListener("click",event=>{
  show(page);
 },true);
 
-// ربط أزرار القائمة مباشرةً لتحسين التوافق مع شاشات Android المدمجة في السيارات.
-document.querySelectorAll("nav [data-page]").forEach(button=>{
- button.addEventListener("click",event=>{
-  event.preventDefault();
-  event.stopPropagation();
-  show(button.dataset.page);
- });
-});
-
 const serviceForm=el("service-form");
 const serviceFormToggle=el("toggle-service-form");
 const serviceFormClose=el("close-service-form");
@@ -400,11 +391,11 @@ if(shareGoodButton){
 }
 
 document.addEventListener("click",function(event){
-const pageButton=event.target.closest("[data-page]");
-if(pageButton){show(pageButton.dataset.page);return;}
-const toggle=event.target.closest("[data-toggle-form]");if(toggle){const form=el(toggle.dataset.toggleForm);if(form){const opening=form.classList.contains("hidden");form.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"إخفاء الاستمارة":toggle.dataset.label;if(opening)form.scrollIntoView({behavior:"smooth",block:"start"});}return;}
-const closer=event.target.closest("[data-close-form]");if(closer){const form=el(closer.dataset.closeForm);if(form){form.classList.add("hidden");const opener=document.querySelector('[data-toggle-form="'+closer.dataset.closeForm+'"]');if(opener){opener.setAttribute("aria-expanded","false");opener.textContent=opener.dataset.label;opener.focus();}}return;}
-const sendButton=event.target.closest("[data-table]");
+const clicked=event.target instanceof Element ? event.target : event.target?.parentElement;
+if(!clicked)return;
+const toggle=clicked.closest("[data-toggle-form]");if(toggle){const form=el(toggle.dataset.toggleForm);if(form){const opening=form.classList.contains("hidden");form.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"إخفاء الاستمارة":toggle.dataset.label;if(opening)form.scrollIntoView({behavior:"smooth",block:"start"});}return;}
+const closer=clicked.closest("[data-close-form]");if(closer){const form=el(closer.dataset.closeForm);if(form){form.classList.add("hidden");const opener=document.querySelector('[data-toggle-form="'+closer.dataset.closeForm+'"]');if(opener){opener.setAttribute("aria-expanded","false");opener.textContent=opener.dataset.label;opener.focus();}}return;}
+const sendButton=clicked.closest("[data-table]");
 if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textContent;sendButton.disabled=true;sendButton.textContent="جاري الحفظ...";sendData(sendButton.dataset.table).finally(()=>{sendButton.disabled=false;sendButton.textContent=oldText;});}
 });
 
