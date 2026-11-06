@@ -405,6 +405,68 @@ button:focus-visible,nav button:focus-visible,a:focus-visible,input:focus-visibl
 
 
 
+
+<style>
+/* White-forward palette: red is an accent, not the dominant surface */
+:root{
+ --brand:#c51f35;--brand-dark:#97172d;--ink:#29272a;--muted:#716b6d;
+ --line:#e9e6e7;--paper:#fff;--bg:#fff;--gold:#d94a60;
+}
+html,body{background:#fff!important;color:#29272a}
+body{background:#fff!important}
+header{
+ background:#fff!important;color:#29272a!important;
+ border-bottom:1px solid #eee!important;
+ box-shadow:0 5px 22px #22222208!important;
+}
+header h1{color:#a51c32!important}
+header .brand-fr{color:#8e2638!important}
+header div:not(.brand-fr){color:#555!important}
+header small{background:#fff!important;color:#8e2638!important;border-color:#e7dadd!important}
+header:before,header:after{border-color:#d8d4d5!important}
+.live-clock{background:#fff!important;border:1px solid #e7dfe1!important;color:#9b1c31!important;box-shadow:0 3px 12px #22222208!important}
+.live-clock .clock-date{color:#777!important}
+nav{background:#fff!important;border-bottom:1px solid #ece9ea!important;box-shadow:0 4px 14px #22222208!important}
+nav button{background:#fff!important;color:#8f2638!important;border:1px solid #eadfe1!important;box-shadow:none!important}
+nav button:hover{background:#faf8f8!important}
+nav button.active,nav button[aria-current="page"]{
+ background:#b91f35!important;color:#fff!important;border-color:#b91f35!important;
+ box-shadow:0 3px 9px #b91f3518!important
+}
+button{
+ background:#fff!important;color:#a51c32!important;
+ border:1px solid #c94b5d!important;box-shadow:none!important
+}
+button:hover{background:#fff8f9!important;box-shadow:0 3px 10px #b91f3510!important}
+main>.note{background:#fff!important;color:#67585b!important;border:1px solid #eee!important}
+.box,.card{background:#fff!important;border:1px solid #eae7e8!important;box-shadow:0 5px 18px #22222208!important}
+.box h2,main section h2,section>h2{color:#373235!important}
+section>h2{border-bottom-color:#eee!important}
+section>h2:before{background:#c51f35!important}
+.box h3,.cards .card h3{color:#4b3b3f!important}
+#home>.box:first-child{
+ background:#fff!important;
+ box-shadow:inset -4px 0 0 #c51f35,0 5px 18px #22222208!important;
+}
+#home>.box:first-child h2{color:#373235!important}
+#home>.box:first-child:after{opacity:0!important}
+.cards .card{background:#fff!important;border-color:#eae7e8!important}
+.cards .card:before{background:#c51f35!important;height:3px!important}
+.cards .card .icon{background:#faf8f8!important;color:#a51c32!important}
+.cards .card p,.muted{color:#716b6d!important}
+label{color:#51474a!important}
+input,select,textarea{background:#fff!important;color:#29272a!important;border-color:#e2dcde!important}
+.entry{background:#fff!important;border-color:#eae7e8!important}
+.good-topics details.card[open]{outline-color:#d9b8be!important}
+.good-topics details.card .topic-hint,.good-topics details.card[open] summary::after{color:#a51c32!important}
+#answer{background:#fff!important;color:#51474a!important;border-color:#eae7e8!important}
+footer{background:#fff!important;border-top-color:#eee!important;color:#716b6d!important}
+@media(max-width:600px){
+ nav{background:#fff!important}
+ .cards .card{background:#fff!important}
+}
+</style>
+
 </head>
 <body>
 <header>
