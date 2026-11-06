@@ -1238,6 +1238,31 @@ nav a[href="#admin-contact"] {
   color: #ffffff !important;
 }
 </style>
+
+<style id="digital-clock-size-enhancement">
+/* Larger, clearer digital clock and matching clock icon */
+header .topbar .live-clock{
+  gap:12px!important;
+  padding:9px 13px!important;
+}
+header .topbar .live-clock::before{
+  content:"🕒";
+  display:inline-block;
+  font-size:32px;
+  line-height:1;
+  flex:0 0 auto;
+}
+header .topbar .live-clock .clock-time{
+  font-size:clamp(27px,4.2vw,36px)!important;
+  line-height:1.2!important;
+  letter-spacing:1px!important;
+  font-weight:900!important;
+}
+@media(max-width:600px){
+  header .topbar .live-clock::before{font-size:28px}
+  header .topbar .live-clock .clock-time{font-size:27px!important}
+}
+</style>
 </head>
 <body>
 <header>
