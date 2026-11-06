@@ -171,6 +171,47 @@ footer{background:#fff;border-top-color:#f0d9dd;color:#75666b}
  nav{background:#fff;padding:9px}
 }
 
+
+/* Fine UI polish: consistent red/white details across every section */
+section>h2{
+ position:relative;margin:8px 0 18px;padding:0 14px 10px 0;
+ border-bottom:1px solid #f1dce0;font-size:clamp(21px,3.2vw,27px);
+ color:#a51c32;line-height:1.5;
+}
+section>h2:before{
+ content:"";position:absolute;right:0;top:4px;width:5px;height:calc(100% - 14px);
+ border-radius:8px;background:linear-gradient(180deg,#d83b51,#9b172d);
+}
+.box h3{color:#9b1c31}
+.box p{overflow-wrap:anywhere}
+nav a[href="#admin-contact"]{
+ background:linear-gradient(135deg,#cf2940,#98172d)!important;
+ box-shadow:0 4px 12px #c51f3520;
+}
+button[style*="background:#647875"],button[style*="background: #647875"]{
+ background:#fff1f3!important;color:#982238!important;
+ border:1px solid #edcbd2!important;box-shadow:none!important;
+}
+button[style*="background:#a34b4b"]{
+ background:#fff0f1!important;color:#a12635!important;
+ border:1px solid #edc4ca!important;box-shadow:none!important;
+}
+a[href^="tel:"],a[href*="wa.me/"]{
+ border-radius:999px!important;box-shadow:0 4px 12px #c51f3518;
+}
+#answer{background:#fff2f4!important;color:#812238;border:1px solid #f0d0d6}
+.entry{position:relative;transition:border-color .18s,box-shadow .18s}
+.entry:hover{border-color:#e8b9c2;box-shadow:0 5px 15px #8f14270b}
+input[type="checkbox"]{width:auto;accent-color:#bd2037}
+input[type="file"]{padding:9px;background:#fffafb}
+input::placeholder,textarea::placeholder{color:#a18d92;opacity:1}
+button:disabled{filter:grayscale(.15)}
+.cards .card .icon{color:#a51c32}
+@media(max-width:600px){
+ section>h2{margin-bottom:14px;padding-bottom:8px}
+ .entry{padding:13px}
+}
+
 </style>
 <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
