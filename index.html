@@ -508,6 +508,33 @@ svg{fill:#ff0000!important;stroke:#ff0000!important}
 hr{border-color:#ff0000!important}
 </style>
 
+
+<style>
+/* Restore the exact typography scale from the Tunisian-flag-era interface */
+body{font-size:16px!important}
+header .topbar-title h1{font-size:clamp(25px,5vw,43px)!important;line-height:1.2!important}
+header .topbar-title .brand-fr{font-size:clamp(11px,2vw,16px)!important}
+header .topbar~div{font-size:clamp(14px,2.5vw,18px)!important}
+nav button{font-size:16px!important}
+section>h2{font-size:clamp(21px,3.2vw,27px)!important}
+.cards .card .icon{width:64px!important;height:64px!important;font-size:35px!important}
+.cards .card h3{font-size:19px!important}
+.cards .card p{font-size:16px!important;line-height:1.7!important;min-height:48px!important}
+@media(max-width:600px){
+ header .topbar-title h1{font-size:clamp(20px,5.8vw,29px)!important}
+ header .topbar-title .brand-fr{font-size:10px!important}
+ header .topbar .live-clock .clock-time{font-size:18px!important}
+ header .topbar .live-clock .clock-date{font-size:9px!important}
+ nav button{font-size:14px!important}
+ .cards .card .icon{width:52px!important;height:52px!important;font-size:29px!important}
+ .cards .card h3{font-size:16px!important}
+ .cards .card p{font-size:13px!important;min-height:54px!important}
+}
+@media(max-width:360px){
+ header .topbar-title h1{font-size:18px!important}
+}
+</style>
+
 </head>
 <body>
 <header>
