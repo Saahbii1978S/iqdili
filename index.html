@@ -294,22 +294,62 @@ header small{display:inline-block;margin-top:5px!important}
 }
 @media(prefers-reduced-motion:reduce){header .topbar-brand .tunisia-flag-wave{animation:none!important}}
 </style>
+
+<style>
+/* Final palette: clean white, strong Tunisian red, and neutral grey — no pink */
+:root{
+ --brand:#c8102e;--brand-dark:#9e1027;--ink:#222;--muted:#666;
+ --line:#e2e2e2;--paper:#fff;--bg:#fff;--gold:#d6a52a;
+}
+html,body{background:#fff!important;color:#222!important}
+header{
+ background:#fff!important;color:#222!important;
+ border-bottom:2px solid #c8102e!important;
+ box-shadow:0 5px 18px #0000000b!important;
+}
+header h1{color:#c8102e!important}
+header .brand-fr{color:#9e1027!important}
+header div:not(.brand-fr){color:#333}
+header small{color:#9e1027!important;background:#fff!important;border-color:#c8102e!important}
+header:before,header:after{border-color:#c8102e18!important}
+nav{background:#fff!important;border-bottom:1px solid #ddd!important}
+nav button{background:#f5f5f5!important;color:#9e1027!important;border:1px solid #ddd!important}
+nav button:hover{background:#eee!important}
+nav button.active,nav button[aria-current="page"]{
+ background:#c8102e!important;color:#fff!important;border-color:#c8102e!important;
+ box-shadow:0 3px 10px #c8102e20!important
+}
+button{background:linear-gradient(135deg,#d71936,#a20e27)!important;color:#fff!important}
+.live-clock{background:#fff!important;color:#a20e27!important;border:1px solid #c8102e!important;box-shadow:0 3px 12px #0000000a!important}
+.live-clock .clock-date{color:#555!important}
+main>.note{background:#f7f7f7!important;color:#8f1026!important;border:1px solid #ddd!important}
+.box,.card{background:#fff!important;border:1px solid #e2e2e2!important;box-shadow:0 5px 18px #0000000a!important}
+.box h2,main section h2,section>h2,.box h3{color:#a20e27!important}
+#home>.box:first-child{background:#fff!important;border:1px solid #e2e2e2!important;box-shadow:inset -5px 0 0 #c8102e,0 5px 18px #00000008!important}
+.cards .card{background:#fff!important;border-color:#e2e2e2!important}
+.cards .card:before{background:#c8102e!important}
+.cards .card .icon{background:#f3f3f3!important;color:#a20e27!important}
+.cards .card h3{color:#a20e27!important}
+.cards .card p,.muted,footer{color:#666!important}
+label{color:#8f1026!important}
+input,select,textarea{background:#fff!important;color:#222!important;border-color:#ccc!important}
+.entry{background:#fff!important;border-color:#ddd!important}
+section>h2{border-bottom-color:#ddd!important}
+section>h2:before{background:#c8102e!important}
+button[style*="background:#647875"],button[style*="background: #647875"],
+button[style*="background:#a34b4b"]{background:#f3f3f3!important;color:#8f1026!important;border:1px solid #ccc!important;box-shadow:none!important}
+#answer{background:#f5f5f5!important;color:#7f1024!important;border:1px solid #ddd!important}
+input[type="file"]{background:#fff!important}
+input::placeholder,textarea::placeholder{color:#777!important}
+footer{background:#fff!important;border-top:1px solid #ddd!important}
+@media(max-width:600px){header{background:#fff!important}nav{background:#fff!important}}
+</style>
+
 </head>
 <body>
 <header>
 <div class="topbar">
   <div class="topbar-brand">
-    <div class="tunisia-flag-wrap" aria-label="العلم الرسمي للجمهورية التونسية" role="img">
-      <svg class="tunisia-flag-wave" viewBox="0 0 180 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs><clipPath id="tn-flag-clip"><path d="M8 8 Q48 2 88 8 T172 8 L172 112 Q130 106 88 112 T8 112Z"/></clipPath></defs>
-        <g clip-path="url(#tn-flag-clip)">
-          <rect x="8" y="8" width="164" height="104" fill="#e70013"/>
-          <circle cx="90" cy="60" r="32" fill="#fff"/>
-          <path d="M111 35 A27 27 0 1 0 111 85 A21 21 0 1 1 111 35Z" fill="#e70013"/>
-          <path d="M112 40 L117 51 L129 52 L120 60 L123 72 L112 66 L101 72 L104 60 L95 52 L107 51Z" fill="#e70013"/>
-        </g>
-      </svg>
-    </div>
     <div class="topbar-title"><h1>أحلى توانسة</h1><div class="brand-fr" lang="fr" dir="ltr">AHLA TOUNSA</div></div>
   </div>
   <div class="live-clock" role="timer" aria-label="الساعة والتاريخ بتوقيت تونس"><span class="clock-time" id="clock-time">--:--:--</span><span class="clock-date" id="clock-date">توقيت تونس</span></div>
