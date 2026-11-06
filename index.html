@@ -212,11 +212,49 @@ button:disabled{filter:grayscale(.15)}
  .entry{padding:13px}
 }
 
+
+/* A gently waving Tunisian flag above the brand */
+.tunisia-flag-wrap{
+ width:clamp(94px,15vw,126px);height:auto;margin:0 auto 13px;
+ perspective:520px;filter:drop-shadow(0 7px 9px #8f14272b);
+}
+.tunisia-flag-wave{
+ display:block;width:100%;height:auto;transform-origin:left center;
+ animation:tunisia-flag-wave 3.2s ease-in-out infinite;
+}
+.tunisia-flag-wrap:after{
+ content:"";display:block;position:relative;margin-top:-72%;height:72%;
+ pointer-events:none;border-radius:3px;
+ background:linear-gradient(105deg,#ffffff00 15%,#ffffff35 42%,#ffffff08 62%,#6d00101c 100%);
+ transform-origin:left center;animation:tunisia-flag-shimmer 3.2s ease-in-out infinite;
+}
+@keyframes tunisia-flag-wave{
+ 0%,100%{transform:perspective(520px) rotateY(0deg) skewY(0deg)}
+ 50%{transform:perspective(520px) rotateY(-17deg) skewY(1.5deg)}
+}
+@keyframes tunisia-flag-shimmer{
+ 0%,100%{opacity:.35;transform:skewY(0deg)}
+ 50%{opacity:.85;transform:skewY(1.5deg)}
+}
+@media(prefers-reduced-motion:reduce){
+ .tunisia-flag-wave,.tunisia-flag-wrap:after{animation:none!important}
+}
+
 </style>
 <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<header><h1>أحلى توانسة</h1><div class="brand-fr" lang="fr" dir="ltr">AHLA TOUNSA</div><div>خدماتك وفرصتك وعقارك في بلاصة وحدة</div><small>نبدأوا بصفاقس ونتوسعوا لكل تونس</small><div class="live-clock" role="timer" aria-label="الساعة والتاريخ بتوقيت تونس"><span class="clock-time" id="clock-time">--:--:--</span><span class="clock-date" id="clock-date">توقيت تونس</span></div></header>
+<header><div class="tunisia-flag-wrap" aria-label="علم تونس يرفرف" role="img">
+<svg class="tunisia-flag-wave" viewBox="0 0 180 110" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs><clipPath id="tn-flag-clip"><path d="M8 7 Q48 1 88 7 T172 7 L172 103 Q130 97 88 103 T8 103Z"/></clipPath></defs>
+<g clip-path="url(#tn-flag-clip)">
+<rect x="8" y="7" width="164" height="96" fill="#e70013"/>
+<circle cx="90" cy="55" r="31" fill="#fff"/>
+<circle cx="99" cy="49" r="24" fill="#e70013"/>
+<path d="M111 34 L116 46 L129 47 L119 56 L122 69 L111 62 L100 69 L103 56 L93 47 L106 46Z" fill="#e70013"/>
+<path d="M8 7 Q48 1 88 7 T172 7" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="2"/>
+</g>
+</svg></div><h1>أحلى توانسة</h1><div class="brand-fr" lang="fr" dir="ltr">AHLA TOUNSA</div><div>خدماتك وفرصتك وعقارك في بلاصة وحدة</div><small>نبدأوا بصفاقس ونتوسعوا لكل تونس</small><div class="live-clock" role="timer" aria-label="الساعة والتاريخ بتوقيت تونس"><span class="clock-time" id="clock-time">--:--:--</span><span class="clock-date" id="clock-date">توقيت تونس</span></div></header>
 
 <nav aria-label="القائمة الرئيسية">
 <button type="button" data-page="home">الرئيسية</button>
