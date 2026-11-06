@@ -345,6 +345,64 @@ footer{background:#fff!important;border-top:1px solid #ddd!important}
 @media(max-width:600px){header{background:#fff!important}nav{background:#fff!important}}
 </style>
 
+
+<style>
+/* Interface refinement: crisp white surfaces, clear hierarchy and comfortable touch targets */
+:root{
+ --brand:#c8102e;--brand-dark:#991027;--ink:#202124;--muted:#62666b;
+ --line:#dedfe2;--paper:#fff;--bg:#fff;
+}
+header .topbar{max-width:1180px!important}
+header .topbar-title h1{letter-spacing:.1px}
+header .topbar .live-clock{
+ min-width:112px;border-radius:12px!important;padding:8px 13px!important;
+ border:1px solid #c8102e!important;background:#fff!important;
+ box-shadow:0 3px 12px #2021240d!important
+}
+header .topbar .live-clock .clock-time{font-variant-numeric:tabular-nums;font-weight:900}
+header .topbar .live-clock .clock-date{color:#555!important}
+header>div:not(.topbar){font-weight:700;color:#333!important}
+header small{border-radius:8px!important;padding:5px 12px!important}
+main{max-width:1180px}
+nav{gap:8px!important}
+nav button{min-height:42px!important;border-radius:9px!important;font-weight:700}
+.box,.card{border-radius:15px!important}
+.cards{gap:15px!important}
+.cards .card{
+ display:flex;flex-direction:column;align-items:center;text-align:center;
+ min-height:220px;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease
+}
+.cards .card:hover{transform:translateY(-3px);border-color:#c8102e!important;box-shadow:0 9px 22px #20212412!important}
+.cards .card p{flex:1;line-height:1.65}
+.cards .card button{min-width:112px;min-height:43px;margin-top:10px}
+.box h2,section>h2{font-weight:900}
+section>h2{margin-top:5px}
+label{display:block;margin:12px 0 5px;font-weight:700}
+input,select,textarea{min-height:44px;border-radius:9px!important}
+textarea{min-height:105px;resize:vertical}
+input[type="checkbox"]{min-height:auto}
+button:focus-visible,nav button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+ outline:3px solid #c8102e!important;outline-offset:2px
+}
+.entry{border-radius:12px!important}
+@media(max-width:600px){
+ header .topbar{grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
+ header .topbar-brand{justify-self:center}
+ header .topbar .live-clock{min-width:92px!important;padding:6px 8px!important}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ .cards .card{min-height:205px;padding:15px 10px!important}
+ .cards .card button{min-width:0;width:100%;padding:9px 8px!important}
+ main{padding-left:12px!important;padding-right:12px!important}
+}
+@media(max-width:360px){
+ .cards{grid-template-columns:1fr!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .cards .card{transition:none!important}
+ .cards .card:hover{transform:none!important}
+}
+</style>
+
 </head>
 <body>
 <header>
