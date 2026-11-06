@@ -1086,6 +1086,147 @@ footer{background:#fff!important;color:#718096!important;border-top:1px solid #e
 }
 @media(max-width:360px){.cards{grid-template-columns:1fr!important}}
 
+/* AHLA TOUNSA — clean professional redesign, CSS only */
+:root{
+ --brand:#087f78!important;--brand-dark:#075a60!important;
+ --ink:#203044!important;--muted:#687789!important;
+ --line:#e5ebf0!important;--paper:#fff!important;--bg:#f7f9fc!important;
+ --gold:#d9a441!important;
+}
+html{background:#f7f9fc!important}
+body{background:#f7f9fc!important;color:#203044!important;font-family:Tahoma,Arial,sans-serif!important}
+header{
+ background:linear-gradient(135deg,#ffffff 0%,#f2f8f8 100%)!important;
+ color:#203044!important;text-align:right!important;
+ padding:clamp(22px,4vw,42px) clamp(16px,5vw,58px)!important;
+ border-bottom:1px solid #e2ebed!important;
+ box-shadow:0 8px 28px #18334b0a!important;
+}
+header:before,header:after{display:none!important}
+header .topbar{max-width:1320px;margin:0 auto 12px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+header .topbar-title h1{color:#123c4b!important;font-weight:900!important;letter-spacing:0!important;text-shadow:none!important}
+header .brand-fr{color:#087f78!important;letter-spacing:3px!important;font-weight:800!important}
+header>div:not(.topbar){max-width:1320px;margin:8px auto 0!important;color:#526779!important;font-weight:700!important}
+header small{margin-top:13px!important;background:#e8f4f2!important;color:#08736d!important;border:1px solid #cce5e1!important;font-weight:700!important}
+.live-clock{background:#fff!important;border:1px solid #e1e9ef!important;border-radius:15px!important;padding:9px 16px!important;box-shadow:0 4px 14px #17384d0b!important}
+.live-clock .clock-time{color:#111827!important;font-weight:900!important}
+.live-clock .clock-date{color:#64748b!important}
+nav{
+ position:sticky!important;top:0!important;z-index:30!important;
+ justify-content:flex-start!important;flex-wrap:nowrap!important;overflow-x:auto!important;
+ white-space:nowrap!important;scrollbar-width:thin!important;
+ background:#ffffffed!important;border-bottom:1px solid #e5ebf0!important;
+ box-shadow:0 5px 18px #2030440b!important;backdrop-filter:blur(12px)!important;
+ padding:11px clamp(10px,3vw,30px)!important;gap:9px!important;
+}
+nav button,nav button:nth-child(n){
+ flex:0 0 auto!important;background:#f3f6f8!important;color:#405469!important;
+ border:1px solid #e3eaf0!important;border-radius:12px!important;
+ box-shadow:none!important;font-weight:700!important;
+}
+nav button:hover{background:#e8f4f2!important;color:#08736d!important}
+nav button.active,nav button[aria-current="page"]{
+ background:#087f78!important;color:#fff!important;border-color:#087f78!important;
+ box-shadow:0 4px 12px #087f7828!important;
+}
+main{max-width:1320px!important;margin:0 auto!important;padding:clamp(18px,3vw,34px) clamp(12px,3vw,30px) 48px!important}
+.box,.card,.entry{
+ background:#fff!important;border:1px solid #e6ecf1!important;
+ border-radius:18px!important;box-shadow:0 5px 18px #1e34480a!important;
+}
+.box{padding:clamp(17px,2.5vw,26px)!important}
+#home>.box:first-child{
+ background:linear-gradient(115deg,#edf7f6,#f8fbfc)!important;
+ border:1px solid #dcecea!important;border-right:5px solid #087f78!important;
+ box-shadow:none!important;border-radius:18px!important;
+}
+.box h2,section>h2,main section h2{color:#173f50!important}
+.box h3,.cards .card h3{color:#263f55!important}
+.cards{gap:16px!important}
+.cards .card{
+ position:relative!important;overflow:hidden!important;
+ padding:22px 17px!important;text-align:center!important;
+ background:#fff!important;border:1px solid #e5ebf0!important;
+ border-radius:18px!important;box-shadow:0 5px 18px #2030440a!important;
+}
+.cards .card:before{
+ content:""!important;position:absolute!important;top:0!important;right:0!important;left:0!important;
+ height:4px!important;background:var(--card-accent,#0d9488)!important;
+}
+.cards .card:nth-child(6n+1){--card-accent:#0d9488}
+.cards .card:nth-child(6n+2){--card-accent:#3976c6}
+.cards .card:nth-child(6n+3){--card-accent:#7c63bd}
+.cards .card:nth-child(6n+4){--card-accent:#d18b32}
+.cards .card:nth-child(6n+5){--card-accent:#438b63}
+.cards .card:nth-child(6n){--card-accent:#4386a5}
+.cards .card .icon{
+ display:grid!important;place-items:center!important;
+ width:62px!important;height:62px!important;margin:0 auto 12px!important;
+ border-radius:18px!important;background:#eef5f5!important;
+ color:var(--card-accent,#0d9488)!important;font-size:33px!important;
+}
+.cards .card:nth-child(6n+2) .icon{background:#edf3fc!important}
+.cards .card:nth-child(6n+3) .icon{background:#f2effa!important}
+.cards .card:nth-child(6n+4) .icon{background:#fbf4e9!important}
+.cards .card:nth-child(6n+5) .icon{background:#edf5ef!important}
+.cards .card:nth-child(6n) .icon{background:#edf4f7!important}
+.cards .card p{color:#6b7a89!important;min-height:2.5em}
+.cards .card button,button{
+ background:#087f78!important;color:#fff!important;border:0!important;
+ border-radius:12px!important;box-shadow:0 4px 12px #087f781c!important;
+}
+.cards .card button:hover,button:hover{background:#076b68!important}
+.note{background:#fff8e9!important;color:#76571e!important;border:1px solid #f1dfb7!important;border-right:4px solid #d9a441!important}
+.entry{background:#fbfcfd!important;border-right:4px solid #0d9488!important}
+input,select,textarea{background:#fff!important;border:1px solid #d7e1e8!important;color:#203044!important;border-radius:11px!important}
+input:focus,select:focus,textarea:focus{outline:3px solid #0d948822!important;border-color:#0d9488!important}
+label{color:#344b60!important}
+footer{background:#fff!important;color:#718096!important;border-top:1px solid #e5ebf0!important}
+@media(min-width:900px){
+ .cards{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:19px!important}
+ .cards .card{padding:25px 20px!important}
+}
+@media(max-width:600px){
+ header{padding:22px 14px 24px!important;text-align:center!important}
+ header .topbar{flex-direction:column;gap:10px}
+ header>div:not(.topbar){text-align:center!important}
+ nav{padding:9px!important;gap:7px!important}
+ nav button{min-height:43px!important;padding:9px 13px!important}
+ main{padding:15px 11px 30px!important}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ .cards .card{padding:16px 10px!important;border-radius:15px!important}
+ .cards .card .icon{width:49px!important;height:49px!important;font-size:27px!important;border-radius:14px!important}
+ .cards .card p{min-height:0!important}
+ .live-clock{padding:7px 12px!important}
+}
+@media(max-width:360px){.cards{grid-template-columns:1fr!important}}
+
+
+/* Compact category tiles: smaller width and height */
+.cards{grid-template-columns:repeat(auto-fit,minmax(185px,1fr))!important;gap:13px!important;align-items:stretch!important}
+.cards .card{
+ padding:15px 13px!important;min-height:0!important;
+ border-radius:15px!important;
+}
+.cards .card .icon{
+ width:48px!important;height:48px!important;
+ margin:0 auto 8px!important;border-radius:14px!important;font-size:26px!important;
+}
+.cards .card h3{font-size:18px!important;margin:5px 0!important;line-height:1.45!important}
+.cards .card p{font-size:14px!important;line-height:1.6!important;min-height:0!important;margin:4px 0 9px!important}
+.cards .card button{font-size:15px!important;min-height:38px!important;padding:7px 13px!important}
+@media(min-width:1100px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:14px!important}}
+@media(min-width:700px) and (max-width:1099px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:600px){
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ .cards .card{padding:12px 8px!important;border-radius:13px!important}
+ .cards .card .icon{width:42px!important;height:42px!important;font-size:23px!important;margin-bottom:6px!important}
+ .cards .card h3{font-size:16px!important;margin:4px 0!important}
+ .cards .card p{font-size:12px!important;line-height:1.5!important;margin:3px 0 7px!important}
+ .cards .card button{font-size:13px!important;min-height:34px!important;padding:6px 10px!important}
+}
+
+
 </style>
 
 </head>
