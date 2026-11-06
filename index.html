@@ -75,6 +75,41 @@ nav button[aria-current="page"]{box-shadow:0 3px 10px #087f7528}
 .good-topics details.card[open] summary::after{content:"اضغط للإغلاق";font-size:12px;color:var(--brand)}
 .good-topics details.card summary:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:6px}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+
+/* AHLA TOUNSA — refreshed visual layer */
+:root{--brand:#087f75;--brand-dark:#064e4a;--ink:#183b38;--muted:#647b76;--line:#d9e9e4;--paper:#fff;--bg:#f1f7f4;--gold:#f0b64b}
+body{background:radial-gradient(ellipse at 90% 0%,#e1f2eb 0,transparent 34%),var(--bg);color:var(--ink);font-family:Tahoma,Arial,sans-serif}
+header{padding:clamp(34px,6vw,68px) 18px 42px;background:linear-gradient(118deg,#063f3b 0%,#087f75 54%,#176b78 100%);box-shadow:0 12px 32px #073f3b22}
+header h1{font-size:clamp(38px,7vw,58px);font-weight:900;text-shadow:0 3px 16px #002c2940}
+header .brand-fr{letter-spacing:3px;font-size:clamp(15px,2.5vw,20px);opacity:.92}
+header div:not(.brand-fr){margin-top:10px;font-size:clamp(17px,3vw,22px)}
+header small{margin-top:15px;padding:7px 17px;border-color:#ffffff66;background:#ffffff18;font-weight:700}
+nav{padding:12px clamp(10px,3vw,26px);gap:9px;background:#ffffffed;border-bottom:1px solid #dcebe5;box-shadow:0 7px 22px #123e3510}
+nav button{border-radius:999px;padding:9px 17px;min-height:44px;background:#edf6f2;border-color:#dcece5;font-weight:700}
+nav button.active,nav button[aria-current="page"]{background:linear-gradient(135deg,#087f75,#14566a);color:#fff;border-color:transparent;box-shadow:0 5px 13px #087f7530}
+main{max-width:1240px;padding-top:27px}
+main>.note{border-radius:14px;background:#fff9e9;border-color:#f0dfb7;color:#6f541d;padding:13px 17px}
+.box,.card{border:1px solid #dfebe6;border-radius:20px;box-shadow:0 8px 25px #163f350a}
+.box{padding:clamp(17px,2.5vw,25px)}
+#home>.box:first-child{position:relative;overflow:hidden;background:linear-gradient(115deg,#e0f3eb,#f8fcfa);box-shadow:inset -5px 0 0 var(--brand),0 8px 25px #163f3508;padding:clamp(22px,4vw,36px)}
+#home>.box:first-child:after{content:"🇹🇳";position:absolute;left:22px;bottom:-15px;font-size:76px;opacity:.09;pointer-events:none}
+#home>.box:first-child h2{font-size:clamp(23px,4vw,31px);color:#075e58}
+.cards{gap:17px}
+.cards .card{position:relative;overflow:hidden;padding:23px 18px;background:linear-gradient(160deg,#fff 0%,#f8fcfa 100%);border-color:#e0eee8}
+.cards .card:before{content:"";position:absolute;top:0;right:0;left:0;height:4px;background:linear-gradient(90deg,#087f75,#e6ad3c)}
+.cards .card .icon{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 12px;border-radius:19px;background:#e7f4ee;font-size:35px}
+.cards .card h3{font-size:19px;color:#14564f}
+.cards .card p{min-height:48px;line-height:1.7}
+.cards .card button{min-width:112px;border-radius:999px;padding:10px 20px}
+button{border-radius:12px;box-shadow:0 4px 12px #087f7518}
+input,select,textarea{border-radius:12px;border-color:#d3e2dc;padding:12px 13px}
+label{color:#254b45}
+.entry{border-radius:15px;background:#fbfefc;border-color:#e1eee8;padding:16px}
+footer{margin-top:18px;background:#fff}
+@media(min-width:900px){.cards{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}}
+@media(max-width:600px){header{padding:34px 14px 30px}nav{gap:7px;padding:9px}nav button{padding:8px 14px;min-height:40px}main{padding-top:17px}.cards{gap:10px}.cards .card{padding:16px 10px;border-radius:16px}.cards .card .icon{width:52px;height:52px;font-size:29px}.cards .card h3{font-size:16px}.cards .card p{font-size:13px;min-height:54px}.cards .card button{min-width:0;padding:8px 14px}}
+@media(min-width:1100px){main{max-width:1320px}.cards{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
 </style>
 <script async src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
