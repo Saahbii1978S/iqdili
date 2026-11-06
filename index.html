@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#087f75">
+<link rel="manifest" href="/iqdili/manifest.webmanifest">
+<link rel="icon" href="/iqdili/app-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/iqdili/app-icon.svg">
 <meta name="description" content="أحلى توانسة: منصة تونسية للخدمات وفرص العمل والعقارات والسوق، نبدأوا بصفاقس ونتوسعوا لكل تونس.">
 <title>أحلى توانسة | AHLA TOUNSA</title>
 <style>
@@ -885,6 +888,14 @@ function showInitialPage(){
 document.addEventListener("DOMContentLoaded",showInitialPage);
 if(document.readyState!=="loading")showInitialPage();
 })();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/iqdili/service-worker.js", { scope: "/iqdili/" })
+      .catch(error => console.warn("Offline support could not be enabled:", error));
+  });
+}
 </script>
 </body>
 </html>
