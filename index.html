@@ -629,6 +629,7 @@ main>section input[type="file"]::file-selector-button{
 <button type="button" data-page="ask" onclick="if(window.show){window.show('ask');} return false;">اسأل أحلى توانسة</button>
 <button type="button" data-page="saved" onclick="if(window.show){window.show('saved');} return false;">المنشورات الحية</button>
 <button type="button" data-page="cv" onclick="if(window.show){window.show('cv');} return false;">CV من أجل الخير</button>
+<button type="button" data-page="account" onclick="if(window.show){window.show('account');} return false;">حسابي</button>
 <button type="button" data-page="admin" onclick="if(window.show){window.show('admin');} return false;">الإدارة</button>
 <a href="#admin-contact" aria-label="التواصل مع إدارة أحلى توانسة عبر واتساب" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:9px 17px;border-radius:999px;background:#14566a;color:#fff;text-decoration:none;font-weight:700">تواصل مع الإدارة</a>
 </nav>
@@ -800,6 +801,32 @@ main>section input[type="file"]::file-selector-button{
 <p id="reset-password-message" class="muted"></p>
 </div></section>
 
+<section id="account" class="hidden">
+<h2>حسابي في أحلى توانسة 👤</h2>
+<div class="box">
+<p>الحساب اختياري: تنجم تتفرّج وتنشر من غير تسجيل. بالحساب تنجم تتابع إعلاناتك وحالتها وتعاود تنشر إعلان جديد بسهولة.</p>
+<div id="member-login">
+<label for="member-email">البريد الإلكتروني</label><input id="member-email" type="email" maxlength="254" autocomplete="email" placeholder="name@example.com">
+<label for="member-password">كلمة المرور (8 أحرف على الأقل)</label><input id="member-password" type="password" maxlength="128" minlength="8" autocomplete="current-password">
+<div class="row" style="gap:8px;flex-wrap:wrap;margin-top:12px">
+<button type="button" id="member-signin">دخول لحسابي</button>
+<button type="button" id="member-signup" style="background:#14566a">إنشاء حساب جديد</button>
+</div>
+<button type="button" id="member-forgot" style="margin-top:9px;background:#647875">نسيت كلمة السر؟</button>
+<p id="member-message" class="muted" aria-live="polite"></p>
+</div>
+<div id="member-panel" class="hidden">
+<p id="member-welcome" class="muted"></p>
+<div class="row" style="gap:8px;flex-wrap:wrap">
+<button type="button" id="member-refresh">تحديث إعلاناتي</button>
+<button type="button" id="member-logout" style="background:#647875">خروج من الحساب</button>
+</div>
+<div id="member-posts" aria-live="polite" style="margin-top:14px"><p class="muted">جاري تحميل إعلاناتك...</p></div>
+<p class="muted">إعادة النشر تنشئ إعلاناً جديداً ويرجع للمراجعة. يلزمك تختار الصورة من جديد إذا تحب تضيف صورة.</p>
+</div>
+</div>
+</section>
+
 <section id="admin" class="hidden">
 <div class="box"><h2>لوحة إدارة أحلى توانسة</h2>
 <div id="admin-login">
@@ -898,7 +925,7 @@ function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&a
 
 
 function show(id){
-const allowed=["home","services","jobs","realty","market","good","cv","ask","saved","admin","reset-password"];
+const allowed=["home","services","jobs","realty","market","good","cv","ask","saved","account","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
@@ -906,6 +933,7 @@ const activeNavButton=document.querySelector('nav [data-page="'+id+'"]');
 if(activeNavButton)activeNavButton.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"});
 window.scrollTo({top:0,behavior:"auto"});
 if(["saved","market","services","jobs","realty"].includes(id)){setupListingSearch();loadData();}
+if(id==="account" && db) refreshMemberState().catch(()=>{});
 if(id==="admin" && db) refreshAdminState().catch(()=>{});
 }
 window.show=show;
@@ -1077,6 +1105,7 @@ db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
+ else if(el("account") && !el("account").classList.contains("hidden")){refreshMemberState().catch(()=>{});}
 });
 authListenerInstalled=true;
 }
@@ -1231,8 +1260,11 @@ form.append("table",target);
 form.append("data",JSON.stringify(data));
 form.append("turnstileToken",turnstileTokens[table]);
 if(uploadFile)form.append("file",uploadFile);
+const {data:memberSession}=await db.auth.getSession();
+const submitHeaders={"apikey":SUPABASE_KEY};
+if(memberSession?.session?.access_token)submitHeaders.Authorization="Bearer "+memberSession.session.access_token;
 const submitResponse=await fetch(SUPABASE_URL+"/functions/v1/submit-public-post",{
- method:"POST",headers:{"apikey":SUPABASE_KEY},body:form
+ method:"POST",headers:submitHeaders,body:form
 });
 const submitResult=await submitResponse.json().catch(()=>({}));
 resetTurnstile(table);
@@ -1528,6 +1560,123 @@ async function refreshAdminState(){
   throw error;
  }
 }
+function memberMessage(message){const node=el("member-message");if(node)node.textContent=message;}
+const memberStatusLabel=status=>({pending:"في انتظار مراجعة الإدارة",approved:"منشور للعموم",rejected:"مرفوض",unpublished:"توقّف نشره"})[status]||status||"غير معروف";
+async function refreshMemberState(){
+ if(!db){memberMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
+ const login=el("member-login"),panel=el("member-panel");
+ const {data,error}=await db.auth.getSession();
+ if(error)throw error;
+ const session=data?.session;
+ login.classList.toggle("hidden",!!session);
+ panel.classList.toggle("hidden",!session);
+ if(!session){el("member-posts").textContent="";return;}
+ el("member-welcome").textContent="مرحبا بيك، "+(session.user.email||"في حسابك")+". إعلاناتك الخاصة تظهر هنا.";
+ await loadMemberPosts(session.access_token);
+}
+async function loadMemberPosts(token){
+ const host=el("member-posts");host.innerHTML='<p class="muted">جاري تحميل إعلاناتك...</p>';
+ try{
+  const response=await fetch(SUPABASE_URL+"/functions/v1/my-posts",{method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+token},body:"{}"});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||!result.ok){host.textContent=result.error||"تعذّر تحميل إعلاناتك.";return;}
+  const labels={service_requests:"الخدمات",job_posts:"فرص العمل",real_estate_posts:"العقارات",market_posts:"السوق"};
+  const all=[];
+  for(const table of Object.keys(labels)){
+   for(const post of (result.posts?.[table]||[]))all.push({table,post});
+  }
+  all.sort((a,b)=>new Date(b.post.created_at||0)-new Date(a.post.created_at||0));
+  if(!all.length){host.innerHTML='<p class="muted">ما عندك حتى إعلان مربوط بالحساب هذا. الإعلانات اللي نشرتها قبل إنشاء الحساب ما تتربطش آلياً به.</p>';return;}
+  host.innerHTML=all.map(({table,post})=>{
+   const expiry=post.expires_at?"ينتهي: "+new Date(post.expires_at).toLocaleDateString("ar-TN"):"";
+   const detail=[labels[table],memberStatusLabel(post.status),post.city||"",expiry].filter(Boolean).join(" • ");
+   const packed=safe(JSON.stringify(post));
+   return '<div class="entry"><b>'+safe(post.title||"إعلان من غير عنوان")+'</b><small>'+safe(detail)+'</small><p>'+safe(post.description||"")+'</p><button type="button" data-member-repost="1" data-table="'+safe(table)+'" data-post="'+packed+'">عاود انشر إعلان جديد</button></div>';
+  }).join("");
+ }catch(error){console.error("Member posts error:",error);host.textContent="صار خطأ في الاتصال. عاود التحديث.";}
+}
+function setMemberField(id,value){
+ const node=el(id);if(!node||value===null||value===undefined)return;
+ const text=String(value);
+ if(node.tagName==="SELECT"&&!Array.from(node.options).some(option=>option.value===text||option.textContent===text))return;
+ node.value=text;
+}
+function repostMemberPost(table,post){
+ const pages={service_requests:"services",job_posts:"jobs",real_estate_posts:"realty",market_posts:"market"};
+ const forms={service_requests:"service-form",job_posts:"job-form",real_estate_posts:"realty-form",market_posts:"market-form"};
+ const page=pages[table],formId=forms[table];if(!page||!formId)return;
+ show(page);
+ const form=el(formId);if(form)form.classList.remove("hidden");
+ if(table==="service_requests"){
+  setMemberField("st",post.title);
+  const match=(post.description||"").match(/^الوقت المناسب: ([^\n]+)\n/);
+  setMemberField("sw",match?match[1]:"");
+  setMemberField("sd",match?post.description.slice(match[0].length):post.description);
+  setMemberField("sa",post.city);setMemberField("sc",post.phone);
+ }else if(table==="job_posts"){
+  setMemberField("jt",post.title);setMemberField("ji",post.description);setMemberField("ja",post.city);setMemberField("jc",post.phone);setMemberField("jk",post.job_type);setMemberField("jn",post.work_nature);
+ }else if(table==="real_estate_posts"){
+  setMemberField("rt",post.listing_type);setMemberField("rp",post.property_type);setMemberField("ri",post.description);setMemberField("ra",post.city);setMemberField("rc",post.phone);setMemberField("r_price",post.price);setMemberField("size",post.size);setMemberField("rooms",post.rooms);
+ }else if(table==="market_posts"){
+  setMemberField("mt",post.listing_type);setMemberField("mc",post.category);setMemberField("mn",post.title);setMemberField("md",post.description);setMemberField("ma",post.city);setMemberField("mphone",post.phone);setMemberField("mp",post.price);
+ }
+ const imageId={service_requests:"simage",job_posts:"jimage",real_estate_posts:"rimage",market_posts:"mimage"}[table];
+ if(imageId&&el(imageId))el(imageId).value="";
+ form?.scrollIntoView({behavior:"smooth",block:"start"});
+ alert("عمرنالك الاستمارة بمعلومات إعلانك السابق. راجعها وحدّثها، واختار الصورة من جديد إذا تحب، وبعد ابعث الإعلان للمراجعة.");
+}
+document.addEventListener("click",event=>{
+ const button=event.target.closest("[data-member-repost]");
+ if(!button)return;
+ try{repostMemberPost(button.dataset.table,JSON.parse(button.dataset.post));}
+ catch(error){console.error("Repost prefill error:",error);alert("ما نجّمش نجهّز الإعلان لإعادة النشر. حدّث الصفحة وعاود.");}
+});
+el("member-signup").addEventListener("click",async()=>{
+ const email=val("member-email"),password=val("member-password"),button=el("member-signup");
+ if(!db){memberMessage("خدمة الحسابات غير متوفرة حالياً.");return;}
+ if(!email||!password){memberMessage("اكتب البريد الإلكتروني وكلمة المرور.");return;}
+ if(password.length<8){memberMessage("كلمة المرور يلزمها 8 أحرف على الأقل.");return;}
+ button.disabled=true;button.textContent="جاري إنشاء الحساب...";
+ try{
+  const {data,error}=await db.auth.signUp({email,password});
+  if(error){memberMessage(error.message.includes("already registered")?"البريد هذا مسجّل من قبل. جرّب الدخول لحسابك.":"ما نجّمش ننشئ الحساب. تثبّت من البريد وكلمة المرور وعاود.");return;}
+  if(data?.session){memberMessage("تم إنشاء الحساب بنجاح.");await refreshMemberState();}
+  else memberMessage("بعثنالك رسالة تأكيد للبريد الإلكتروني. افتحها وأكّد حسابك، وبعد ارجع للموقع وسجّل الدخول.");
+ }catch(error){console.error("Member signup error:",error);memberMessage("صار خطأ أثناء إنشاء الحساب. عاود بعد شوية.");}
+ finally{button.disabled=false;button.textContent="إنشاء حساب جديد";}
+});
+el("member-signin").addEventListener("click",async()=>{
+ const email=val("member-email"),password=val("member-password"),button=el("member-signin");
+ if(!db){memberMessage("خدمة الحسابات غير متوفرة حالياً.");return;}
+ if(!email||!password){memberMessage("اكتب البريد الإلكتروني وكلمة المرور.");return;}
+ button.disabled=true;button.textContent="جاري الدخول...";
+ try{
+  const {error}=await db.auth.signInWithPassword({email,password});
+  if(error){memberMessage("تعذّر الدخول. تثبّت من البريد وكلمة المرور، وإذا الحساب جديد أكّد بريدك أولاً.");return;}
+  memberMessage("");await refreshMemberState();
+ }catch(error){console.error("Member signin error:",error);memberMessage("صار خطأ في الاتصال أثناء الدخول.");}
+ finally{button.disabled=false;button.textContent="دخول لحسابي";}
+});
+el("member-forgot").addEventListener("click",async()=>{
+ const email=val("member-email"),button=el("member-forgot");
+ if(!email){memberMessage("اكتب بريدك الإلكتروني أولاً.");return;}
+ if(!db){memberMessage("خدمة الحسابات غير متوفرة حالياً.");return;}
+ button.disabled=true;
+ try{
+  const redirectTo=window.location.origin+window.location.pathname+"?recovery=1";
+  const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
+  if(error){memberMessage("ما نجّمش نبعث رابط الاسترجاع. تثبّت من البريد وعاود.");return;}
+  memberMessage("إذا البريد مربوط بحساب، توصلك رسالة لاسترجاع كلمة السر. تثبّت من الوارد والرسائل غير المرغوب فيها.");
+ }catch(error){console.error("Member password recovery:",error);memberMessage("صار خطأ أثناء طلب رابط الاسترجاع.");}
+ finally{button.disabled=false;}
+});
+el("member-refresh").addEventListener("click",async()=>{
+ const {data}=await db.auth.getSession();if(data?.session)await loadMemberPosts(data.session.access_token);
+});
+el("member-logout").addEventListener("click",async()=>{
+ const {error}=await db.auth.signOut();if(error){memberMessage("ما نجّمش نخرجك من الحساب. عاود.");return;}
+ await refreshMemberState();
+});
 el("admin-forgot-password").addEventListener("click",async()=>{
   const email=val("admin-email"),button=el("admin-forgot-password");
   if(!email){adminMessage("اكتب البريد الإلكتروني أولاً، وبعد اضغط على استرجاع كلمة السر.");return;}
