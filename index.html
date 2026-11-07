@@ -1132,6 +1132,8 @@ function resetTurnstile(table){
  }
 }
 
+const pendingImagePaths={};
+const pendingImageFiles={};
 async function sendData(table){
 if(!db){alert("الاتصال بقاعدة البيانات غير متوفر حالياً. تأكد من الإنترنت.");return;}
 if(!ensureTurnstile(table))return;
@@ -1170,29 +1172,37 @@ const numericFields=table==="realty"?["r_price","size","rooms"]:table==="market"
 if(numericFields.some(id=>val(id)!==""&&(!Number.isFinite(Number(val(id)))||Number(val(id))<0))){alert("السعر والمساحة وعدد الغرف يلزمهم أرقام موجبة أو صفر.");return;}
 if(table==="realty" && val("rooms")!=="" && !Number.isInteger(Number(val("rooms")))){alert("عدد الغرف يلزمو يكون عدد صحيح، من غير فاصلة.");return;}
 try{
-if(table==="market" && marketImageInput && marketImageInput.files && marketImageInput.files[0]){
- const file=marketImageInput.files[0];
- if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728){
+const imageInputs={services:"simage",jobs:"jimage",realty:"rimage",market:"mimage"};
+const imageInput=el(imageInputs[table]);
+const selectedFile=imageInput&&imageInput.files&&imageInput.files[0];
+if(selectedFile){
+ if(!["image/jpeg","image/png","image/webp"].includes(selectedFile.type)||selectedFile.size>3145728){
   alert("الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.");return;
  }
- const extension={"image/jpeg":"jpg","image/png":"png","image/webp":"webp"}[file.type];
- const uniqueName=(window.crypto&&typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():Date.now()+"-"+Math.random().toString(36).slice(2);
- const upload=await db.storage.from("market-images").upload("market/"+uniqueName+"."+extension,file,{cacheControl:"3600",upsert:false,contentType:file.type});
- if(upload.error){console.error("Image upload error:",upload.error);alert("ما نجّمش نرفع الصورة. جرّب صورة أصغر أو عاود المحاولة.");return;}
- data.image_urls=[upload.data.path];
-}
-const listingImageFields={services:{input:"simage",folder:"services"},jobs:{input:"jimage",folder:"jobs"},realty:{input:"rimage",folder:"realty"}};
-const imageConfig=listingImageFields[table];
-if(imageConfig){
- const input=el(imageConfig.input),file=input&&input.files&&input.files[0];
- if(file){
-  if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728){alert("الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.");return;}
-  const extension={"image/jpeg":"jpg","image/png":"png","image/webp":"webp"}[file.type];
-  const uniqueName=(window.crypto&&typeof window.crypto.randomUUID==="function")?window.crypto.randomUUID():Date.now()+"-"+Math.random().toString(36).slice(2);
-  const upload=await db.storage.from("listing-images").upload(imageConfig.folder+"/"+uniqueName+"."+extension,file,{cacheControl:"3600",upsert:false,contentType:file.type});
-  if(upload.error){console.error("Listing image upload error:",upload.error);alert("ما نجّمش نرفع الصورة. جرّب صورة أصغر أو عاود المحاولة.");return;}
-  data.image_urls=[upload.data.path];
+ if(pendingImageFiles[table]!==selectedFile || !pendingImagePaths[table]){
+  const form=new FormData();
+  form.append("category",table);
+  form.append("file",selectedFile);
+  form.append("turnstileToken",turnstileTokens[table]);
+  const uploadResponse=await fetch(SUPABASE_URL+"/functions/v1/upload-pending-image",{
+   method:"POST",headers:{"apikey":SUPABASE_KEY},body:form
+  });
+  const uploadResult=await uploadResponse.json().catch(()=>({}));
+  resetTurnstile(table);
+  if(!uploadResponse.ok||!uploadResult.ok||typeof uploadResult.path!=="string"){
+   console.error("Private image upload failed:",uploadResult);
+   alert(uploadResult.error||"ما نجّمش نرفع الصورة في المخزن الخاص. عاود المحاولة.");return;
+  }
+  pendingImagePaths[table]=uploadResult.path;
+  pendingImageFiles[table]=selectedFile;
+  alert("ترفعَت الصورة في مخزن خاص وآمن. كمّل تحقق Cloudflare مرة ثانية، وبعد اضغط إرسال الإعلان.");
+  return;
  }
+ data.image_urls=[pendingImagePaths[table]];
+}else{
+ pendingImagePaths[table]="";
+ pendingImageFiles[table]=null;
+ data.image_urls=[];
 }
 const submitResponse=await fetch(SUPABASE_URL+"/functions/v1/submit-public-post",{
  method:"POST",
@@ -1397,12 +1407,42 @@ async function renderAdmin(){
     const actions=protectedDemo
       ? '<p class="muted">النشر معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
       : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "";
-    return `<div class="entry" data-admin-entry data-admin-category="${item.table}" data-admin-status="${adminEscape(status)}" data-search-text="${adminEscape(searchable)}" data-likely-demo="${likelyDemo ? "yes" : "no"}" data-protected-demo="${protectedDemo ? "yes" : "no"}"><b>${adminEscape(title)}</b><br>${demoLabel}<p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(statusLabel)} | رقم: ${adminEscape(row.id)}</small>${actions}</div>`;
+    const imagePreview=Array.isArray(row.image_urls)&&row.image_urls.length
+      ? `<div data-admin-image data-admin-table="${item.table}" data-id="${adminEscape(row.id)}"><p class="muted">جاري تحميل معاينة الصورة...</p></div>`
+      : "";
+    return `<div class="entry" data-admin-entry data-admin-category="${item.table}" data-admin-status="${adminEscape(status)}" data-search-text="${adminEscape(searchable)}" data-likely-demo="${likelyDemo ? "yes" : "no"}" data-protected-demo="${protectedDemo ? "yes" : "no"}"><b>${adminEscape(title)}</b><br>${demoLabel}<p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(statusLabel)} | رقم: ${adminEscape(row.id)}</small>${imagePreview}${actions}</div>`;
    }).join("");
    htmlOut+="</section>";
   }
   host.innerHTML=htmlOut;
   applyAdminSearch();
+  await loadAdminImagePreviews();
+}
+async function loadAdminImagePreviews(){
+ const placeholders=[...document.querySelectorAll("[data-admin-image]")];
+ if(!placeholders.length||!db)return;
+ const {data,error}=await db.auth.getSession();
+ const token=data?.session?.access_token;
+ if(error||!token)return;
+ await Promise.all(placeholders.map(async box=>{
+  try{
+   const response=await fetch(SUPABASE_URL+"/functions/v1/admin-post-image",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+token},
+    body:JSON.stringify({table:box.dataset.adminTable,id:box.dataset.id})
+   });
+   const result=await response.json().catch(()=>({}));
+   box.textContent="";
+   if(!response.ok||!result.ok||!result.url){
+    box.textContent=result.error||"ما فماش معاينة متاحة للصورة.";
+    return;
+   }
+   const img=document.createElement("img");
+   img.src=result.url;img.alt="معاينة صورة الإعلان";img.loading="lazy";
+   img.style.cssText="display:block;max-width:220px;max-height:180px;object-fit:contain;border-radius:10px;margin:10px 0;border:1px solid #dce5e1";
+   box.appendChild(img);
+  }catch(error){console.warn("Admin image preview:",error);box.textContent="تعذّر تحميل معاينة الصورة.";}
+ }));
 }
 function applyAdminSearch(){
   const input=el("admin-search");
@@ -1526,10 +1566,22 @@ el("admin-login-button").addEventListener("click",async()=>{
    if(status==="unpublished" && !window.confirm("متأكد تحب تلغي نشر الإعلان؟ الإعلان يختفي من المنشورات الحية وتبقى بياناته محفوظة."))return;
   action.disabled=true;
   try{
-   const expectedStatus=status==="unpublished"?"approved":"pending";
+   if(status==="approved"){
+    const {data:sessionData,error:sessionError}=await db.auth.getSession();
+    if(sessionError||!sessionData?.session?.access_token){alert("جلسة الإدارة انتهت. عاود الدخول.");return;}
+    const response=await fetch(SUPABASE_URL+"/functions/v1/admin-approve-post",{
+     method:"POST",
+     headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+sessionData.session.access_token},
+     body:JSON.stringify({table,id})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.ok){alert(result.error||"ما نجّمش نوافق على الإعلان. حدّث القائمة وعاود.");return;}
+   }else{
+    const expectedStatus=status==="unpublished"?"approved":"pending";
     const {data,error}=await db.from(table).update({status}).eq("id",id).eq("status",expectedStatus).select("id");
-   if(error){console.error("Admin status update:",error);alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من الصلاحيات والاتصال.");return;}
-   if(!data||data.length===0){alert("الإعلان تبدّلت حالته من قبل أو ما عادش موجوداً بالحالة المطلوبة. حدّث القائمة.");await renderAdmin();return;}
+    if(error){console.error("Admin status update:",error);alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من الصلاحيات والاتصال.");return;}
+    if(!data||data.length===0){alert("الإعلان تبدّلت حالته من قبل أو ما عادش موجوداً بالحالة المطلوبة. حدّث القائمة.");await renderAdmin();return;}
+   }
    await renderAdmin();
   }catch(error){
    console.error("Admin action error:",error);
