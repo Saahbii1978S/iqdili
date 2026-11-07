@@ -696,6 +696,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
 <div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
 <label for="simage">صورة الخدمة (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="simage" type="file" accept="image/*"><div id="simage-preview" class="muted" aria-live="polite"></div><label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<p class="muted" style="margin-top:10px">تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.</p>
 <div id="turnstile-services" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
 <button type="button" id="close-service-form" style="margin-top:10px;background:#647875">إغلاق الاستمارة</button>
@@ -713,6 +714,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
 <div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
 <label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jimage">صورة الإعلان (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="jimage" type="file" accept="image/*"><div id="jimage-preview" class="muted" aria-live="polite"></div><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<p class="muted" style="margin-top:10px">تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.</p>
 <div id="turnstile-jobs" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="jobs">حفظ الإعلان</button><button type="button" data-close-form="job-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -728,6 +730,7 @@ main>section input[type="file"]::file-selector-button{
 <div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
 <div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1"></div></div>
 <label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="rimage" type="file" accept="image/*"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<p class="muted" style="margin-top:10px">تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.</p>
 <div id="turnstile-realty" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -738,6 +741,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
 <label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mimage">صورة المنتج (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="mimage" type="file" accept="image/*"><div id="mimage-preview" class="muted" aria-live="polite"></div><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="mpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<p class="muted" style="margin-top:10px">تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.</p>
 <div id="turnstile-market" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="market">إرسال الإعلان</button><button type="button" data-close-form="market-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -1425,9 +1429,10 @@ async function renderAdmin(){
     const demoLabel=protectedDemo
       ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">🔒 إعلان تجريبي محمي — ممنوع نشره</span>'
       : likelyDemo ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">يحتمل أنّه تجريبي — راجع المحتوى</span>' : "";
-    const actions=protectedDemo
+    const actions=(protectedDemo
       ? '<p class="muted">النشر معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
-      : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "";
+      : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "")
+      + `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`;
     const imagePreview=Array.isArray(row.image_urls)&&row.image_urls.length
       ? `<div data-admin-image data-admin-table="${item.table}" data-id="${adminEscape(row.id)}"><p class="muted">جاري تحميل معاينة الصورة...</p></div>`
       : "";
@@ -1578,16 +1583,27 @@ el("admin-login-button").addEventListener("click",async()=>{
    return;
   }
   const allowedTables=["service_requests","job_posts","real_estate_posts","market_posts"];
-  if(!allowedTables.includes(table)||!["approved","rejected","unpublished"].includes(status)||!id){
+  if(!allowedTables.includes(table)||!["approved","rejected","unpublished","delete"].includes(status)||!id){
    alert("العملية غير صالحة. حدّث صفحة الإدارة وعاود.");
    return;
   }
   if(!db){alert("خدمة الإدارة غير متوفرة حالياً. تثبّت من الإنترنت.");return;}
   if(status==="rejected" && !window.confirm("متأكد تحب ترفض الإعلان؟"))return;
+  if(status==="delete" && !window.confirm("تنبيه: باش يتحذف الإعلان وصوره نهائياً، وما تنجمش ترجعهم. متأكد؟"))return;
    if(status==="unpublished" && !window.confirm("متأكد تحب تلغي نشر الإعلان؟ الإعلان يختفي من المنشورات الحية وتبقى بياناته محفوظة."))return;
   action.disabled=true;
   try{
-   if(status==="approved"){
+   if(status==="delete"){
+    const {data:sessionData,error:sessionError}=await db.auth.getSession();
+    if(sessionError||!sessionData?.session?.access_token){alert("جلسة الإدارة انتهت. عاود الدخول.");return;}
+    const response=await fetch(SUPABASE_URL+"/functions/v1/admin-delete-post",{
+     method:"POST",
+     headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+sessionData.session.access_token},
+     body:JSON.stringify({table,id})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.ok){alert(result.error||"ما نجّمش نحذف الإعلان. حدّث القائمة وعاود.");return;}
+   }else if(status==="approved"){
     const {data:sessionData,error:sessionError}=await db.auth.getSession();
     if(sessionError||!sessionData?.session?.access_token){alert("جلسة الإدارة انتهت. عاود الدخول.");return;}
     const response=await fetch(SUPABASE_URL+"/functions/v1/admin-approve-post",{
