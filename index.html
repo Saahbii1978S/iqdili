@@ -656,7 +656,7 @@ main>section input[type="file"]::file-selector-button{
 <div class="row"><div><label for="cv-template">اختار تصميم السيرة الذاتية</label><select id="cv-template"><option value="modern">حديث واحترافي</option><option value="classic">كلاسيكي ورسمي</option><option value="simple">بسيط ومناسب لأنظمة الانتداب ATS</option></select></div><div><label for="cv-language">لغة السيرة الذاتية</label><select id="cv-language"><option value="fr">Français</option><option value="ar">العربية</option></select></div><div><label for="cv-name">الاسم واللقب *</label><input id="cv-name" maxlength="100" autocomplete="name" placeholder="اسمك ولقبك"></div></div>
 <div class="row"><div><label for="cv-job">الوظيفة المطلوبة</label><input id="cv-job" maxlength="100" placeholder="مثال: عامل إنتاج / مساعد إداري"></div><div><label for="cv-city">المدينة</label><input id="cv-city" maxlength="80" placeholder="صفاقس"></div></div>
 <div class="row"><div><label for="cv-phone">الهاتف (اختياري)</label><input id="cv-phone" type="tel" maxlength="25" autocomplete="tel"></div><div><label for="cv-email">البريد الإلكتروني (اختياري)</label><input id="cv-email" type="email" maxlength="120" autocomplete="email"></div></div>
-<div class="row"><div><label for="cv-photo">صورة شخصية (اختيارية)</label><input id="cv-photo" type="file" accept="image/jpeg,image/png,image/webp"><small class="muted">JPG أو PNG أو WebP، حتى 2 ميغابايت. الصورة تبقى في جهازك.</small></div><div><label for="cv-link">LinkedIn أو رابط مهني (اختياري)</label><input id="cv-link" type="url" maxlength="180" placeholder="https://..."></div></div><label for="cv-summary">نبذة قصيرة عنك</label><textarea id="cv-summary" maxlength="700" placeholder="مثال: شخص جدي ومنظم، نحب نتعلم ونخدم ضمن فريق..."></textarea>
+<div class="row"><div><label for="cv-photo">صورة شخصية (اختيارية)</label><input id="cv-photo" type="file" accept="image/*"><small class="muted">JPG أو PNG أو WebP، حتى 2 ميغابايت. الصورة تبقى في جهازك.</small></div><div><label for="cv-link">LinkedIn أو رابط مهني (اختياري)</label><input id="cv-link" type="url" maxlength="180" placeholder="https://..."></div></div><label for="cv-summary">نبذة قصيرة عنك</label><textarea id="cv-summary" maxlength="700" placeholder="مثال: شخص جدي ومنظم، نحب نتعلم ونخدم ضمن فريق..."></textarea>
 <button type="button" id="cv-suggest-summary" style="background:#28745f;margin:8px 0 14px">✨ اقترحلي نبذة مهنية حسب معلوماتي</button><small class="muted">الاقتراح يعتمد كان على المعلومات اللي كتبتها. ما يخترعش خبرة ولا شهادات، وتنجم تبدّلو قبل تحضير الـ CV.</small>
 <label for="cv-education">المستوى الدراسي والتكوين</label><textarea id="cv-education" maxlength="700" placeholder="مثال: السنة التاسعة أساسي، شهادة تكوين مهني..."></textarea>
 <label for="cv-experience">الخبرة المهنية (اكتب «دون خبرة» إذا ما عندكش)</label><textarea id="cv-experience" maxlength="1000" placeholder="اسم المؤسسة، الخطة، والمدة. ما تكتبش تجربة ما عشتهاش."></textarea>
@@ -695,7 +695,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="st">نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
 <label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
 <div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
-<label for="simage">صورة الخدمة (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="simage" type="file" accept="image/jpeg,image/png,image/webp"><div id="simage-preview" class="muted" aria-live="polite"></div><label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="simage">صورة الخدمة (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="simage" type="file" accept="image/*"><div id="simage-preview" class="muted" aria-live="polite"></div><label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <div id="turnstile-services" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
 <button type="button" id="close-service-form" style="margin-top:10px;background:#647875">إغلاق الاستمارة</button>
@@ -712,7 +712,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="jk">نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
 <label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
 <div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
-<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jimage">صورة الإعلان (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="jimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="jimage-preview" class="muted" aria-live="polite"></div><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jimage">صورة الإعلان (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="jimage" type="file" accept="image/*"><div id="jimage-preview" class="muted" aria-live="polite"></div><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <div id="turnstile-jobs" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="jobs">حفظ الإعلان</button><button type="button" data-close-form="job-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -727,7 +727,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="rp">نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
 <div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
 <div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1"></div></div>
-<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="rimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="rimage" type="file" accept="image/*"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <div id="turnstile-realty" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -737,7 +737,7 @@ main>section input[type="file"]::file-selector-button{
 <div id="market-form" class="hidden"><div class="box"><h3>نشر إعلان في السوق</h3>
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
-<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mimage">صورة المنتج (اختيارية، JPG أو PNG أو WebP، حتى 3 ميغابايت)</label><input id="mimage" type="file" accept="image/jpeg,image/png,image/webp"><div id="mimage-preview" class="muted" aria-live="polite"></div><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="mpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mimage">صورة المنتج (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="mimage" type="file" accept="image/*"><div id="mimage-preview" class="muted" aria-live="polite"></div><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="mpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 <div id="turnstile-market" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="market">إرسال الإعلان</button><button type="button" data-close-form="market-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -1147,6 +1147,35 @@ function resetTurnstile(table){
  }
 }
 
+async function prepareImageForUpload(file){
+ if(!file)return null;
+ if(!file.type||!file.type.startsWith("image/"))throw new Error("الملف المختار موش صورة.");
+ let bitmap;
+ try{bitmap=await createImageBitmap(file);}catch(error){throw new Error("التلفون ما نجّمش يقرأ صيغة الصورة. جرّب صورة JPG أو PNG من الاستوديو.");}
+ try{
+  const maxSide=1920,scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+  const canvas=document.createElement("canvas");
+  canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+  const context=canvas.getContext("2d");if(!context)throw new Error("تعذّر تجهيز الصورة في هذا المتصفح.");
+  context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  let result=null;
+  for(const quality of [0.86,0.78,0.70,0.62]){
+   result=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",quality));
+   if(result&&result.type==="image/webp"&&result.size<=2800000)break;
+  }
+  if(!result||result.type!=="image/webp")throw new Error("المتصفح ما يدعمش تجهيز الصورة. جرّب JPG أو PNG.");
+  if(result.size>2800000){
+   const smaller=document.createElement("canvas"),ratio=1600/Math.max(canvas.width,canvas.height);
+   smaller.width=Math.max(1,Math.round(canvas.width*ratio));smaller.height=Math.max(1,Math.round(canvas.height*ratio));
+   const smallerContext=smaller.getContext("2d");if(!smallerContext)throw new Error("تعذّر تجهيز الصورة.");
+   smallerContext.drawImage(canvas,0,0,smaller.width,smaller.height);
+   result=await new Promise(resolve=>smaller.toBlob(resolve,"image/webp",0.68));
+  }
+  if(!result||result.size>2800000)throw new Error("الصورة كبيرة برشا حتى بعد تجهيزها. جرّب صورة أخرى.");
+  return new File([result],"product-image.webp",{type:"image/webp",lastModified:Date.now()});
+ }finally{bitmap.close();}
+}
+
 async function sendData(table){
 if(!db){alert("الاتصال بقاعدة البيانات غير متوفر حالياً. تأكد من الإنترنت.");return;}
 let target="",data={},required=[];
@@ -1187,15 +1216,17 @@ try{
 const imageInputs={services:"simage",jobs:"jimage",realty:"rimage",market:"mimage"};
 const imageInput=el(imageInputs[table]);
 const selectedFile=imageInput&&imageInput.files&&imageInput.files[0];
-if(selectedFile&&(!["image/jpeg","image/png","image/webp"].includes(selectedFile.type)||selectedFile.size>3145728)){
- alert("الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.");return;
+let uploadFile=null;
+if(selectedFile){
+ try{uploadFile=await prepareImageForUpload(selectedFile);}
+ catch(imageError){alert(imageError.message||"ما نجّمش نجهّز الصورة. جرّب صورة أخرى.");return;}
 }
 if(!ensureTurnstile(table))return;
 const form=new FormData();
 form.append("table",target);
 form.append("data",JSON.stringify(data));
 form.append("turnstileToken",turnstileTokens[table]);
-if(selectedFile)form.append("file",selectedFile);
+if(uploadFile)form.append("file",uploadFile);
 const submitResponse=await fetch(SUPABASE_URL+"/functions/v1/submit-public-post",{
  method:"POST",headers:{"apikey":SUPABASE_KEY},body:form
 });
@@ -1251,7 +1282,7 @@ function setupImagePreview(inputId){
   clearImagePreviewUrl(inputId);
   const file=input.files&&input.files[0];
   if(!file){preview.textContent="";return;}
-  if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728){input.value="";preview.textContent="الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.";return;}
+  if(!file.type||!file.type.startsWith("image/")){input.value="";preview.textContent="اختار ملف صورة من التلفون.";return;}
   const localUrl=URL.createObjectURL(file);
   imagePreviewUrls[inputId]=localUrl;
   preview.innerHTML='<img src="'+localUrl+'" alt="معاينة الصورة المختارة" style="display:block;max-width:180px;max-height:140px;object-fit:contain;border-radius:10px;margin-top:8px">';
@@ -1265,9 +1296,9 @@ if(marketImageInput){
   const file=marketImageInput.files&&marketImageInput.files[0],preview=el("mimage-preview");
   if(!preview)return;
   if(!file){preview.textContent="";return;}
-  if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728){
+  if(!file.type||!file.type.startsWith("image/")){
    marketImageInput.value="";
-   preview.textContent="الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.";
+   preview.textContent="اختار ملف صورة من التلفون.";
    return;
   }
   const localUrl=URL.createObjectURL(file);
