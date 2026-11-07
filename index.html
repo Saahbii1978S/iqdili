@@ -1212,9 +1212,10 @@ required.forEach(id=>{if(el(id))el(id).value="";});
 ["sd","ji","ri","md","q","jt","mn"].forEach(id=>{const field=el(id),counter=el("counter-"+id);if(field&&counter)counter.textContent=field.value.length+" / "+field.maxLength+" حرف";});
 ["sa","ja","ra","ma"].forEach(id=>{if(el(id))el(id).value="صفاقس";});
 ["spublic","jpublic","rpublic","mpublic"].forEach(id=>{if(el(id))el(id).checked=false;});
+clearImagePreviewUrl("mimage");
 if(marketImageInput)marketImageInput.value="";
 if(el("mimage-preview"))el("mimage-preview").textContent="";
-["simage","jimage","rimage"].forEach(id=>{if(el(id))el(id).value="";const preview=el(id+"-preview");if(preview)preview.textContent="";});
+["simage","jimage","rimage"].forEach(id=>{clearImagePreviewUrl(id);if(el(id))el(id).value="";const preview=el(id+"-preview");if(preview)preview.textContent="";});
 ["st","jk","jn","rt","rp","mt","mc"].forEach(id=>{if(el(id))el(id).selectedIndex=0;});
 await loadData();
 }catch(error){console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
@@ -1239,14 +1240,20 @@ function marketImageHtml(paths,title){
  }).join("");
 }
 const marketImageInput=el("mimage");
+const imagePreviewUrls={};
+function clearImagePreviewUrl(inputId){
+ if(imagePreviewUrls[inputId]){URL.revokeObjectURL(imagePreviewUrls[inputId]);delete imagePreviewUrls[inputId];}
+}
 function setupImagePreview(inputId){
  const input=el(inputId),preview=el(inputId+"-preview");
  if(!input||!preview)return;
  input.addEventListener("change",()=>{
+  clearImagePreviewUrl(inputId);
   const file=input.files&&input.files[0];
   if(!file){preview.textContent="";return;}
   if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>3145728){input.value="";preview.textContent="الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.";return;}
   const localUrl=URL.createObjectURL(file);
+  imagePreviewUrls[inputId]=localUrl;
   preview.innerHTML='<img src="'+localUrl+'" alt="معاينة الصورة المختارة" style="display:block;max-width:180px;max-height:140px;object-fit:contain;border-radius:10px;margin-top:8px">';
   preview.insertAdjacentHTML("beforeend",'<p class="muted">الصورة جاهزة للإرسال مع الإعلان.</p>');
  });
@@ -1254,6 +1261,7 @@ function setupImagePreview(inputId){
 ["simage","jimage","rimage"].forEach(setupImagePreview);
 if(marketImageInput){
  marketImageInput.addEventListener("change",()=>{
+  clearImagePreviewUrl("mimage");
   const file=marketImageInput.files&&marketImageInput.files[0],preview=el("mimage-preview");
   if(!preview)return;
   if(!file){preview.textContent="";return;}
@@ -1263,6 +1271,7 @@ if(marketImageInput){
    return;
   }
   const localUrl=URL.createObjectURL(file);
+  imagePreviewUrls.mimage=localUrl;
   preview.innerHTML='<img src="'+localUrl+'" alt="معاينة الصورة المختارة" style="display:block;max-width:180px;max-height:140px;object-fit:contain;border-radius:10px;margin-top:8px">';
   preview.insertAdjacentHTML("beforeend",'<p class="muted">الصورة جاهزة للإرسال مع الإعلان.</p>');
  });
