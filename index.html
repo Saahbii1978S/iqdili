@@ -426,6 +426,7 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 <div class="row"><div><label for="cv-job">الوظيفة المطلوبة</label><input id="cv-job" maxlength="100" placeholder="مثال: عامل إنتاج / مساعد إداري"></div><div><label for="cv-city">المدينة</label><input id="cv-city" maxlength="80" placeholder="صفاقس"></div></div>
 <div class="row"><div><label for="cv-phone">الهاتف (اختياري)</label><input id="cv-phone" type="tel" maxlength="25" autocomplete="tel"></div><div><label for="cv-email">البريد الإلكتروني (اختياري)</label><input id="cv-email" type="email" maxlength="120" autocomplete="email"></div></div>
 <div class="row"><div><label for="cv-photo">صورة شخصية (اختيارية)</label><input id="cv-photo" type="file" accept="image/jpeg,image/png,image/webp"><small class="muted">JPG أو PNG أو WebP، حتى 2 ميغابايت. الصورة تبقى في جهازك.</small></div><div><label for="cv-link">LinkedIn أو رابط مهني (اختياري)</label><input id="cv-link" type="url" maxlength="180" placeholder="https://..."></div></div><label for="cv-summary">نبذة قصيرة عنك</label><textarea id="cv-summary" maxlength="700" placeholder="مثال: شخص جدي ومنظم، نحب نتعلم ونخدم ضمن فريق..."></textarea>
+<button type="button" id="cv-suggest-summary" style="background:#28745f;margin:8px 0 14px">✨ اقترحلي نبذة مهنية حسب معلوماتي</button><small class="muted">الاقتراح يعتمد كان على المعلومات اللي كتبتها. ما يخترعش خبرة ولا شهادات، وتنجم تبدّلو قبل تحضير الـ CV.</small>
 <label for="cv-education">المستوى الدراسي والتكوين</label><textarea id="cv-education" maxlength="700" placeholder="مثال: السنة التاسعة أساسي، شهادة تكوين مهني..."></textarea>
 <label for="cv-experience">الخبرة المهنية (اكتب «دون خبرة» إذا ما عندكش)</label><textarea id="cv-experience" maxlength="1000" placeholder="اسم المؤسسة، الخطة، والمدة. ما تكتبش تجربة ما عشتهاش."></textarea>
 <label for="cv-skills">المهارات</label><textarea id="cv-skills" maxlength="700" placeholder="مثال: العمل ضمن فريق، الانضباط، استعمال الحاسوب..."></textarea>
@@ -635,6 +636,32 @@ window.show=show;
 
 
 const cvFields=["name","job","city","phone","email","summary","education","experience","skills","languages","training","license","link"];
+el("cv-suggest-summary").addEventListener("click",()=>{
+ const job=cvValue("job"),education=cvValue("education"),experience=cvValue("experience"),skills=cvValue("skills"),training=cvValue("training");
+ const fr=el("cv-language").value==="fr";
+ const parts=[];
+ if(fr){
+  if(job) parts.push("Je souhaite mettre mes compétences au service d'un poste de "+job+".");
+  else parts.push("Je souhaite intégrer une équipe et développer mes compétences professionnelles.");
+  if(experience && !/^(sans expérience|aucune|néant|دون خبرة|ما عنديش خبرة)$/i.test(experience)) parts.push("Mon parcours comprend : "+experience.replace(/\s+/g," ").slice(0,220)+".");
+  else parts.push("Motivé(e) à apprendre, je suis à la recherche d'une première opportunité professionnelle.");
+  if(education) parts.push("Formation : "+education.replace(/\s+/g," ").slice(0,180)+".");
+  if(skills) parts.push("Compétences : "+skills.replace(/\s+/g," ").slice(0,180)+".");
+  if(training) parts.push("Stages et formations : "+training.replace(/\s+/g," ").slice(0,160)+".");
+ }else{
+  if(job) parts.push("نطمح نخدم في مجال "+job+" ونوظّف قدراتي باش نكون إضافة إيجابية لفريق العمل.");
+  else parts.push("نطمح للاندماج في فريق عمل جدي وتطوير قدراتي المهنية.");
+  if(experience && !/^(دون خبرة|ما عنديش خبرة|بدون خبرة|sans expérience|aucune|néant)$/i.test(experience)) parts.push("عندي تجربة مهنية تتمثّل في: "+experience.replace(/\s+/g," ").slice(0,220)+".");
+  else parts.push("متحمّس للتعلّم واكتساب الخبرة، ونبحث على فرصة مهنية أولى نثبت فيها جديتي واستعدادي للعمل.");
+  if(education) parts.push("المستوى الدراسي والتكوين: "+education.replace(/\s+/g," ").slice(0,180)+".");
+  if(skills) parts.push("من المهارات اللي نذكرها: "+skills.replace(/\s+/g," ").slice(0,180)+".");
+  if(training) parts.push("شاركت في التربصات أو الدورات التالية: "+training.replace(/\s+/g," ").slice(0,160)+".");
+ }
+ el("cv-summary").value=parts.join(" ");
+ el("cv-status").textContent="حضّرنالك نبذة أولية حسب المعلومات اللي كتبتها. راجعها وعدّلها إذا تحب.";
+ el("cv-summary").focus();
+});
+
 let cvPlainText="";
 let cvPhotoData="";
 function cvValue(id){return (el("cv-"+id)?.value||"").trim();}
