@@ -1229,7 +1229,7 @@ if(el("mimage-preview"))el("mimage-preview").textContent="";
 ["simage","jimage","rimage"].forEach(id=>{clearImagePreviewUrl(id);if(el(id))el(id).value="";const preview=el(id+"-preview");if(preview)preview.textContent="";});
 ["st","jk","jn","rt","rp","mt","mc"].forEach(id=>{if(el(id))el(id).selectedIndex=0;});
 await loadData();
-}catch(error){console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
+}catch(error){resetTurnstile(table);console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
 }
 
 function listingImageHtml(paths,title,folder){
