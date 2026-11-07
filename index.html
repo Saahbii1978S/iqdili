@@ -1379,7 +1379,7 @@ async function renderAdmin(){
     const statusLabel={pending:"في انتظار المراجعة",approved:"مقبول ومنشور",rejected:"مرفوض",unpublished:"ملغى النشر"}[status]||status;
     const phone=String(row.phone||"").trim();
     const phoneHtml=phone ? '<p>📞 <a href="tel:'+phone.replace(/[^+0-9]/g,"") + '">' + adminEscape(phone) + '</a></p>' : "";
-    const searchable=[title,desc,city,row.id,phone].join(" ").toLocaleLowerCase();
+    const searchable=normalizeListingSearch([title,desc,city,row.id,phone].join(" "));
     const likelyDemo=/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(searchable);
     const protectedDemo=(protectedDemoIds[item.table]||[]).includes(String(row.id)) || (likelyDemo && ["market_posts","real_estate_posts"].includes(item.table));
     const demoLabel=protectedDemo
@@ -1397,7 +1397,7 @@ async function renderAdmin(){
 }
 function applyAdminSearch(){
   const input=el("admin-search");
-  const query=input ? input.value.trim().toLocaleLowerCase() : "";
+  const query=input ? normalizeListingSearch(input.value.trim()) : "";
   const category=el("admin-category-filter")?.value||"all";
   const status=el("admin-status-filter")?.value||"all";
   document.querySelectorAll("[data-admin-entry]").forEach(entry=>{
