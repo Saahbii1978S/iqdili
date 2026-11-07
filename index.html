@@ -853,6 +853,8 @@ const allowed=["home","services","jobs","realty","market","good","cv","ask","sav
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
+const activeNavButton=document.querySelector('nav [data-page="'+id+'"]');
+if(activeNavButton)activeNavButton.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"});
 window.scrollTo({top:0,behavior:"auto"});
 if(["saved","market","services","jobs","realty"].includes(id)){setupListingSearch();loadData();}
 if(id==="admin" && db) refreshAdminState().catch(()=>{});
@@ -956,6 +958,7 @@ document.addEventListener("click",event=>{
  const page=button.dataset.page;
  if(!page) return;
  event.preventDefault();
+ event.stopImmediatePropagation();
  show(page);
 },true);
 
