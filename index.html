@@ -1105,7 +1105,6 @@ db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
- else if(el("account") && !el("account").classList.contains("hidden")){refreshMemberState().catch(()=>{});}
 });
 authListenerInstalled=true;
 }
