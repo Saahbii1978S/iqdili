@@ -761,7 +761,7 @@ main>section input[type="file"]::file-selector-button{
 </div>
 </section>
 
-<section id="ask" class="hidden"><div class="box"><h2>اسأل أحلى توانسة</h2><label for="q">اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
+<section id="ask" class="hidden"><div class="box"><h2>اسأل أحلى توانسة</h2><label for="q">اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف.</p><div id="ask-turnstile" style="margin-top:12px"></div><p class="muted">قبل إرسال السؤال، كمّل التحقق الآمن من Cloudflare.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
 
 <section id="saved" class="hidden"><div class="box">
 <h2>المنشورات الحية</h2><h3>🔄 طلبات الخدمات</h3><input id="services-search" maxlength="100" type="search" placeholder="فتّش في طلبات الخدمات..." aria-label="البحث في طلبات الخدمات"><div id="sl" aria-live="polite"></div>
@@ -1538,10 +1538,22 @@ el("admin-login-button").addEventListener("click",async()=>{
  });
 
 
+let askTurnstileWidget=null,askTurnstileToken="";
+function ensureAskTurnstile(){
+ if(askTurnstileToken)return true;
+ if(!window.turnstile||typeof window.turnstile.render!=="function"){alert("حماية Cloudflare مازالت تتحمّل. استنّى شوية وعاود.");return false;}
+ if(askTurnstileWidget===null){
+  try{askTurnstileWidget=window.turnstile.render(el("ask-turnstile"),{sitekey:TURNSTILE_SITE_KEY,callback:(token)=>{askTurnstileToken=token;},"expired-callback":()=>{askTurnstileToken="";},"error-callback":()=>{askTurnstileToken="";}});}
+  catch(error){console.error("Ask Turnstile render:",error);alert("تعذّر تشغيل التحقق. حدّث الصفحة وعاود.");return false;}
+  alert("كمّل التحقق من Cloudflare، وبعد اضغط على إرسال مرة أخرى.");return false;
+ }
+ alert("كمّل التحقق من Cloudflare قبل إرسال السؤال.");return false;
+}
 el("ask-button").addEventListener("click",async function(){
 const question=val("q").trim();
 if(!question){alert("اكتب سؤالك أولاً، وما تبعثش فراغات فقط.");return;}
 if(question.length>1000){alert("السؤال طويل برشة. اختصره إلى 1000 حرف.");return;}
+if(!ensureAskTurnstile())return;
 const button=el("ask-button"), answer=el("answer");
 answer.style.direction="rtl";
 answer.style.textAlign="right";
@@ -1552,8 +1564,9 @@ answer.classList.remove("hidden");answer.textContent="قاعد نفهم في س�
 try{
 const response=await fetch(SUPABASE_URL+"/functions/v1/ask-iqdili",{
 method:"POST",headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},
-body:JSON.stringify({question})
+body:JSON.stringify({question,turnstileToken:askTurnstileToken})
 });
+askTurnstileToken="";if(window.turnstile&&askTurnstileWidget!==null){try{window.turnstile.reset(askTurnstileWidget);}catch(resetError){console.warn("Ask Turnstile reset:",resetError);}}
 const responseText=await response.text();
 let result={};
 try{result=responseText?JSON.parse(responseText):{};}catch(parseError){
