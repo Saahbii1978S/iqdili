@@ -289,7 +289,7 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 @media(min-width:1100px){
   main{padding-top:32px}
-  .cards{gap:18px}
+  .cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
   .cards .card{padding:23px 18px}
 }
 @media(min-width:700px) and (max-width:1099px){
