@@ -560,6 +560,36 @@ main>section .muted{line-height:1.8}
   main>section:not(#home){animation:none}
 }
 
+
+/* تحسين سهولة استعمال النماذج والنتائج باللمس على الهاتف */
+main>section input:not([type="checkbox"]):not([type="radio"]),
+main>section select,
+main>section textarea{
+  width:100%;max-width:100%;min-width:0;
+}
+main>section .entry,
+main>section [aria-live="polite"]{
+  overflow-wrap:anywhere;word-break:normal;
+}
+main>section button,
+main>section input[type="file"]::file-selector-button{
+  touch-action:manipulation;
+}
+@media(max-width:699px){
+  main>section input:not([type="checkbox"]):not([type="radio"]),
+  main>section select,
+  main>section textarea{
+    min-height:46px;font-size:16px;padding:11px 12px;
+  }
+  main>section textarea{min-height:116px;line-height:1.75}
+  main>section input[type="file"]{font-size:14px;min-height:48px}
+  main>section button{min-height:45px}
+  main>section .entry{overflow:hidden}
+  main>section .entry img{max-width:100%;height:auto;object-fit:contain}
+  #saved .box{padding:12px}
+  #saved .box>input[type="search"]{margin-bottom:12px}
+}
+
 </style>
 </head>
 <body>
