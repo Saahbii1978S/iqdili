@@ -1636,6 +1636,26 @@ document.addEventListener("DOMContentLoaded",showInitialPage);
 if(document.readyState!=="loading")showInitialPage();
 })();
 </script>
+<script id="ahla-navigation-fallback">
+/* Keep section navigation available even if an unrelated app script fails. */
+if (typeof window.show !== "function") {
+  window.show = function (id) {
+    const pages = ["home","services","jobs","realty","market","good","cv","ask","saved","admin","reset-password"];
+    if (!pages.includes(id)) return;
+    pages.forEach(function (name) {
+      const section = document.getElementById(name);
+      if (section) section.classList.toggle("hidden", name !== id);
+    });
+    document.querySelectorAll("[data-page]").forEach(function (button) {
+      const active = button.dataset.page === id;
+      button.classList.toggle("active", active);
+      if (active) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+}
+</script>
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
