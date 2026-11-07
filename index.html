@@ -1304,13 +1304,19 @@ setupListingSearch();
 }catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
 
+function normalizeListingSearch(value){
+ return String(value||"").normalize("NFKC")
+  .replace(/[\u064B-\u065F\u0670\u0640]/g,"")
+  .replace(/[أإآ]/g,"ا").replace(/ى/g,"ي")
+  .toLocaleLowerCase("ar");
+}
 function filterListing(inputId,listId){
  const input=el(inputId),list=el(listId);if(!input||!list)return;
- const query=input.value.trim().toLocaleLowerCase();
+ const query=normalizeListingSearch(input.value.trim());
  const entries=[...list.querySelectorAll(".entry")];
  let visible=0;
  entries.forEach(entry=>{
-  const match=!query||entry.textContent.toLocaleLowerCase().includes(query);
+  const match=!query||normalizeListingSearch(entry.textContent).includes(query);
   entry.classList.toggle("hidden",!match);
   if(match)visible++;
  });
