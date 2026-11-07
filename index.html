@@ -1138,7 +1138,8 @@ if(typeof result.answer!=="string"||!result.answer.trim()){
  answer.textContent="ما وصلتناش إجابة واضحة. عاود المحاولة.";
 }else{
  answer.replaceChildren();
- answer.append(document.createTextNode(result.answer.trim().slice(0,6000)));
+ const formattedAnswer=result.answer.trim().slice(0,6000).replace(/\\r\\n|\\n|\\r/g,"\n");
+ answer.append(document.createTextNode(formattedAnswer));
  if(Array.isArray(result.sources)&&result.sources.length){
   const sourceBox=document.createElement("div");
   sourceBox.style.marginTop="10px";
