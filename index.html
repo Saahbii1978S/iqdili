@@ -1133,7 +1133,7 @@ function resetTurnstile(table){
 }
 
 const pendingImagePaths={};
-const pendingImageFiles={};
+const pendingImageFileKeys={};
 async function sendData(table){
 if(!db){alert("الاتصال بقاعدة البيانات غير متوفر حالياً. تأكد من الإنترنت.");return;}
 if(!ensureTurnstile(table))return;
@@ -1179,7 +1179,8 @@ if(selectedFile){
  if(!["image/jpeg","image/png","image/webp"].includes(selectedFile.type)||selectedFile.size>3145728){
   alert("الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.");return;
  }
- if(pendingImageFiles[table]!==selectedFile || !pendingImagePaths[table]){
+ const selectedFileKey=[selectedFile.name,selectedFile.size,selectedFile.lastModified,selectedFile.type].join("|");
+ if(pendingImageFileKeys[table]!==selectedFileKey || !pendingImagePaths[table]){
   const form=new FormData();
   form.append("category",table);
   form.append("file",selectedFile);
@@ -1194,14 +1195,14 @@ if(selectedFile){
    alert(uploadResult.error||"ما نجّمش نرفع الصورة في المخزن الخاص. عاود المحاولة.");return;
   }
   pendingImagePaths[table]=uploadResult.path;
-  pendingImageFiles[table]=selectedFile;
+  pendingImageFileKeys[table]=selectedFileKey;
   alert("ترفعَت الصورة في مخزن خاص وآمن. كمّل تحقق Cloudflare مرة ثانية، وبعد اضغط إرسال الإعلان.");
   return;
  }
  data.image_urls=[pendingImagePaths[table]];
 }else{
  pendingImagePaths[table]="";
- pendingImageFiles[table]=null;
+ pendingImageFileKeys[table]="";
  data.image_urls=[];
 }
 const submitResponse=await fetch(SUPABASE_URL+"/functions/v1/submit-public-post",{
