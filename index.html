@@ -1147,11 +1147,8 @@ function resetTurnstile(table){
  }
 }
 
-const pendingImagePaths={};
-const pendingImageFileKeys={};
 async function sendData(table){
 if(!db){alert("الاتصال بقاعدة البيانات غير متوفر حالياً. تأكد من الإنترنت.");return;}
-if(!ensureTurnstile(table))return;
 let target="",data={},required=[];
 if(table==="services"){
 target="service_requests";
@@ -1190,41 +1187,18 @@ try{
 const imageInputs={services:"simage",jobs:"jimage",realty:"rimage",market:"mimage"};
 const imageInput=el(imageInputs[table]);
 const selectedFile=imageInput&&imageInput.files&&imageInput.files[0];
-if(selectedFile){
- if(!["image/jpeg","image/png","image/webp"].includes(selectedFile.type)||selectedFile.size>3145728){
-  alert("الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.");return;
- }
- const selectedFileKey=[selectedFile.name,selectedFile.size,selectedFile.lastModified,selectedFile.type].join("|");
- if(pendingImageFileKeys[table]!==selectedFileKey || !pendingImagePaths[table]){
-  const form=new FormData();
-  form.append("category",table);
-  form.append("file",selectedFile);
-  form.append("turnstileToken",turnstileTokens[table]);
-  const uploadResponse=await fetch(SUPABASE_URL+"/functions/v1/upload-pending-image",{
-   method:"POST",headers:{"apikey":SUPABASE_KEY},body:form
-  });
-  const uploadResult=await uploadResponse.json().catch(()=>({}));
-  resetTurnstile(table);
-  if(!uploadResponse.ok||!uploadResult.ok||typeof uploadResult.path!=="string"){
-   console.error("Private image upload failed:",uploadResult);
-   alert(uploadResult.error||"ما نجّمش نرفع الصورة في المخزن الخاص. عاود المحاولة.");return;
-  }
-  pendingImagePaths[table]=uploadResult.path;
-  pendingImageFileKeys[table]=selectedFileKey;
-  alert("ترفعَت الصورة في مخزن خاص وآمن. كمّل تحقق Cloudflare مرة ثانية، وبعد اضغط إرسال الإعلان.");
-  return;
- }
- data.image_urls=[pendingImagePaths[table]];
-}else{
- pendingImagePaths[table]="";
- pendingImageFileKeys[table]="";
- data.image_urls=[];
+if(selectedFile&&(!["image/jpeg","image/png","image/webp"].includes(selectedFile.type)||selectedFile.size>3145728)){
+ alert("الصورة يلزم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 3 ميغابايت.");return;
 }
+if(!ensureTurnstile(table))return;
+const form=new FormData();
+form.append("table",target);
+form.append("data",JSON.stringify(data));
+form.append("turnstileToken",turnstileTokens[table]);
+if(selectedFile)form.append("file",selectedFile);
 const submitResponse=await fetch(SUPABASE_URL+"/functions/v1/submit-public-post",{
- method:"POST",
- headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY},
- body:JSON.stringify({table:target,data,turnstileToken:turnstileTokens[table]})
- });
+ method:"POST",headers:{"apikey":SUPABASE_KEY},body:form
+});
 const submitResult=await submitResponse.json().catch(()=>({}));
 resetTurnstile(table);
 if(!submitResponse.ok){
