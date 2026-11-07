@@ -374,6 +374,110 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
  body.cv-printing #cv-preview{font-size:11pt}
  body.cv-printing #cv-preview .cv-name{font-size:23pt}
 }
+
+/* واجهة محسّنة: ترتيب أوضح ولمسات متناسقة على الهاتف والحاسوب */
+:root{
+  --brand:#087f78;--brand-dark:#075b60;
+  --shadow:0 10px 28px rgba(24,48,68,.075);
+}
+body{background:linear-gradient(180deg,#f2f8f7 0,#f7f9fc 340px,#f5f8fb 100%)}
+header{
+  background:radial-gradient(circle at 12% 8%,rgba(13,148,136,.13),transparent 28%),
+             linear-gradient(135deg,#fff 0%,#edf8f6 54%,#edf3fb 100%);
+  padding-bottom:34px;
+}
+header .topbar{margin-bottom:16px}
+header .topbar-brand:before{
+  border-radius:20px;box-shadow:0 9px 24px rgba(8,127,120,.25);
+}
+header small{box-shadow:0 4px 12px rgba(8,127,120,.06)}
+nav{
+  gap:9px;padding-top:12px;padding-bottom:12px;
+  border-bottom-color:#dce8e9;
+}
+nav button{transition:background .18s ease,color .18s ease,transform .18s ease}
+nav button.active,nav button[aria-current="page"]{transform:translateY(-1px)}
+main{padding-top:clamp(20px,3.5vw,38px)}
+.note{box-shadow:0 4px 14px rgba(24,48,68,.035)}
+#home>.box:first-child{
+  position:relative;isolation:isolate;overflow:hidden;
+  min-height:180px;display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(25px,4vw,42px);
+  background:
+    radial-gradient(circle at 92% 20%,rgba(13,148,136,.13),transparent 26%),
+    linear-gradient(120deg,#eaf6f3 0%,#f7fbfc 60%,#eef4fb 100%);
+  border:1px solid #d7eae6;border-right:6px solid var(--brand);
+  border-radius:22px;
+}
+#home>.box:first-child:after{
+  content:"";position:absolute;z-index:-1;left:22px;bottom:-62px;
+  width:170px;height:170px;border:22px solid rgba(8,127,120,.055);
+  border-radius:50%;
+}
+#home>.box:first-child h2{font-size:clamp(27px,3.8vw,36px);margin-bottom:8px}
+#home>.box:first-child p{max-width:760px;color:#536a78;font-size:clamp(16px,2vw,19px);margin:0}
+.cards{gap:17px}
+.cards .card{
+  min-height:224px;padding:23px 18px;border-radius:20px;
+  border-color:#e1e9ee;box-shadow:0 7px 22px rgba(24,48,68,.055);
+}
+.cards .card:before{height:5px}
+.cards .card .icon{
+  width:64px;height:64px;border-radius:20px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.8);
+  font-size:33px;margin-bottom:12px;
+}
+.cards .card h3{font-size:20px}
+.cards .card p{font-size:15px;line-height:1.8}
+.cards .card button{border-radius:999px;min-height:44px;padding-inline:20px}
+.cards .card:hover{transform:translateY(-4px);box-shadow:0 15px 30px rgba(24,48,68,.11)}
+section:not(#home){scroll-margin-top:100px}
+section>h2{margin-top:8px;padding-bottom:13px}
+.box,.entry{border-radius:18px}
+.box{box-shadow:0 7px 22px rgba(24,48,68,.045)}
+input,select,textarea{border-color:#d5e1e7;border-radius:13px}
+button{border-radius:13px}
+button:focus-visible,nav a:focus-visible{outline:3px solid rgba(217,164,65,.7);outline-offset:3px}
+@media(min-width:1100px){
+  nav{padding-left:max(24px,calc((100vw - 1320px)/2));padding-right:max(24px,calc((100vw - 1320px)/2))}
+  .cards{gap:20px}
+}
+@media(max-width:699px){
+  header{padding:20px 12px 22px}
+  header .topbar{gap:12px}
+  header .topbar-brand:before{width:46px;height:46px}
+  header>div:not(.topbar){font-size:17px;line-height:1.6}
+  header small{font-size:12px;padding:6px 12px}
+  nav{
+    grid-template-rows:repeat(2,auto);grid-auto-flow:column;
+    grid-auto-columns:max-content;gap:7px;padding:9px 10px;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+  }
+  nav button,nav a[href="#admin-contact"]{
+    min-width:112px;min-height:43px;border-radius:12px;
+    font-size:13px;padding:8px 10px;scroll-snap-align:start;
+  }
+  main{padding:13px 10px 28px}
+  #home>.box:first-child{min-height:160px;padding:23px 19px;border-radius:18px}
+  #home>.box:first-child h2{font-size:25px}
+  #home>.box:first-child p{font-size:15px;line-height:1.8}
+  .cards{gap:10px}
+  .cards .card{min-height:194px;padding:16px 10px;border-radius:16px}
+  .cards .card .icon{width:50px;height:50px;border-radius:15px;font-size:26px;margin-bottom:8px}
+  .cards .card h3{font-size:16px;line-height:1.55}
+  .cards .card p{font-size:12.5px;line-height:1.65}
+  .cards .card button{font-size:13px;min-height:40px}
+  section>h2{font-size:23px;margin-bottom:14px}
+  .box{padding:15px;border-radius:15px}
+}
+@media(max-width:360px){
+  #home>.box:first-child h2{font-size:22px}
+  .cards{grid-template-columns:1fr}
+  .cards .card{min-height:0;padding:17px}
+  .cards .card p{font-size:14px}
+  .cards .card button{width:auto;min-width:130px}
+}
+
 </style>
 </head>
 <body>
