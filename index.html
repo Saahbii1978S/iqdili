@@ -1368,7 +1368,7 @@ if(typeof result.answer!=="string"||!result.answer.trim()){
   const heading=document.createElement("strong");
   heading.textContent=String(result.sourcesLabel||"مصادر رسمية:").slice(0,180);
   sourceBox.appendChild(heading);
-  result.sources.slice(0,5).forEach(source=>{
+  result.sources.slice(0,6).forEach(source=>{
    try{
     const url=new URL(source.url);
     if(url.protocol!=="https:"||!["www.commune-tunis.gov.tn","khadamet.gov.tn","www.social.tn","social.tn","www.cnss.tn","cnss.tn","diwan.tn","www.diwan.tn","lois.tn","www.lois.tn"].includes(url.hostname))return;
