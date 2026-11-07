@@ -478,6 +478,88 @@ button:focus-visible,nav a:focus-visible{outline:3px solid rgba(217,164,65,.7);o
   .cards .card button{width:auto;min-width:130px}
 }
 
+
+/* تحسين صفحات الأقسام والنماذج والنتائج */
+main>section:not(#home){animation:section-arrive .22s ease both}
+@keyframes section-arrive{from{opacity:.72;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+main>section>h2{
+  display:flex;align-items:center;gap:10px;
+  margin:6px 0 20px;padding:0 15px 13px 0;
+  color:#173f50;letter-spacing:.1px;
+}
+main>section>.box{margin-bottom:17px}
+main>section>.box>h3{
+  display:flex;align-items:center;gap:8px;
+  margin:2px 0 12px;color:#174b55;font-size:clamp(18px,2.2vw,21px)
+}
+main>section>.box>p:first-child{color:#586c7b}
+main>section input[type="search"]{
+  min-height:49px;padding-right:44px;
+  background:#fbfdfd url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23087f78' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-4-4'/%3E%3C/svg%3E") no-repeat right 14px center;
+  background-size:19px;border-color:#d7e6e4;
+}
+main>section input[type="search"]:focus{background-color:#fff;box-shadow:0 0 0 4px rgba(8,127,120,.07)}
+main>section [id$="-form"]:not(.hidden){
+  margin:12px 0 18px;padding:5px;
+  border:1px solid #dcebe7;border-radius:19px;
+  background:linear-gradient(145deg,#edf7f5,#f8fbfc);
+}
+main>section [id$="-form"]:not(.hidden)>.box{
+  margin:0;border-color:#e4eeec;box-shadow:0 5px 18px rgba(24,48,68,.045)
+}
+main>section [id$="-form"] h3{color:#14566a}
+main>section [id$="-form"] label{margin-top:15px}
+main>section [id$="-form"] button.send,
+main>section [id$="-form"] button[data-table]{
+  min-width:145px;margin-top:14px;
+  background:linear-gradient(120deg,#087f78,#075b60);
+}
+main>section button[data-toggle-form],
+main>section #toggle-service-form{
+  min-height:48px;padding:11px 22px;border-radius:999px;
+  box-shadow:0 6px 15px rgba(8,127,120,.15)
+}
+main>section .entry{
+  position:relative;margin:12px 0;padding:17px 18px;
+  border:1px solid #e3ebef;border-right:4px solid #0d9488;
+  border-radius:15px;background:linear-gradient(135deg,#fff,#fbfdfd);
+  box-shadow:0 4px 14px rgba(24,48,68,.035);
+}
+main>section .entry b{font-size:17px;color:#164b57}
+main>section .entry small{display:inline-block;margin-top:5px;line-height:1.8}
+main>section .entry p{margin:8px 0;color:#4c6070}
+main>section .muted{line-height:1.8}
+#saved .box>h3{
+  margin:22px 0 10px;padding:10px 13px;
+  border-right:4px solid #0d9488;border-radius:9px;
+  background:#f0f7f6;color:#174b55;font-size:18px;
+}
+#saved .box>h3:first-of-type{margin-top:8px}
+#saved .box>input[type="search"]{margin-bottom:9px}
+#ask #answer{margin-top:16px!important;padding:17px!important;border-radius:15px!important}
+#good .good-topics{margin-top:18px}
+#good .good-topics details.card{border-radius:16px}
+#good .good-topics details.card summary{min-height:60px}
+#good .good-topics details.card p{color:#536879;font-size:14px}
+#cv .box{overflow:hidden}
+#admin .box{border-top:4px solid #14566a}
+#admin [data-admin-entry]{border-right-color:#3976c6}
+@media(max-width:699px){
+  main>section:not(#home){animation:none}
+  main>section>h2{margin-bottom:15px;padding-bottom:10px}
+  main>section>.box{margin-bottom:12px}
+  main>section [id$="-form"]:not(.hidden){padding:3px;border-radius:15px}
+  main>section [id$="-form"]>.box{padding:13px}
+  main>section [id$="-form"] button{width:100%;margin:7px 0 0}
+  main>section button[data-toggle-form],
+  main>section #toggle-service-form{width:100%}
+  main>section .entry{padding:14px;margin:10px 0}
+  #saved .box>h3{margin-top:18px}
+}
+@media(prefers-reduced-motion:reduce){
+  main>section:not(#home){animation:none}
+}
+
 </style>
 </head>
 <body>
