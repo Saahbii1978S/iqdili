@@ -1336,7 +1336,7 @@ if(typeof result.answer!=="string"||!result.answer.trim()){
  answer.replaceChildren();
  const formattedAnswer=result.answer.trim().slice(0,6000).replace(/\\r\\n|\\n|\\r/g,"\n");
  const appendInline=(host,line)=>{
-  const pattern=/\\*\\*(.+?)\\*\\*/g;
+  const pattern=/\*\*(.+?)\*\*/g;
   let cursor=0,match;
   while((match=pattern.exec(line))){
    if(match.index>cursor)host.appendChild(document.createTextNode(line.slice(cursor,match.index)));
@@ -1347,11 +1347,11 @@ if(typeof result.answer!=="string"||!result.answer.trim()){
   }
   if(cursor<line.length)host.appendChild(document.createTextNode(line.slice(cursor)));
  };
- formattedAnswer.split("\\n").forEach(line=>{
+ formattedAnswer.split("\n").forEach(line=>{
   if(!line.trim()){const gap=document.createElement("div");gap.style.height="7px";answer.appendChild(gap);return;}
-  const heading=line.match(/^\\*\\*(.+)\\*\\*$/);
-  const bullet=line.match(/^\\s*[-•]\\s+(.+)$/);
-  const numbered=line.match(/^\\s*(\\d+[.)])\\s+(.+)$/);
+  const heading=line.match(/^\*\*(.+)\*\*$/);
+  const bullet=line.match(/^\s*[-•]\s+(.+)$/);
+  const numbered=line.match(/^\s*(\d+[.)])\s+(.+)$/);
   const item=document.createElement(heading?"div":bullet||numbered?"div":"p");
   item.style.margin=heading?"7px 0 3px":bullet||numbered?"3px 0":"0 0 7px";
   if(heading){const strong=document.createElement("strong");strong.textContent=heading[1];item.appendChild(strong);}
