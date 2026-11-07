@@ -346,6 +346,34 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
  body.cv-printing #cv-sheet h3{color:#14566a;border-bottom:1px solid #dcecea;padding-bottom:5px;margin-bottom:5px}
  @page{size:A4;margin:12mm}
 }
+
+/* CV builder: three print-friendly layouts */
+#cv-preview{font-family:Tahoma,Arial,sans-serif;color:#263746;line-height:1.65}
+#cv-preview .cv-head{display:flex;align-items:center;gap:20px;padding:8px 0 20px;border-bottom:2px solid #dcecea}
+#cv-preview .cv-photo{width:108px;height:126px;object-fit:cover;border-radius:12px;border:2px solid #e2e8f0;flex:0 0 auto}
+#cv-preview .cv-head-main{flex:1;min-width:0}
+#cv-preview .cv-name{margin:0;color:#173f50;font-size:29px;font-weight:900;overflow-wrap:anywhere}
+#cv-preview .cv-role{margin:5px 0;color:#087f78;font-size:18px;font-weight:700}
+#cv-preview .cv-contact{margin:8px 0 0;color:#64748b;font-size:13px;overflow-wrap:anywhere}
+#cv-preview .cv-part{margin-top:17px;break-inside:avoid}
+#cv-preview .cv-part h3{margin:0 0 6px;padding:0 0 5px;color:#087f78;font-size:16px;border-bottom:1px solid #dcecea}
+#cv-preview .cv-part p{margin:0;white-space:normal;overflow-wrap:anywhere}
+#cv-preview.cv-template-classic .cv-head{display:block;text-align:center;border-bottom:3px double #34495e}
+#cv-preview.cv-template-classic .cv-photo{width:92px;height:108px;margin:0 auto 10px;border-radius:50%}
+#cv-preview.cv-template-classic .cv-name{color:#263746}
+#cv-preview.cv-template-classic .cv-role{color:#536579}
+#cv-preview.cv-template-classic .cv-part h3{color:#263746;border-bottom:1px solid #aab6c2}
+#cv-preview.cv-template-simple .cv-head{border-bottom:1px solid #9aa7b2}
+#cv-preview.cv-template-simple .cv-name{font-size:25px;color:#111}
+#cv-preview.cv-template-simple .cv-role{color:#333}
+#cv-preview.cv-template-simple .cv-part h3{color:#111;border-bottom:1px solid #c8cdd2;text-transform:uppercase}
+@media(max-width:600px){#cv-preview .cv-head{gap:12px}#cv-preview .cv-photo{width:82px;height:98px}#cv-preview .cv-name{font-size:23px}}
+@media print{
+ body.cv-printing #cv-sheet{direction:inherit}
+ body.cv-printing #cv-sheet .cv-part{break-inside:avoid}
+ body.cv-printing #cv-preview{font-size:11pt}
+ body.cv-printing #cv-preview .cv-name{font-size:23pt}
+}
 </style>
 </head>
 <body>
@@ -394,10 +422,10 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 <div class="box">
 <p>حضّر سيرتك الذاتية بالعربية أو الفرنسية، مجاناً ومن غير حساب.</p>
 <p class="note">🔒 خصوصيتك: المعلومات اللي تعمّرها تستعمل فقط لصناعة سيرتك الذاتية في جهازك. ما تتبعثش لقاعدة بيانات أحلى توانسة وما تتخزّنش عندنا. كي تسكّر الصفحة تنجم تضيع المعلومات، لذلك حمّل نسخة PDF قبل ما تخرج.</p>
-<div class="row"><div><label for="cv-language">لغة السيرة الذاتية</label><select id="cv-language"><option value="fr">Français</option><option value="ar">العربية</option></select></div><div><label for="cv-name">الاسم واللقب *</label><input id="cv-name" maxlength="100" autocomplete="name" placeholder="اسمك ولقبك"></div></div>
+<div class="row"><div><label for="cv-template">اختار تصميم السيرة الذاتية</label><select id="cv-template"><option value="modern">حديث واحترافي</option><option value="classic">كلاسيكي ورسمي</option><option value="simple">بسيط ومناسب لأنظمة الانتداب ATS</option></select></div><div><label for="cv-language">لغة السيرة الذاتية</label><select id="cv-language"><option value="fr">Français</option><option value="ar">العربية</option></select></div><div><label for="cv-name">الاسم واللقب *</label><input id="cv-name" maxlength="100" autocomplete="name" placeholder="اسمك ولقبك"></div></div>
 <div class="row"><div><label for="cv-job">الوظيفة المطلوبة</label><input id="cv-job" maxlength="100" placeholder="مثال: عامل إنتاج / مساعد إداري"></div><div><label for="cv-city">المدينة</label><input id="cv-city" maxlength="80" placeholder="صفاقس"></div></div>
 <div class="row"><div><label for="cv-phone">الهاتف (اختياري)</label><input id="cv-phone" type="tel" maxlength="25" autocomplete="tel"></div><div><label for="cv-email">البريد الإلكتروني (اختياري)</label><input id="cv-email" type="email" maxlength="120" autocomplete="email"></div></div>
-<label for="cv-summary">نبذة قصيرة عنك</label><textarea id="cv-summary" maxlength="700" placeholder="مثال: شخص جدي ومنظم، نحب نتعلم ونخدم ضمن فريق..."></textarea>
+<div class="row"><div><label for="cv-photo">صورة شخصية (اختيارية)</label><input id="cv-photo" type="file" accept="image/jpeg,image/png,image/webp"><small class="muted">JPG أو PNG أو WebP، حتى 2 ميغابايت. الصورة تبقى في جهازك.</small></div><div><label for="cv-link">LinkedIn أو رابط مهني (اختياري)</label><input id="cv-link" type="url" maxlength="180" placeholder="https://..."></div></div><label for="cv-summary">نبذة قصيرة عنك</label><textarea id="cv-summary" maxlength="700" placeholder="مثال: شخص جدي ومنظم، نحب نتعلم ونخدم ضمن فريق..."></textarea>
 <label for="cv-education">المستوى الدراسي والتكوين</label><textarea id="cv-education" maxlength="700" placeholder="مثال: السنة التاسعة أساسي، شهادة تكوين مهني..."></textarea>
 <label for="cv-experience">الخبرة المهنية (اكتب «دون خبرة» إذا ما عندكش)</label><textarea id="cv-experience" maxlength="1000" placeholder="اسم المؤسسة، الخطة، والمدة. ما تكتبش تجربة ما عشتهاش."></textarea>
 <label for="cv-skills">المهارات</label><textarea id="cv-skills" maxlength="700" placeholder="مثال: العمل ضمن فريق، الانضباط، استعمال الحاسوب..."></textarea>
@@ -412,7 +440,7 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 </div>
 <div id="cv-preview-wrap" class="hidden">
 <div id="cv-sheet" class="box" style="max-width:850px;margin:18px auto;padding:30px;background:#fff;border-top:7px solid #087f78">
-<div id="cv-preview"></div>
+<div id="cv-preview" class="cv-template-modern"></div>
 </div>
 </div>
 <div class="box"><p style="text-align:center;font-weight:700;color:#08736d">اللهم اجعل هذا العمل خالصاً لوجهك، وانفع به عبادك، واجعله صدقة جارية.</p></div>
@@ -605,28 +633,48 @@ if(id==="admin" && db) refreshAdminState().catch(()=>{});
 }
 window.show=show;
 
-const cvFields=["name","job","city","phone","email","summary","education","experience","skills","languages","training","license"];
+
+const cvFields=["name","job","city","phone","email","summary","education","experience","skills","languages","training","license","link"];
 let cvPlainText="";
+let cvPhotoData="";
 function cvValue(id){return (el("cv-"+id)?.value||"").trim();}
 function cvEscape(value){return String(value||"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
-function cvGenerate(){
- const name=cvValue("name");
+el("cv-photo").addEventListener("change",()=>{
+ const file=el("cv-photo").files&&el("cv-photo").files[0];
  const status=el("cv-status");
+ cvPhotoData="";
+ if(!file){status.textContent="تمت إزالة الصورة الشخصية.";return;}
+ if(!["image/jpeg","image/png","image/webp"].includes(file.type)||file.size>2*1024*1024){
+  el("cv-photo").value="";
+  status.textContent="الصورة لازم تكون JPG أو PNG أو WebP وحجمها ما يفوتش 2 ميغابايت.";
+  return;
+ }
+ const reader=new FileReader();
+ reader.onload=()=>{cvPhotoData=String(reader.result||"");status.textContent="تم تجهيز الصورة في جهازك فقط. اضغط حضّر سيرتي الذاتية لمعاينتها.";};
+ reader.onerror=()=>{cvPhotoData="";status.textContent="ما نجّمش نقرا الصورة. جرّب صورة أخرى.";};
+ reader.readAsDataURL(file);
+});
+function cvGenerate(){
+ const name=cvValue("name"),status=el("cv-status");
  if(!name){status.textContent="اكتب الاسم واللقب أولاً باش نحضّرولك السيرة الذاتية.";el("cv-name").focus();return;}
  const fr=el("cv-language").value==="fr";
- const labels=fr?{job:"Poste recherché",city:"Ville",phone:"Téléphone",email:"E-mail",summary:"Profil",education:"Formation",experience:"Expérience professionnelle",skills:"Compétences",languages:"Langues",training:"Stages et formations",license:"Permis de conduire"}:{job:"الوظيفة المطلوبة",city:"المدينة",phone:"الهاتف",email:"البريد الإلكتروني",summary:"نبذة شخصية",education:"المستوى الدراسي والتكوين",experience:"الخبرة المهنية",skills:"المهارات",languages:"اللغات",training:"التربصات والدورات",license:"رخصة السياقة"};
- const values={name,job:cvValue("job"),city:cvValue("city"),phone:cvValue("phone"),email:cvValue("email"),summary:cvValue("summary"),education:cvValue("education"),experience:cvValue("experience"),skills:cvValue("skills"),languages:cvValue("languages"),training:cvValue("training"),license:cvValue("license")};
- const order=["job","city","phone","email","summary","education","experience","skills","languages","training","license"];
+ const labels=fr?{job:"Poste recherché",city:"Ville",phone:"Téléphone",email:"E-mail",summary:"Profil",education:"Formation",experience:"Expérience professionnelle",skills:"Compétences",languages:"Langues",training:"Stages et formations",license:"Permis de conduire",link:"Profil professionnel"}:{job:"الوظيفة المطلوبة",city:"المدينة",phone:"الهاتف",email:"البريد الإلكتروني",summary:"نبذة شخصية",education:"المستوى الدراسي والتكوين",experience:"الخبرة المهنية",skills:"المهارات",languages:"اللغات",training:"التربصات والدورات",license:"رخصة السياقة",link:"رابط مهني"};
+ const values={name,job:cvValue("job"),city:cvValue("city"),phone:cvValue("phone"),email:cvValue("email"),summary:cvValue("summary"),education:cvValue("education"),experience:cvValue("experience"),skills:cvValue("skills"),languages:cvValue("languages"),training:cvValue("training"),license:cvValue("license"),link:cvValue("link")};
+ if(values.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)){status.textContent="تثبّت من عنوان البريد الإلكتروني.";el("cv-email").focus();return;}
+ if(values.link){try{const u=new URL(values.link);if(!["http:","https:"].includes(u.protocol))throw new Error();}catch(_){status.textContent="الرابط المهني موش صحيح. استعمل رابط يبدأ بـ https://";el("cv-link").focus();return;}}
+ const order=["summary","education","experience","skills","languages","training","license","link"];
  const sections=order.filter(k=>values[k]).map(k=>'<section class="cv-part"><h3>'+cvEscape(labels[k])+'</h3><p>'+cvEscape(values[k]).replace(/\n/g,"<br>")+'</p></section>').join("");
  const contact=[values.city,values.phone,values.email].filter(Boolean).map(cvEscape).join("　|　");
- const preview=el("cv-preview");
+ const photo=cvPhotoData?'<img class="cv-photo" src="'+cvPhotoData+'" alt="">':"";
+ const preview=el("cv-preview"),template=el("cv-template").value;
+ preview.className="cv-template-"+template;
  preview.setAttribute("dir",fr?"ltr":"rtl");
  preview.style.textAlign=fr?"left":"right";
- preview.innerHTML='<div style="padding-bottom:16px;border-bottom:2px solid #dcecea"><h1 style="margin:0;color:#14566a;font-size:30px">'+cvEscape(name)+'</h1>'+(values.job?'<h2 style="margin:5px 0;color:#087f78;font-size:19px">'+cvEscape(values.job)+'</h2>':"")+'<p style="margin:8px 0;color:#64748b">'+contact+'</p></div>'+sections;
+ preview.innerHTML='<div class="cv-head">'+photo+'<div class="cv-head-main"><h1 class="cv-name">'+cvEscape(name)+'</h1>'+(values.job?'<div class="cv-role">'+cvEscape(values.job)+'</div>':"")+'<p class="cv-contact">'+contact+'</p></div></div>'+sections;
  cvPlainText=[name,values.job,contact,...order.filter(k=>values[k]).map(k=>labels[k]+"\n"+values[k])].filter(Boolean).join("\n\n");
  el("cv-preview-wrap").classList.remove("hidden");
  el("cv-print").disabled=false;el("cv-copy").disabled=false;
- status.textContent="حضّرنا سيرتك الذاتية. راجع المعلومات قبل الطباعة أو الحفظ.";
+ status.textContent="السيرة الذاتية جاهزة. راجعها، وتنجم تبدّل التصميم أو المعلومات وتعاود تضغط تحضير.";
  el("cv-preview-wrap").scrollIntoView({behavior:"smooth",block:"start"});
 }
 el("cv-generate").addEventListener("click",cvGenerate);
@@ -642,8 +690,9 @@ el("cv-copy").addEventListener("click",async()=>{
   if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(cvPlainText);
   else{const area=document.createElement("textarea");area.value=cvPlainText;area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();document.execCommand("copy");area.remove();}
   el("cv-status").textContent="تم نسخ نص السيرة الذاتية.";
- }catch(error){el("cv-status").textContent="ما نجّمش ننسخ آلياً. تنجم تحدد النص من المعاينة وتنسخو."; }
+ }catch(error){el("cv-status").textContent="ما نجّمش ننسخ آلياً. تنجم تحدد النص من المعاينة وتنسخو.";}
 });
+
 
 
 // التقاط ضغطات التنقّل في مرحلة الالتقاط قبل أي مستمع آخر؛ هذا أكثر توافقاً
