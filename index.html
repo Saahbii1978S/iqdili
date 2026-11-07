@@ -1269,7 +1269,7 @@ if(marketImageInput){
 }
 function contactActions(phone){
  const raw=String(phone||"").trim(), digits=raw.replace(/\D/g,"");
- if(!raw||digits.length<8||digits.length>15)return "";
+ if(!raw||digits.length<8||digits.length>15)return '<p class="muted" style="margin:9px 0 0">رقم الهاتف غير معروض من صاحب الإعلان.</p>';
  const tel=raw.replace(/[^+0-9]/g,"");
  return '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a href="tel:'+tel+'">📞 اتصل</a><a href="https://wa.me/'+digits+'" target="_blank" rel="noopener noreferrer">واتساب</a></div>';
 }
