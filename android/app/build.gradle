@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace 'tn.ahlatounsa.app'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId 'tn.ahlatounsa.app'
         minSdk 23
-        targetSdk 35
+        targetSdk 36
         versionCode 1
         versionName '1.0'
     }
