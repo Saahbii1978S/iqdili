@@ -2268,6 +2268,11 @@ if ("serviceWorker" in navigator) {
   "اكتب اسم منتج أو منطقة...": "Saisissez le nom du produit ou la région…",
   "فتّش بالعنوان أو الوصف أو المنطقة أو الرقم...": "Rechercher par titre, description, région ou numéro…"
 });
+ Object.assign(translations, {
+  "🔒 خصوصيتك: المعلومات اللي تعمّرها تستعمل فقط لصناعة سيرتك الذاتية في جهازك. ما تتبعثش لقاعدة بيانات أحلى توانسة وما تتخزّنش عندنا. كي تسكّر الصفحة تنجم تضيع المعلومات، لذلك حمّل نسخة PDF قبل ما تخرج.": "🔒 Votre confidentialité : les informations saisies servent uniquement à créer votre CV sur votre appareil. Elles ne sont pas envoyées à la base de données d’Ahla Tounsa et ne sont pas stockées chez nous. Elles peuvent être perdues lorsque vous fermez la page ; téléchargez donc une copie PDF avant de quitter.",
+  "كي تبعث طلب خدمة أو إعلان، المنصة تستقبل المعلومات اللي تختار تعمّرها، كيف العنوان والوصف والمدينة ورقم الهاتف والصور الاختيارية، وتحفظها في قاعدة بياناتها السحابية لمراجعتها وإدارتها.": "Lorsque vous envoyez une demande de service ou une annonce, la plateforme reçoit les informations que vous choisissez de saisir, telles que le titre, la description, la ville, le numéro de téléphone et les photos facultatives. Elles sont enregistrées dans sa base de données en ligne afin de permettre leur modération et leur gestion.",
+  "نستعمل المعلومات لتسيير المنصة ومراجعة المنشورات والرد على الاستفسارات والحد من إساءة الاستعمال. ما نبيعوش بيانات المستخدمين. رغم اعتماد إجراءات حماية تقنية، ما فماش خدمة على الإنترنت تضمن أماناً مطلقاً.": "Nous utilisons ces informations pour faire fonctionner la plateforme, modérer les publications, répondre aux demandes et limiter les abus. Nous ne vendons pas les données des utilisateurs. Malgré les mesures de sécurité techniques mises en place, aucun service en ligne ne peut garantir une sécurité absolue."
+});
  let current="tn";
  const originals=new WeakMap();
  function normalizeText(value){return value.replace(/\\s+/g," ").trim();}
