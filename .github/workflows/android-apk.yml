@@ -1,4 +1,4 @@
-name: Build Ahla Tounsa Android APK
+name: Build and publish Ahla Tounsa Android APK
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -41,10 +41,28 @@ jobs:
         working-directory: android
         run: gradle --no-daemon assembleDebug
 
-      - name: Upload APK
+      - name: Prepare direct-download APK
+        run: |
+          mkdir -p dist
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/ahla-tounsa.apk
+
+      - name: Keep workflow artifact backup
         uses: actions/upload-artifact@v4
         with:
           name: ahla-tounsa-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: dist/ahla-tounsa.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Publish stable direct-download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: Ahla Tounsa Android APK
+          target_commitish: main
+          files: dist/ahla-tounsa.apk
+          overwrite_files: true
+          make_latest: true
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
