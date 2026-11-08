@@ -1964,15 +1964,34 @@ if ("serviceWorker" in navigator) {
  };
  let current="tn";
  const originals=new WeakMap();
+ function normalizeText(value){return value.replace(/\\s+/g," ").trim();}
  function translateNode(node,lang){
-   if(node.nodeType===Node.TEXT_NODE){const raw=node.nodeValue;const key=raw.trim();if(!key)return;
+   if(node.nodeType===Node.TEXT_NODE){
+     const raw=node.nodeValue;
+     if(!raw || !raw.trim())return;
      if(!originals.has(node))originals.set(node,raw);
-     const original=originals.get(node),k=original.trim();
+     const original=originals.get(node);
+     const key=normalizeText(original);
+     const translated=translations[key];
      let next=original;
-     if(lang==="fr"&&translations[k])next=original.replace(k,translations[k]);
+     if(lang==="fr"&&translated){
+       const leading=(original.match(/^\\s*/)||[""])[0];
+       const trailing=(original.match(/\\s*$/)||[""])[0];
+       next=leading+translated+trailing;
+     }
      if(node.nodeValue!==next)node.nodeValue=next;
    } else if(node.nodeType===Node.ELEMENT_NODE){
-     for(const a of ["placeholder","aria-label","title"]){if(node.hasAttribute(a)){const v=node.getAttribute(a);if(!node.dataset["orig"+a])node.dataset["orig"+a]=v;const base=node.dataset["orig"+a];node.setAttribute(a,lang==="fr"?(attrs[base]||base):base);}}
+     if(node.id==="ahla-language-toggle")return;
+     for(const a of ["placeholder","aria-label","title"]){
+       if(node.hasAttribute(a)){
+         const v=node.getAttribute(a);
+         const dataKey="orig"+a;
+         if(!node.dataset[dataKey])node.dataset[dataKey]=v;
+         const base=node.dataset[dataKey];
+         const key=normalizeText(base);
+         node.setAttribute(a,lang==="fr"?(attrs[key]||attrs[base]||base):base);
+       }
+     }
      if(node.tagName!=="SCRIPT"&&node.tagName!=="STYLE")Array.from(node.childNodes).forEach(n=>translateNode(n,lang));
    }
  }
