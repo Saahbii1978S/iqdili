@@ -31,7 +31,7 @@ public class MainActivity extends Activity {
                 sendIntent.setType("text/plain");
                 String content = (message == null ? "" : message.trim());
                 if (url != null && !url.trim().isEmpty() && !content.contains(url.trim())) {
-                    content = content.isEmpty() ? url.trim() : content + "\\n" + url.trim();
+                    content = content.isEmpty() ? url.trim() : content + "\n" + url.trim();
                 }
                 sendIntent.putExtra(Intent.EXTRA_TEXT, content);
                 try {
@@ -52,14 +52,15 @@ public class MainActivity extends Activity {
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);\n        settings.setCacheMode(WebSettings.LOAD_DEFAULT);\n        settings.setLoadsImagesAutomatically(true);
+        settings.setDomStorageEnabled(true);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setLoadsImagesAutomatically(true);
         settings.setDatabaseEnabled(false);
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(true);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setSupportMultipleWindows(false);
-        // Location access is disabled until a proper Android runtime permission flow is implemented.
         settings.setGeolocationEnabled(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             settings.setSafeBrowsingEnabled(true);
@@ -87,9 +88,8 @@ public class MainActivity extends Activity {
                     FileChooserParams params) {
                 if (fileChooserCallback != null) fileChooserCallback.onReceiveValue(null);
                 fileChooserCallback = callback;
-                Intent intent = params.createIntent();
                 try {
-                    startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                    startActivityForResult(params.createIntent(), FILE_CHOOSER_REQUEST);
                     return true;
                 } catch (Exception e) {
                     fileChooserCallback = null;
@@ -112,7 +112,12 @@ public class MainActivity extends Activity {
 
     private boolean routeUrl(Uri uri) {
         String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
-        if ("https".equals(scheme) && HOST.equalsIgnoreCase(uri.getHost())\n                && ("/iqdili".equals(uri.getPath()) || (uri.getPath() != null && uri.getPath().startsWith("/iqdili/")))) return false;
+        String path = uri.getPath() == null ? "" : uri.getPath();
+        boolean isProjectPage = "https".equals(scheme)
+                && HOST.equalsIgnoreCase(uri.getHost())
+                && ("/iqdili".equals(path) || path.startsWith("/iqdili/"));
+        if (isProjectPage) return false;
+
         if ("http".equals(scheme) || "https".equals(scheme)
                 || "tel".equals(scheme) || "mailto".equals(scheme)
                 || "sms".equals(scheme) || "whatsapp".equals(scheme)) {
@@ -121,7 +126,6 @@ public class MainActivity extends Activity {
             } catch (Exception e) {
                 Toast.makeText(this, "ما نجّمش نفتح الرابط على الهاتف", Toast.LENGTH_SHORT).show();
             }
-            return true;
         }
         return true;
     }
@@ -140,6 +144,18 @@ public class MainActivity extends Activity {
     protected void onSaveInstanceState(Bundle outState) {
         if (webView != null) webView.saveState(outState);
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onPause() {
+        if (webView != null) webView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (webView != null) webView.onResume();
     }
 
     @Override
