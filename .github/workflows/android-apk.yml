@@ -41,6 +41,18 @@ jobs:
         working-directory: android
         run: gradle --no-daemon assembleDebug
 
+      - name: Verify APK integrity, signature, and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -t "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -F "package: name='tn.ahlatounsa.app'"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK"
+          echo "Verified APK size: $(stat -c%s "$APK") bytes"
+
       - name: Prepare direct-download APK
         run: |
           mkdir -p dist
