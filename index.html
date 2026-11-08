@@ -606,6 +606,51 @@ main>section input[type="file"]::file-selector-button{
 }
 
 </style>
+<style id="ahla-user-settings-style">
+#ahla-settings-toggle{position:fixed;top:10px;right:10px;z-index:1101;width:42px;height:42px;border-radius:50%;background:#fff;color:#14566a;border:1px solid #cbdad6;font-size:21px;box-shadow:0 3px 12px #0002;cursor:pointer}
+html[dir="ltr"] #ahla-settings-toggle{right:auto;left:10px}
+#ahla-settings-panel{position:fixed;top:60px;right:10px;z-index:1100;width:min(360px,calc(100vw - 20px));max-height:calc(100vh - 78px);overflow:auto;padding:16px;background:var(--paper,#fff);color:var(--ink,#203044);border:1px solid var(--line,#e3eaf0);border-radius:18px;box-shadow:0 14px 40px #0003;text-align:start;direction:inherit}
+html[dir="ltr"] #ahla-settings-panel{right:auto;left:10px}
+#ahla-settings-panel[hidden]{display:none!important}
+#ahla-settings-panel h2{font-size:20px;margin:0}
+#ahla-settings-panel .settings-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+#ahla-settings-panel .settings-close{border:0;background:transparent;color:inherit;font-size:23px;min-width:36px;min-height:36px}
+#ahla-settings-panel .settings-group{padding:11px 0;border-top:1px solid var(--line,#e3eaf0)}
+#ahla-settings-panel .settings-label{display:block;font-weight:800;margin-bottom:8px}
+#ahla-settings-panel .settings-options{display:flex;flex-wrap:wrap;gap:7px}
+#ahla-settings-panel button[data-setting],#ahla-language-choice{border:1px solid var(--line,#e3eaf0);border-radius:10px;padding:8px 11px;background:var(--page,#f5f8fb);color:var(--ink,#203044);font:inherit;font-size:14px;cursor:pointer}
+#ahla-settings-panel button.is-active{background:var(--brand,#087f78);border-color:var(--brand,#087f78);color:#fff}
+#ahla-settings-panel #ahla-language-choice{width:100%;font-weight:800}
+#ahla-settings-panel button:focus-visible,#ahla-settings-toggle:focus-visible{outline:3px solid #d9a441;outline-offset:2px}
+:root[data-font-size="small"] body{font-size:16px}
+:root[data-font-size="large"] body{font-size:20px}
+:root[data-density="compact"] main>section{padding-top:12px;padding-bottom:12px}
+:root[data-density="compact"] main>section .box{padding:10px}
+:root[data-accent="blue"]{--brand:#2563a6;--brand-dark:#174477}
+:root[data-accent="purple"]{--brand:#7650a8;--brand-dark:#523477}
+:root[data-accent="orange"]{--brand:#bd6b20;--brand-dark:#874713}
+:root[data-theme="dark"]{color-scheme:dark;--ink:#e7edf5;--muted:#aab7c7;--line:#344354;--paper:#1d2936;--page:#111a24;--shadow:0 8px 24px #0004}
+:root[data-theme="dark"] body{background:var(--page);color:var(--ink)}
+:root[data-theme="dark"] header{background:linear-gradient(135deg,#1d2936,#172635 60%,#1b2635);border-color:var(--line);color:var(--ink)}
+:root[data-theme="dark"] header .topbar-title h1,:root[data-theme="dark"] header h1{color:#eaf2fa}
+:root[data-theme="dark"] nav{background:#172331;border-color:var(--line)}
+:root[data-theme="dark"] nav button{background:#243447;color:#edf4fb;border-color:#40546a}
+:root[data-theme="dark"] main>section,:root[data-theme="dark"] footer,:root[data-theme="dark"] details,:root[data-theme="dark"] .box,:root[data-theme="dark"] .entry,:root[data-theme="dark"] .card{background-color:var(--paper);color:var(--ink);border-color:var(--line)}
+:root[data-theme="dark"] input,:root[data-theme="dark"] textarea,:root[data-theme="dark"] select{background:#152230!important;color:var(--ink)!important;border-color:#46576a!important}
+:root[data-theme="dark"] .muted,:root[data-theme="dark"] small{color:var(--muted)}
+:root[data-theme="system"]{color-scheme:light}
+@media(prefers-color-scheme:dark){
+:root[data-theme="system"]{color-scheme:dark;--ink:#e7edf5;--muted:#aab7c7;--line:#344354;--paper:#1d2936;--page:#111a24;--shadow:0 8px 24px #0004}
+:root[data-theme="system"] body{background:var(--page);color:var(--ink)}
+:root[data-theme="system"] header{background:linear-gradient(135deg,#1d2936,#172635 60%,#1b2635);border-color:var(--line);color:var(--ink)}
+:root[data-theme="system"] header .topbar-title h1,:root[data-theme="system"] header h1{color:#eaf2fa}
+:root[data-theme="system"] nav{background:#172331;border-color:var(--line)}
+:root[data-theme="system"] nav button{background:#243447;color:#edf4fb;border-color:#40546a}
+:root[data-theme="system"] main>section,:root[data-theme="system"] footer,:root[data-theme="system"] details,:root[data-theme="system"] .box,:root[data-theme="system"] .entry,:root[data-theme="system"] .card{background-color:var(--paper);color:var(--ink);border-color:var(--line)}
+:root[data-theme="system"] input,:root[data-theme="system"] textarea,:root[data-theme="system"] select{background:#152230!important;color:var(--ink)!important;border-color:#46576a!important}
+:root[data-theme="system"] .muted,:root[data-theme="system"] small{color:var(--muted)}
+}
+</style>
 </head>
 <body>
 <header>
@@ -2275,7 +2320,7 @@ if ("serviceWorker" in navigator) {
   "نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.":"Nous rapprochons les services des citoyens et les aidons à trouver des emplois, des biens immobiliers et des offres sur un marché ouvert.",
   "تنبيه: «باب الخير» حالياً للتوعية والتشجيع على المبادرات الآمنة فقط. المنصة لا تجمع أموالاً ولا تستقبل طلبات مساعدة أو بيانات حالات إنسانية في الوقت الحالي. أي خدمة مستقبلية من النوع هذا يلزمها تحقق وحماية خصوصية قبل تفعيلها.":"Information : « Porte du bien » est actuellement un espace de sensibilisation et d’encouragement aux initiatives solidaires sûres. La plateforme ne collecte pas d’argent et ne reçoit actuellement ni demandes d’aide ni données relatives à des situations humanitaires. Tout futur service de ce type nécessitera des vérifications et une protection de la vie privée avant son activation."
  });
- let current="tn";
+ Object.assign(translations,{"إعداداتي":"Mes paramètres","المظهر":"Apparence","فاتح":"Clair","داكن":"Sombre","حسب إعدادات الجهاز":"Selon l’appareil","لون الواجهة":"Couleur de l’interface","أخضر مزرق":"Vert canard","أزرق":"Bleu","بنفسجي":"Violet","برتقالي":"Orange","حجم الكتابة":"Taille du texte","صغير":"Petit","عادي":"Normal","كبير":"Grand","كثافة العرض":"Densité d’affichage","مريح":"Confortable","مضغوط":"Compact","اللغة":"Langue","إغلاق":"Fermer","الإعدادات":"Paramètres"}); let current="tn";
  const originals=new WeakMap();
  const lastApplied=new WeakMap();
  const attrOriginals=new WeakMap();
@@ -2323,14 +2368,24 @@ if ("serviceWorker" in navigator) {
    document.documentElement.dir=current==="fr"?"ltr":"rtl";
    document.body.dir=current==="fr"?"ltr":"rtl";
    translateNode(document.body,current);
-   const btn=document.getElementById("ahla-language-toggle");
-   if(btn){btn.textContent=current==="fr"?"🇹🇳 تونسي":"🇫🇷 Français";btn.setAttribute("aria-label",current==="fr"?"Passer au tunisien":"Passer au français");}
+   const btn=document.getElementById("ahla-language-choice");
+   if(btn){btn.textContent=current==="fr"?"🇹🇳 Passer au tunisien":"🇫🇷 Passer au français";}
    try{localStorage.setItem("ahla-language",current);}catch(e){}
  }
- const style=document.createElement("style");style.textContent="#ahla-language-toggle{position:fixed;top:10px;right:10px;z-index:1000;min-height:36px;padding:6px 11px;border-radius:999px;background:#fff;color:#14566a;border:1px solid #cbdad6;font:700 13px Tahoma,Arial,sans-serif;box-shadow:0 3px 12px #0002}html[dir=ltr] #ahla-language-toggle{right:auto;left:10px}";document.head.appendChild(style);
- const button=document.createElement("button");button.id="ahla-language-toggle";button.type="button";button.textContent="🇫🇷 Français";button.addEventListener("click",()=>apply(current==="tn"?"fr":"tn"));document.body.appendChild(button);
- let saved="tn";try{saved=localStorage.getItem("ahla-language")||"tn";}catch(e){}
- apply(saved);
+ const button=document.createElement("button");
+ button.id="ahla-settings-toggle";button.type="button";button.textContent="⚙️";button.setAttribute("aria-label","الإعدادات");button.setAttribute("aria-expanded","false");document.body.appendChild(button);
+ const panel=document.createElement("aside");panel.id="ahla-settings-panel";panel.hidden=true;panel.setAttribute("aria-label","إعداداتي");
+ panel.innerHTML="<div class='settings-head'><h2>⚙️ إعداداتي</h2><button type='button' class='settings-close' aria-label='إغلاق'>×</button></div><div class='settings-group'><span class='settings-label'>اللغة</span><button type='button' id='ahla-language-choice'>🇫🇷 Passer au français</button></div><div class='settings-group'><span class='settings-label'>المظهر</span><div class='settings-options'><button type='button' data-setting='theme' data-value='light'>فاتح</button><button type='button' data-setting='theme' data-value='dark'>داكن</button><button type='button' data-setting='theme' data-value='system'>حسب إعدادات الجهاز</button></div></div><div class='settings-group'><span class='settings-label'>لون الواجهة</span><div class='settings-options'><button type='button' data-setting='accent' data-value='teal'>أخضر مزرق</button><button type='button' data-setting='accent' data-value='blue'>أزرق</button><button type='button' data-setting='accent' data-value='purple'>بنفسجي</button><button type='button' data-setting='accent' data-value='orange'>برتقالي</button></div></div><div class='settings-group'><span class='settings-label'>حجم الكتابة</span><div class='settings-options'><button type='button' data-setting='font' data-value='small'>صغير</button><button type='button' data-setting='font' data-value='normal'>عادي</button><button type='button' data-setting='font' data-value='large'>كبير</button></div></div><div class='settings-group'><span class='settings-label'>كثافة العرض</span><div class='settings-options'><button type='button' data-setting='density' data-value='comfortable'>مريح</button><button type='button' data-setting='density' data-value='compact'>مضغوط</button></div></div>";
+ document.body.appendChild(panel);
+ function readPref(key,fallback){try{return localStorage.getItem("ahla-pref-"+key)||fallback;}catch(e){return fallback;}}
+ function savePref(key,value){try{localStorage.setItem("ahla-pref-"+key,value);}catch(e){}}
+ function applyPrefs(){const root=document.documentElement;const theme=readPref("theme","light"),accent=readPref("accent","teal"),font=readPref("font","normal"),density=readPref("density","comfortable");root.dataset.theme=theme;root.dataset.accent=accent;root.dataset.fontSize=font;root.dataset.density=density;const colors={teal:["#087f78","#075b60"],blue:["#2563a6","#174477"],purple:["#7650a8","#523477"],orange:["#bd6b20","#874713"]};const chosen=colors[accent]||colors.teal;root.style.setProperty("--brand",chosen[0]);root.style.setProperty("--brand-dark",chosen[1]);panel.querySelectorAll("button[data-setting]").forEach(b=>b.classList.toggle("is-active",b.dataset.value===({theme,accent,font,density}[b.dataset.setting])));}
+ applyPrefs();
+ button.addEventListener("click",()=>{panel.hidden=!panel.hidden;button.setAttribute("aria-expanded",String(!panel.hidden));});
+ panel.querySelector(".settings-close").addEventListener("click",()=>{panel.hidden=true;button.setAttribute("aria-expanded","false");});
+ panel.querySelector("#ahla-language-choice").addEventListener("click",()=>apply(current==="tn"?"fr":"tn"));
+ panel.addEventListener("click",event=>{const choice=event.target.closest("button[data-setting]");if(!choice)return;savePref(choice.dataset.setting,choice.dataset.value);applyPrefs();});
+ let saved="tn";try{saved=localStorage.getItem("ahla-language")||"tn";}catch(e){}apply(saved);
  const observer=new MutationObserver(records=>{for(const rec of records){if(rec.type==="childList")rec.addedNodes.forEach(n=>translateNode(n,current));else if(rec.type==="characterData")translateNode(rec.target,current);}});
  observer.observe(document.body,{subtree:true,childList:true,characterData:true});
 })();
