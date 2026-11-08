@@ -1920,10 +1920,15 @@ el("admin-login-button").addEventListener("click",async()=>{
     const result=await response.json().catch(()=>({}));
     if(!response.ok||!result.ok){alert(result.error||"ما نجّمش نوافق على الإعلان. حدّث القائمة وعاود.");return;}
    }else{
-    const expectedStatus=status==="unpublished"?"approved":"pending";
-    const {data,error}=await db.from(table).update({status}).eq("id",id).eq("status",expectedStatus).select("id");
-    if(error){console.error("Admin status update:",error);alert("ما نجّمش نبدّل حالة الإعلان. تثبّت من الصلاحيات والاتصال.");return;}
-    if(!data||data.length===0){alert("الإعلان تبدّلت حالته من قبل أو ما عادش موجوداً بالحالة المطلوبة. حدّث القائمة.");await renderAdmin();return;}
+    const {data:sessionData,error:sessionError}=await db.auth.getSession();
+    if(sessionError||!sessionData?.session?.access_token){alert("جلسة الإدارة انتهت. عاود الدخول.");return;}
+    const response=await fetch(SUPABASE_URL+"/functions/v1/admin-update-post-status",{
+     method:"POST",
+     headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+sessionData.session.access_token},
+     body:JSON.stringify({table,id,status})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.ok){alert(result.error||"ما نجّمش نبدّل حالة الإعلان. حدّث القائمة وعاود.");return;}
    }
    await renderAdmin();
   }catch(error){
