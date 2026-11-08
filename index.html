@@ -2573,7 +2573,12 @@ if ("serviceWorker" in navigator) {
  });
  if(shareButton)shareButton.addEventListener("click",async()=>{
   try{
-   if(navigator.share){await navigator.share({title:"أحلى توانسة – AHLA TOUNSA",text:"خدماتك وفرصتك وعقارك في بلاصة وحدة. اكتشف منصة أحلى توانسة وشاركها مع أصحابك.",url:projectUrl});if(status)status.textContent="تنجم تختار واتساب أو أي تطبيق مشاركة ❤️";}
+   const shareTitle="أحلى توانسة – AHLA TOUNSA";
+   const shareMessage="خدماتك وفرصتك وعقارك في بلاصة وحدة. اكتشف منصة أحلى توانسة وشاركها مع أصحابك.";
+   if(window.AndroidShare&&typeof window.AndroidShare.share==="function"){
+    window.AndroidShare.share(shareTitle,shareMessage,projectUrl);
+    if(status)status.textContent="اختار واتساب أو ماسنجر أو أي تطبيق من قائمة المشاركة ❤️";
+   }else if(navigator.share){await navigator.share({title:shareTitle,text:shareMessage,url:projectUrl});if(status)status.textContent="اختار التطبيق اللي تحب تشارك معاه ❤️";}
    else{const ok=await copyText(projectUrl);if(status)status.textContent=ok?"المشاركة غير متاحة هنا؛ نسخنالك الرابط باش تبعثه لأصحابك.":"المشاركة غير متاحة؛ انسخ الرابط من شريط العنوان.";}
   }catch(error){if(error&&error.name!=="AbortError"&&status)status.textContent="تعذّرت المشاركة. جرّب زر نسخ الرابط.";}
  });
