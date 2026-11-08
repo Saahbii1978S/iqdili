@@ -1932,5 +1932,67 @@ if ("serviceWorker" in navigator) {
 })();
 </script>
 
+
+<script id="ahla-language-switcher">
+(function(){
+ const translations = {
+ "الرئيسية":"Accueil","الخدمات":"Services","فرص العمل":"Offres d’emploi","العقارات":"Immobilier","السوق":"Marché","باب الخير ❤️":"Porte du bien ❤️","اسأل أحلى توانسة":"Demandez à Ahla Tounsa","المنشورات الحية":"Publications en ligne","CV من أجل الخير":"CV solidaire","حسابي":"Mon compte","الإدارة":"Administration","تواصل مع الإدارة":"Contacter l’administration",
+ "خدماتك وفرصتك وعقارك في بلاصة وحدة":"Vos services, opportunités et biens au même endroit","نبدأوا بصفاقس ونتوسعوا لكل تونس":"Nous commençons à Sfax, puis dans toute la Tunisie",
+ "منصة أحلى توانسة: تنجم تنشر طلب خدمة أو فرصة عمل أو إعلان عقاري أو منتج. النشر السحابي يتطلب اتصالاً بقاعدة البيانات.":"Ahla Tounsa : publiez une demande de service, une offre d’emploi, une annonce immobilière ou un produit. La publication en ligne nécessite une connexion à la base de données.",
+ "مرحبا بيك في أحلى توانسة 👋":"Bienvenue sur Ahla Tounsa 👋","نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.":"Nous rapprochons les services des citoyens et facilitons l’accès aux emplois, à l’immobilier et à un marché ouvert.",
+ "الخدمات والمشاوير":"Services et courses","توصيل، بحث عن مختصين، وقضاء مصالح.":"Livraison, recherche de professionnels et démarches du quotidien.","فرص العمل":"Offres d’emploi","فتّش على خدمة أو أضف عرض انتداب.":"Cherchez un emploi ou publiez une offre de recrutement.","ديار ومحلات وأراضٍ للبيع والكراء.":"Maisons, locaux et terrains à vendre ou à louer.","سوق أحلى توانسة":"Le marché Ahla Tounsa","بيع واشري واعرض منتجاتك مجاناً.":"Vendez, achetez et présentez vos produits gratuitement.","باب الخير":"La porte de la solidarité","مبادرات خيرية، تطوّع، تعليم ومساندة الناس بالعمل.":"Initiatives solidaires, bénévolat, éducation et entraide concrète.","حضّر سيرة ذاتية مرتبة ومجانية، حتى كان ما عندكش خبرة.":"Créez gratuitement un CV soigné, même sans expérience.",
+ "ادخل":"Accéder","ساهم بالخير":"Participer","حضّر CV مجاناً":"Créer un CV gratuit",
+ "الخدمات وطلبات المساعدة":"Services et demandes d’aide","هنا تلقى طلبات الخدمات المنشورة والمقبولة. الطلبات اللي مازالت في المراجعة أو المرفوضة ما تظهرش للعموم.":"Retrouvez ici les demandes de services publiées et approuvées. Les demandes en attente ou refusées ne sont pas visibles du public.",
+ "🔎 فتّش في طلبات الخدمات":"🔎 Rechercher des services","تحب تطلب خدمة؟":"Vous souhaitez demander un service ?","اضغط على الزر وافتح استمارة نشر طلب جديد.":"Cliquez pour ouvrir le formulaire et publier une nouvelle demande.","اطلب خدمة جديدة":"Demander un service","نشر طلب خدمة":"Publier une demande de service",
+ "فرص العمل والإعلانات المهنية":"Emploi et annonces professionnelles","هنا تلقى عروض الانتداب وفرص العمل المنشورة والمقبولة. الإعلانات المعلّقة أو المرفوضة ما تظهرش للعموم.":"Retrouvez les offres d’emploi et opportunités approuvées. Les annonces en attente ou refusées ne sont pas visibles du public.",
+ "🔎 فتّش في فرص العمل":"🔎 Rechercher un emploi","تحب تنشر فرصة أو تبحث عن عمل؟":"Vous souhaitez publier une offre ou chercher un emploi ?","أضف إعلان عمل":"Ajouter une annonce d’emploi","نشر إعلان عمل":"Publier une annonce d’emploi",
+ "العقارات للبيع والكراء":"Immobilier à vendre et à louer","هنا تلقى عروض العقارات وطلبات البيع والكراء المقبولة والمنشورة للعموم.":"Retrouvez les annonces immobilières et demandes de vente ou de location approuvées et publiques.",
+ "🔎 فتّش في العقارات":"🔎 Rechercher un bien","تحب تنشر إعلان عقاري؟":"Vous souhaitez publier une annonce immobilière ?","أضف إعلان عقاري":"Ajouter une annonce immobilière","نشر إعلان عقاري":"Publier une annonce immobilière",
+ "🛒 سوق أحلى توانسة المفتوح":"🛒 Le marché ouvert Ahla Tounsa","تصفّح المنتجات والإعلانات المقبولة المنشورة للعموم.":"Parcourez les produits et annonces approuvés et visibles du public.",
+ "❤️ باب الخير – الخير يجمعنا":"❤️ Solidarité – le bien nous rassemble","مساحة تونسية تشجّع على التعاون والتراحم، وتقرّب بين اللي يحب يعاون واللي ينجم يقدّم مساعدة، مع حفظ كرامة الناس وخصوصيتهم.":"Un espace tunisien qui encourage l’entraide et rapproche ceux qui souhaitent aider de ceux qui peuvent apporter leur soutien, dans le respect de la dignité et de la vie privée.",
+ "اسأل أحلى توانسة":"Demandez à Ahla Tounsa","اكتب سؤالك":"Écrivez votre question","إرسال":"Envoyer","المنشورات الحية":"Publications en ligne","حسابي في أحلى توانسة 👤":"Mon compte Ahla Tounsa 👤",
+ "الحساب اختياري: تنجم تتفرّج وتنشر من غير تسجيل. بالحساب تنجم تتابع إعلاناتك وحالتها وتعاود تنشر إعلان جديد بسهولة.":"Le compte est facultatif : vous pouvez consulter et publier sans inscription. Avec un compte, suivez vos annonces et leur statut, puis republiez-les facilement.",
+ "البريد الإلكتروني":"Adresse e-mail","كلمة المرور":"Mot de passe","دخول لحسابي":"Me connecter","إنشاء حساب جديد":"Créer un compte","نسيت كلمة السر؟":"Mot de passe oublié ?",
+ "تغيير كلمة المرور":"Changer le mot de passe","كلمة المرور الجديدة":"Nouveau mot de passe","أعد كتابة كلمة المرور":"Confirmez le mot de passe","حفظ كلمة المرور":"Enregistrer le mot de passe",
+ "لوحة إدارة أحلى توانسة":"Administration Ahla Tounsa","الدخول خاص بمسؤول المنصة فقط.":"Réservé à l’administrateur de la plateforme.","دخول الإدارة":"Connexion administrateur",
+ "تواصل مباشرة مع إدارة أحلى توانسة":"Contacter directement l’administration Ahla Tounsa","عندك استفسار أو اقتراح أو تحب تبلّغ على إعلان؟ الإدارة تسمعك.":"Une question, une suggestion ou un signalement ? L’équipe est à votre écoute.",
+ "📞 اتصال بالإدارة":"📞 Appeler l’administration","واتساب الإدارة":"WhatsApp de l’administration","سياسة الخصوصية وحماية البيانات":"Politique de confidentialité et protection des données","شروط الاستعمال":"Conditions d’utilisation","كيفاش تبلّغ على إعلان أو محتوى مخالف؟":"Comment signaler une annonce ou un contenu inapproprié ?",
+ "أحلى توانسة © 2026":"Ahla Tounsa © 2026","اختار تصميم السيرة الذاتية":"Choisissez un modèle de CV","لغة السيرة الذاتية":"Langue du CV","الاسم واللقب *":"Nom et prénom *","الوظيفة المطلوبة":"Poste souhaité","المدينة":"Ville","الهاتف (اختياري)":"Téléphone (facultatif)","البريد الإلكتروني (اختياري)":"E-mail (facultatif)","صورة شخصية (اختيارية)":"Photo (facultative)","نبذة قصيرة عنك":"Courte présentation","المستوى الدراسي والتكوين":"Études et formation","الخبرة المهنية (اكتب «دون خبرة» إذا ما عندكش)":"Expérience professionnelle (indiquez « sans expérience » si nécessaire)","المهارات":"Compétences","اللغات ومستواك فيها":"Langues et niveaux","التربصات والدورات (اختياري)":"Stages et formations (facultatif)","رخصة السياقة (اختياري)":"Permis de conduire (facultatif)","حضّر سيرتي الذاتية":"Créer mon CV","طباعة / حفظ PDF":"Imprimer / Enregistrer en PDF","نسخ النص":"Copier le texte"
+ };
+ const attrs = {
+ "اكتب نوع الخدمة أو المنطقة...":"Type de service ou région...","اكتب المهنة أو المنطقة...":"Métier ou région...","اكتب نوع العقار أو المنطقة...":"Type de bien ou région...","اسمك ولقبك":"Nom et prénom","مثال: عامل إنتاج / مساعد إداري":"Ex. : agent de production / assistant administratif","صفاقس":"Sfax","اكتب سؤالك باختصار، إلى 1000 حرف.":"Rédigez brièvement votre question (1000 caractères maximum).","فتّش في طلبات الخدمات...":"Rechercher des services...","فتّش في فرص العمل...":"Rechercher des emplois...","فتّش في العقارات...":"Rechercher des biens...","فتّش في إعلانات السوق...":"Rechercher dans le marché..."
+ };
+ let current="tn";
+ const originals=new WeakMap();
+ function translateNode(node,lang){
+   if(node.nodeType===Node.TEXT_NODE){const raw=node.nodeValue;const key=raw.trim();if(!key)return;
+     if(!originals.has(node))originals.set(node,raw);
+     const original=originals.get(node),k=original.trim();
+     if(lang==="fr"&&translations[k])node.nodeValue=original.replace(k,translations[k]);
+     else if(lang==="tn")node.nodeValue=original;
+   } else if(node.nodeType===Node.ELEMENT_NODE){
+     for(const a of ["placeholder","aria-label","title"]){if(node.hasAttribute(a)){const v=node.getAttribute(a);if(!node.dataset["orig"+a])node.dataset["orig"+a]=v;const base=node.dataset["orig"+a];node.setAttribute(a,lang==="fr"?(attrs[base]||base):base);}}
+     if(node.tagName!=="SCRIPT"&&node.tagName!=="STYLE")Array.from(node.childNodes).forEach(n=>translateNode(n,lang));
+   }
+ }
+ function apply(lang){
+   current=lang==="fr"?"fr":"tn";
+   document.documentElement.lang=current==="fr"?"fr":"ar";
+   document.documentElement.dir=current==="fr"?"ltr":"rtl";
+   document.body.dir=current==="fr"?"ltr":"rtl";
+   translateNode(document.body,current);
+   const btn=document.getElementById("ahla-language-toggle");
+   if(btn){btn.textContent=current==="fr"?"🇹🇳 تونسي":"🇫🇷 Français";btn.setAttribute("aria-label",current==="fr"?"Passer au tunisien":"Passer au français");}
+   try{localStorage.setItem("ahla-language",current);}catch(e){}
+ }
+ const style=document.createElement("style");style.textContent="#ahla-language-toggle{position:fixed;top:10px;right:10px;z-index:1000;min-height:36px;padding:6px 11px;border-radius:999px;background:#fff;color:#14566a;border:1px solid #cbdad6;font:700 13px Tahoma,Arial,sans-serif;box-shadow:0 3px 12px #0002}html[dir=ltr] #ahla-language-toggle{right:auto;left:10px}";document.head.appendChild(style);
+ const button=document.createElement("button");button.id="ahla-language-toggle";button.type="button";button.textContent="🇫🇷 Français";button.addEventListener("click",()=>apply(current==="tn"?"fr":"tn"));document.body.appendChild(button);
+ let saved="tn";try{saved=localStorage.getItem("ahla-language")||"tn";}catch(e){}
+ apply(saved);
+ const observer=new MutationObserver(records=>{for(const rec of records){if(rec.type==="childList")rec.addedNodes.forEach(n=>translateNode(n,current));else if(rec.type==="characterData")translateNode(rec.target,current);}});
+ observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+})();
+</script>
+
 </body>
 </html>
