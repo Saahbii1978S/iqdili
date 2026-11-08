@@ -888,6 +888,11 @@ main>section input[type="file"]::file-selector-button{
  <p class="muted">كل شخص يسجّل حساب يبقى مستخدم عادي. إنت وحدك تعيّن المشرف أو تنحّيله الصفة.</p>
  <button type="button" id="admin-users-refresh" style="background:#355c7d">تحديث قائمة المسجّلين</button>
  <div id="admin-users-list" style="margin-top:12px"><p class="muted">اضغط تحديث قائمة المسجّلين.</p></div>
+ <hr style="border:0;border-top:1px solid #dce7e2;margin:16px 0">
+ <h3 style="margin:0 0 8px">سجلّ قرارات المراجعة</h3>
+ <p class="muted">آخر القرارات: شكون قبل أو رفض أو ألغى نشر إعلان ووقتاش.</p>
+ <button type="button" id="admin-audit-refresh" style="background:#718355">تحديث سجلّ المراجعة</button>
+ <div id="admin-audit-list" style="margin-top:12px"><p class="muted">اضغط تحديث سجلّ المراجعة.</p></div>
 </div>
 <button type="button" id="admin-refresh">تحديث الطلبات</button>
 <button type="button" id="admin-logout" style="background:#647875">خروج</button>
@@ -1631,7 +1636,7 @@ async function refreshAdminState(){
     : "أهلاً بيك في لوحة المشرف. صلاحيتك تقتصر على مراجعة الإعلانات.";
   const userManagement=el("admin-user-management");
   userManagement?.classList.toggle("hidden",!currentAdminIsOwner);
-  if(currentAdminIsOwner)await loadAdminUsers();
+  if(currentAdminIsOwner){await loadAdminUsers();await loadAdminAudit();}
   await renderAdmin();
  }catch(error){
   console.error("Admin authorization check:",error);
@@ -1672,9 +1677,30 @@ async function loadAdminUsers(){
   host.textContent="تعذّر تحميل الحسابات. تثبّت من الصلاحيات والاتصال.";
  }
 }
+async function loadAdminAudit(){
+ const host=el("admin-audit-list");
+ if(!host||!currentAdminIsOwner)return;
+ host.innerHTML='<p class="muted">جاري تحميل سجلّ المراجعة...</p>';
+ try{
+  const {data,error}=await db.rpc("admin_list_status_audit");
+  if(error)throw error;
+  const rows=Array.isArray(data)?data:[];
+  if(!rows.length){host.innerHTML='<p class="muted">ما تسجّل حتى قرار مراجعة إلى حدّ الآن.</p>';return;}
+  const labels={pending:"في انتظار المراجعة",approved:"تم القبول والنشر",rejected:"مرفوض",unpublished:"إلغاء النشر"};
+  host.innerHTML=rows.map(row=>{
+   const when=row.changed_at?new Date(row.changed_at).toLocaleString():"";
+   return '<div class="entry" style="margin:8px 0"><b>'+adminEscape(row.actor_email||"حساب غير معروف")+'</b><p class="muted" style="margin:4px 0">'+adminEscape(row.table_name)+' #'+adminEscape(row.record_id)+' | '+adminEscape(labels[row.old_status]||row.old_status||"—")+' ← '+adminEscape(labels[row.new_status]||row.new_status||"—")+'</p><small>'+adminEscape(when)+'</small></div>';
+  }).join("");
+ }catch(error){
+  console.error("Admin review audit:",error);
+  host.textContent="تعذّر تحميل سجلّ المراجعة.";
+ }
+}
 document.addEventListener("click",async event=>{
  const refresh=event.target.closest("#admin-users-refresh");
  if(refresh){await loadAdminUsers();return;}
+ const auditRefresh=event.target.closest("#admin-audit-refresh");
+ if(auditRefresh){await loadAdminAudit();return;}
  const button=event.target.closest("[data-admin-role-user]");
  if(!button||!currentAdminIsOwner)return;
  const userId=button.dataset.userId,make=button.dataset.make==="true";
@@ -2095,6 +2121,17 @@ if ("serviceWorker" in navigator) {
  Object.assign(translations, {
   "توقيت تونس": "Heure de Tunisie",
   "إدارة المستخدمين والمشرفين": "Gestion des utilisateurs et modérateurs",
+  "سجلّ قرارات المراجعة": "Historique des décisions de modération",
+  "آخر القرارات: شكون قبل أو رفض أو ألغى نشر إعلان ووقتاش.": "Dernières décisions : qui a accepté, refusé ou dépublié une annonce et à quel moment.",
+  "تحديث سجلّ المراجعة": "Actualiser l’historique",
+  "جاري تحميل سجلّ المراجعة...": "Chargement de l’historique...",
+  "ما تسجّل حتى قرار مراجعة إلى حدّ الآن.": "Aucune décision de modération enregistrée pour le moment.",
+  "تم القبول والنشر": "Acceptée et publiée",
+  "في انتظار المراجعة": "En attente de modération",
+  "مرفوض": "Refusée",
+  "إلغاء النشر": "Dépublication",
+  "تعذّر تحميل سجلّ المراجعة.": "Impossible de charger l’historique.",
+
   "كل شخص يسجّل حساب يبقى مستخدم عادي. إنت وحدك تعيّن المشرف أو تنحّيله الصفة.": "Chaque nouvel inscrit reste un utilisateur ordinaire. Vous seul pouvez nommer ou retirer un modérateur.",
   "تحديث قائمة المسجّلين": "Actualiser la liste des inscrits",
   "جاري تحميل الحسابات المسجّلة...": "Chargement des comptes inscrits...",
