@@ -1,4 +1,4 @@
-# Deploy only the public entry page to GitHub Pages.
+# Deploy the complete public web app and its required policy pages to GitHub Pages.
 name: Deploy static content to Pages
 
 on:
@@ -29,7 +29,7 @@ jobs:
       - name: Prepare public site
         run: |
           mkdir -p _site
-          cp index.html _site/index.html
+          cp index.html privacy.html delete-account.html manifest.webmanifest service-worker.js app-icon.svg _site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
