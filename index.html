@@ -607,10 +607,9 @@ main>section input[type="file"]::file-selector-button{
 
 </style>
 <style id="ahla-user-settings-style">
-#ahla-settings-toggle{position:fixed;top:10px;right:10px;z-index:1101;width:42px;height:42px;border-radius:50%;background:#fff;color:#14566a;border:1px solid #cbdad6;font-size:21px;box-shadow:0 3px 12px #0002;cursor:pointer}
-html[dir="ltr"] #ahla-settings-toggle{right:auto;left:10px}
-#ahla-settings-panel{position:fixed;top:60px;right:10px;z-index:1100;width:min(360px,calc(100vw - 20px));max-height:calc(100vh - 78px);overflow:auto;padding:16px;background:var(--paper,#fff);color:var(--ink,#203044);border:1px solid var(--line,#e3eaf0);border-radius:18px;box-shadow:0 14px 40px #0003;text-align:start;direction:inherit}
-html[dir="ltr"] #ahla-settings-panel{right:auto;left:10px}
+#ahla-settings-toggle{position:static;display:inline-flex;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:36px;margin-inline-start:4px;border-radius:12px;background:rgba(255,255,255,.82);color:#14566a;border:1px solid #d8e5e2;font-size:19px;box-shadow:0 2px 8px #00000010;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}
+#ahla-settings-toggle:hover{background:#fff;border-color:#9bbdb6;transform:translateY(-1px)}
+#ahla-settings-panel{position:fixed;top:108px;inset-inline-end:12px;z-index:1100;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - 124px);overflow:auto;padding:16px;background:var(--paper,#fff);color:var(--ink,#203044);border:1px solid var(--line,#e3eaf0);border-radius:18px;box-shadow:0 14px 40px #0003;text-align:start;direction:inherit}
 #ahla-settings-panel[hidden]{display:none!important}
 #ahla-settings-panel h2{font-size:20px;margin:0}
 #ahla-settings-panel .settings-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
@@ -2373,7 +2372,7 @@ if ("serviceWorker" in navigator) {
    try{localStorage.setItem("ahla-language",current);}catch(e){}
  }
  const button=document.createElement("button");
- button.id="ahla-settings-toggle";button.type="button";button.textContent="⚙️";button.setAttribute("aria-label","الإعدادات");button.setAttribute("aria-expanded","false");document.body.appendChild(button);
+ button.id="ahla-settings-toggle";button.type="button";button.textContent="⚙";button.setAttribute("aria-label","الإعدادات");button.setAttribute("aria-expanded","false");const brand=document.querySelector("header .topbar-brand");(brand||document.querySelector("header .topbar")||document.body).appendChild(button);
  const panel=document.createElement("aside");panel.id="ahla-settings-panel";panel.hidden=true;panel.setAttribute("aria-label","إعداداتي");
  panel.innerHTML="<div class='settings-head'><h2>⚙️ إعداداتي</h2><button type='button' class='settings-close' aria-label='إغلاق'>×</button></div><div class='settings-group'><span class='settings-label'>اللغة</span><button type='button' id='ahla-language-choice'>🇫🇷 Passer au français</button></div><div class='settings-group'><span class='settings-label'>المظهر</span><div class='settings-options'><button type='button' data-setting='theme' data-value='light'>فاتح</button><button type='button' data-setting='theme' data-value='dark'>داكن</button><button type='button' data-setting='theme' data-value='system'>حسب إعدادات الجهاز</button></div></div><div class='settings-group'><span class='settings-label'>لون الواجهة</span><div class='settings-options'><button type='button' data-setting='accent' data-value='teal'>أخضر مزرق</button><button type='button' data-setting='accent' data-value='blue'>أزرق</button><button type='button' data-setting='accent' data-value='purple'>بنفسجي</button><button type='button' data-setting='accent' data-value='orange'>برتقالي</button></div></div><div class='settings-group'><span class='settings-label'>حجم الكتابة</span><div class='settings-options'><button type='button' data-setting='font' data-value='small'>صغير</button><button type='button' data-setting='font' data-value='normal'>عادي</button><button type='button' data-setting='font' data-value='large'>كبير</button></div></div><div class='settings-group'><span class='settings-label'>كثافة العرض</span><div class='settings-options'><button type='button' data-setting='density' data-value='comfortable'>مريح</button><button type='button' data-setting='density' data-value='compact'>مضغوط</button></div></div>";
  document.body.appendChild(panel);
