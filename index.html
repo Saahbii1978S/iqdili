@@ -1647,17 +1647,25 @@ async function loadAdminUsers(){
  if(!host||!currentAdminIsOwner)return;
  host.innerHTML='<p class="muted">جاري تحميل الحسابات المسجّلة...</p>';
  try{
-  const {data,error}=await db.rpc("admin_list_users");
+  const [{data,error},{data:currentData,error:currentError}]=await Promise.all([
+   db.rpc("admin_list_users"),
+   db.auth.getUser()
+  ]);
   if(error)throw error;
+  if(currentError)throw currentError;
   const users=Array.isArray(data)?data:[];
+  const currentUserId=currentData?.user?.id;
   if(!users.length){host.innerHTML='<p class="muted">ما فماش حسابات مسجّلة حالياً.</p>';return;}
   host.innerHTML=users.map(user=>{
-   const role=user.is_moderator ? "مشرف" : "مستخدم عادي";
-   const created=user.created_at ? new Date(user.created_at).toLocaleDateString("fr-TN") : "";
-   const action=user.is_moderator
-    ? '<button type="button" data-admin-role-user="1" data-user-id="'+adminEscape(user.user_id)+'" data-make="false" style="background:#a34b4b">إلغاء صفة المشرف</button>'
-    : '<button type="button" data-admin-role-user="1" data-user-id="'+adminEscape(user.user_id)+'" data-make="true" style="background:#355c7d">تعيينه مشرف</button>';
-   return '<div class="entry" style="margin:8px 0"><b>'+adminEscape(user.email||"بريد غير متوفر")+'</b><p class="muted" style="margin:4px 0">تاريخ التسجيل: '+adminEscape(created)+' | الصفة: '+role+'</p>'+action+'</div>';
+   const isOwner=user.user_id===currentUserId;
+   const role=isOwner ? "صاحب المشروع" : (user.is_moderator ? "مشرف" : "مستخدم عادي");
+   const created=user.created_at ? new Date(user.created_at).toLocaleDateString() : "";
+   const action=isOwner
+    ? '<span class="muted">حساب صاحب المشروع محمي ولا يمكن تغيير صفته.</span>'
+    : user.is_moderator
+      ? '<button type="button" data-admin-role-user="1" data-user-id="'+adminEscape(user.user_id)+'" data-make="false" style="background:#a34b4b">إلغاء صفة المشرف</button>'
+      : '<button type="button" data-admin-role-user="1" data-user-id="'+adminEscape(user.user_id)+'" data-make="true" style="background:#355c7d">تعيينه مشرف</button>';
+   return '<div class="entry" style="margin:8px 0"><b>'+adminEscape(user.email||"بريد غير متوفر")+'</b><p class="muted" style="margin:4px 0"><span>تاريخ التسجيل:</span> '+adminEscape(created)+' | <span>الصفة:</span> '+role+'</p>'+action+'</div>';
   }).join("");
  }catch(error){
   console.error("Admin users list:",error);
@@ -2092,6 +2100,11 @@ if ("serviceWorker" in navigator) {
   "جاري تحميل الحسابات المسجّلة...": "Chargement des comptes inscrits...",
   "ما فماش حسابات مسجّلة حالياً.": "Aucun compte inscrit pour le moment.",
   "مشرف": "Modérateur",
+  "صاحب المشروع": "Propriétaire du projet",
+  "حساب صاحب المشروع محمي ولا يمكن تغيير صفته.": "Le compte du propriétaire est protégé et son rôle ne peut pas être modifié.",
+  "تاريخ التسجيل:": "Date d’inscription :",
+  "الصفة:": "Rôle :",
+
   "مستخدم عادي": "Utilisateur ordinaire",
   "تاريخ التسجيل: ": "Date d’inscription : ",
   "إلغاء صفة المشرف": "Retirer le rôle de modérateur",
