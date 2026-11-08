@@ -1968,8 +1968,9 @@ if ("serviceWorker" in navigator) {
    if(node.nodeType===Node.TEXT_NODE){const raw=node.nodeValue;const key=raw.trim();if(!key)return;
      if(!originals.has(node))originals.set(node,raw);
      const original=originals.get(node),k=original.trim();
-     if(lang==="fr"&&translations[k])node.nodeValue=original.replace(k,translations[k]);
-     else if(lang==="tn")node.nodeValue=original;
+     let next=original;
+     if(lang==="fr"&&translations[k])next=original.replace(k,translations[k]);
+     if(node.nodeValue!==next)node.nodeValue=next;
    } else if(node.nodeType===Node.ELEMENT_NODE){
      for(const a of ["placeholder","aria-label","title"]){if(node.hasAttribute(a)){const v=node.getAttribute(a);if(!node.dataset["orig"+a])node.dataset["orig"+a]=v;const base=node.dataset["orig"+a];node.setAttribute(a,lang==="fr"?(attrs[base]||base):base);}}
      if(node.tagName!=="SCRIPT"&&node.tagName!=="STYLE")Array.from(node.childNodes).forEach(n=>translateNode(n,lang));
