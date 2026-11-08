@@ -1577,7 +1577,9 @@ async function renderAdmin(){
       ? '<p class="muted">النشر معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
       : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "")
       + (protectedDemo
-        ? '<p class="muted">الحذف النهائي معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
+        ? currentAdminIsOwner
+          ? `<div style="margin-top:8px"><button type="button" data-admin-action="delete_test" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف إعلان تجريبي</button></div>`
+          : '<p class="muted">حذف الإعلانات التجريبية متاح لصاحب المشروع فقط.</p>'
         : currentAdminIsOwner
           ? `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`
           : '<p class="muted">الحذف النهائي متاح لصاحب المشروع فقط.</p>');
@@ -1950,24 +1952,29 @@ el("admin-login-button").addEventListener("click",async()=>{
    alert("هذا إعلان تجريبي محمي، وما ينجمش يتنشر من لوحة الإدارة.");
    return;
   }
+  if(status==="delete_test" && adminEntry?.dataset.protectedDemo!=="yes"){
+   alert("الحذف التجريبي مخصّص للإعلانات المصنّفة كتجارب فقط.");
+   return;
+  }
   const allowedTables=["service_requests","job_posts","real_estate_posts","market_posts"];
-  if(!allowedTables.includes(table)||!["approved","rejected","unpublished","delete"].includes(status)||!id){
+  if(!allowedTables.includes(table)||!["approved","rejected","unpublished","delete","delete_test"].includes(status)||!id){
    alert("العملية غير صالحة. حدّث صفحة الإدارة وعاود.");
    return;
   }
   if(!db){alert("خدمة الإدارة غير متوفرة حالياً. تثبّت من الإنترنت.");return;}
   if(status==="rejected" && !window.confirm("متأكد تحب ترفض الإعلان؟"))return;
   if(status==="delete" && !window.confirm("تنبيه: باش يتحذف الإعلان وصوره نهائياً، وما تنجمش ترجعهم. متأكد؟"))return;
+  if(status==="delete_test" && !window.confirm("تأكيد خاص: باش يتحذف الإعلان التجريبي رقم "+id+" وصوره نهائياً. العملية ما تتراجعش. متأكد؟"))return;
    if(status==="unpublished" && !window.confirm("متأكد تحب تلغي نشر الإعلان؟ الإعلان يختفي من المنشورات الحية وتبقى بياناته محفوظة."))return;
   action.disabled=true;
   try{
-   if(status==="delete"){
+   if(status==="delete"||status==="delete_test"){
     const {data:sessionData,error:sessionError}=await db.auth.getSession();
     if(sessionError||!sessionData?.session?.access_token){alert("جلسة الإدارة انتهت. عاود الدخول.");return;}
     const response=await fetch(SUPABASE_URL+"/functions/v1/admin-delete-post",{
      method:"POST",
      headers:{"Content-Type":"application/json","apikey":SUPABASE_KEY,"Authorization":"Bearer "+sessionData.session.access_token},
-     body:JSON.stringify({table,id})
+     body:JSON.stringify({table,id,delete_test:status==="delete_test"})
     });
     const result=await response.json().catch(()=>({}));
     if(!response.ok||!result.ok){alert(result.error||"ما نجّمش نحذف الإعلان. حدّث القائمة وعاود.");return;}
