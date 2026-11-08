@@ -57,6 +57,7 @@ jobs:
       - name: Publish stable direct-download release
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: android-latest
           name: Ahla Tounsa Android APK
           target_commitish: main
@@ -64,5 +65,3 @@ jobs:
           overwrite_files: true
           make_latest: true
           generate_release_notes: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
