@@ -2271,34 +2271,47 @@ if ("serviceWorker" in navigator) {
   "كي تبعث طلب خدمة أو إعلان، المنصة تستقبل المعلومات اللي تختار تعمّرها، كيف العنوان والوصف والمدينة ورقم الهاتف والصور الاختيارية، وتحفظها في قاعدة بياناتها السحابية لمراجعتها وإدارتها.": "Lorsque vous envoyez une demande de service ou une annonce, la plateforme reçoit les informations que vous choisissez de saisir, telles que le titre, la description, la ville, le numéro de téléphone et les photos facultatives. Elles sont enregistrées dans sa base de données en ligne afin de permettre leur modération et leur gestion.",
   "نستعمل المعلومات لتسيير المنصة ومراجعة المنشورات والرد على الاستفسارات والحد من إساءة الاستعمال. ما نبيعوش بيانات المستخدمين. رغم اعتماد إجراءات حماية تقنية، ما فماش خدمة على الإنترنت تضمن أماناً مطلقاً.": "Nous utilisons ces informations pour faire fonctionner la plateforme, modérer les publications, répondre aux demandes et limiter les abus. Nous ne vendons pas les données des utilisateurs. Malgré les mesures de sécurité techniques mises en place, aucun service en ligne ne peut garantir une sécurité absolue."
 });
+ Object.assign(translations,{
+  "نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.":"Nous rapprochons les services des citoyens et les aidons à trouver des emplois, des biens immobiliers et des offres sur un marché ouvert.",
+  "تنبيه: «باب الخير» حالياً للتوعية والتشجيع على المبادرات الآمنة فقط. المنصة لا تجمع أموالاً ولا تستقبل طلبات مساعدة أو بيانات حالات إنسانية في الوقت الحالي. أي خدمة مستقبلية من النوع هذا يلزمها تحقق وحماية خصوصية قبل تفعيلها.":"Information : « Porte du bien » est actuellement un espace de sensibilisation et d’encouragement aux initiatives solidaires sûres. La plateforme ne collecte pas d’argent et ne reçoit actuellement ni demandes d’aide ni données relatives à des situations humanitaires. Tout futur service de ce type nécessitera des vérifications et une protection de la vie privée avant son activation."
+ });
  let current="tn";
  const originals=new WeakMap();
- function normalizeText(value){return value.replace(/\\s+/g," ").trim();}
+ const lastApplied=new WeakMap();
+ const attrOriginals=new WeakMap();
+ const attrApplied=new WeakMap();
+ function normalizeText(value){return value.replace(/\s+/g," ").trim();}
  function translateNode(node,lang){
    if(node.nodeType===Node.TEXT_NODE){
      const raw=node.nodeValue;
      if(!raw || !raw.trim())return;
-     if(!originals.has(node))originals.set(node,raw);
+     if(!originals.has(node)||(lastApplied.has(node)&&raw!==lastApplied.get(node)))originals.set(node,raw);
      const original=originals.get(node);
      const key=normalizeText(original);
      const translated=translations[key];
      let next=original;
      if(lang==="fr"&&translated){
-       const leading=(original.match(/^\\s*/)||[""])[0];
-       const trailing=(original.match(/\\s*$/)||[""])[0];
+       const leading=(original.match(/^\s*/)||[""])[0];
+       const trailing=(original.match(/\s*$/)||[""])[0];
        next=leading+translated+trailing;
      }
+     lastApplied.set(node,next);
      if(node.nodeValue!==next)node.nodeValue=next;
    } else if(node.nodeType===Node.ELEMENT_NODE){
      if(node.id==="ahla-language-toggle")return;
      for(const a of ["placeholder","aria-label","title"]){
        if(node.hasAttribute(a)){
          const v=node.getAttribute(a);
-         const dataKey="orig"+a;
-         if(!node.dataset[dataKey])node.dataset[dataKey]=v;
-         const base=node.dataset[dataKey];
-         const key=normalizeText(base);
-         node.setAttribute(a,lang==="fr"?(attrs[key]||attrs[base]||base):base);
+          let originalsForNode=attrOriginals.get(node);
+          let appliedForNode=attrApplied.get(node);
+          if(!originalsForNode){originalsForNode={};attrOriginals.set(node,originalsForNode);}
+          if(!appliedForNode){appliedForNode={};attrApplied.set(node,appliedForNode);}
+          if(!(a in originalsForNode)||(a in appliedForNode&&v!==appliedForNode[a]))originalsForNode[a]=v;
+          const base=originalsForNode[a];
+          const key=normalizeText(base);
+          const next=lang==="fr"?(attrs[key]||attrs[base]||base):base;
+          appliedForNode[a]=next;
+          if(v!==next)node.setAttribute(a,next);
        }
      }
      if(node.tagName!=="SCRIPT"&&node.tagName!=="STYLE")Array.from(node.childNodes).forEach(n=>translateNode(n,lang));
