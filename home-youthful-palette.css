@@ -1,0 +1,76 @@
+/* لمسات شبابية متناسقة للواجهة الرئيسية – أحلى توانسة */
+:root{
+  --youth-teal:#087f78;
+  --youth-blue:#3976c6;
+  --youth-purple:#8064bd;
+  --youth-amber:#d18b32;
+  --youth-green:#438b63;
+}
+header{
+  background:
+    radial-gradient(circle at 9% 16%,rgba(128,100,189,.10),transparent 24%),
+    radial-gradient(circle at 91% 12%,rgba(57,118,198,.12),transparent 25%),
+    radial-gradient(circle at 50% 100%,rgba(8,127,120,.08),transparent 36%),
+    linear-gradient(135deg,#fff 0%,#f0f8f7 48%,#f2f5fc 100%);
+}
+header:before{border-color:rgba(57,118,198,.14)}
+header:after{border-color:rgba(128,100,189,.13)}
+header .topbar-brand:before{
+  background:linear-gradient(145deg,#087f78 0%,#3976c6 100%);
+  box-shadow:0 8px 20px rgba(57,118,198,.18);
+}
+header .topbar-title h1{color:#173f50}
+header small{
+  background:linear-gradient(100deg,#e8f5f2,#eef2fb);
+  border-color:#d8e5ef;color:#176c70;
+}
+nav{
+  background:rgba(255,255,255,.97);
+  border-bottom:1px solid #dce6ef;
+}
+nav button{
+  background:#f5f8fb;
+  border-color:#e2e9f0;
+}
+nav button:nth-child(4n+1){border-bottom:2px solid #a8d8d0}
+nav button:nth-child(4n+2){border-bottom:2px solid #b8ccec}
+nav button:nth-child(4n+3){border-bottom:2px solid #d0c3e8}
+nav button:nth-child(4n){border-bottom:2px solid #ecd2a8}
+nav button.active,nav button[aria-current="page"]{
+  background:linear-gradient(110deg,#087f78,#176b83);
+  border-color:#087f78;color:#fff;
+}
+#home>.box:first-child{
+  background:
+    radial-gradient(circle at 88% 16%,rgba(57,118,198,.14),transparent 24%),
+    radial-gradient(circle at 8% 90%,rgba(128,100,189,.10),transparent 25%),
+    linear-gradient(115deg,#eaf6f3 0%,#f5f8fd 58%,#f8f4fb 100%);
+  border-color:#dce8ed;
+  border-right-color:#087f78;
+}
+#home>.box:first-child h2{color:#173f50}
+#home .cards .card{
+  background:linear-gradient(145deg,#fff 0%,#f8fbfd 100%);
+  border-color:#e2eaf0;
+}
+#home .cards .card:nth-child(6n+1){background:linear-gradient(145deg,#fff 0%,#f0f8f6 100%)}
+#home .cards .card:nth-child(6n+2){background:linear-gradient(145deg,#fff 0%,#f1f5fc 100%)}
+#home .cards .card:nth-child(6n+3){background:linear-gradient(145deg,#fff 0%,#f6f2fb 100%)}
+#home .cards .card:nth-child(6n+4){background:linear-gradient(145deg,#fff 0%,#fcf6ed 100%)}
+#home .cards .card:nth-child(6n+5){background:linear-gradient(145deg,#fff 0%,#f1f7f1 100%)}
+#home .cards .card:nth-child(6n){background:linear-gradient(145deg,#fff 0%,#eff6f8 100%)}
+#home .cards .card:hover{border-color:#c5d9e2}
+#home .cards .card .icon{box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 4px 10px rgba(24,48,68,.045)}
+#home .cards .card button{
+  background:linear-gradient(110deg,var(--card-accent,#087f78),#175b70);
+  box-shadow:0 5px 12px rgba(24,48,68,.12);
+}
+#home .cards .card button:hover{filter:brightness(1.06)}
+section>h2:before{background:linear-gradient(180deg,#087f78 0%,#3976c6 55%,#8064bd 100%)}
+@media(max-width:699px){
+  nav button:nth-child(4n+1),nav button:nth-child(4n+2),nav button:nth-child(4n+3),nav button:nth-child(4n){border-bottom-width:2px}
+  #home .cards .card{box-shadow:0 5px 16px rgba(24,48,68,.055)}
+}
+@media(prefers-reduced-motion:reduce){
+  #home .cards .card{transition:none}
+}
