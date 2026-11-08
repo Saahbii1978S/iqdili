@@ -883,6 +883,12 @@ main>section input[type="file"]::file-selector-button{
 </div>
 <div id="admin-panel" class="hidden">
 <p id="admin-welcome" class="muted"></p>
+<div id="admin-user-management" class="hidden" style="margin:14px 0;padding:14px;border:1px solid #dce7e2;border-radius:14px;background:#fbfdfc">
+ <h3 style="margin:0 0 8px">إدارة المستخدمين والمشرفين</h3>
+ <p class="muted">كل شخص يسجّل حساب يبقى مستخدم عادي. إنت وحدك تعيّن المشرف أو تنحّيله الصفة.</p>
+ <button type="button" id="admin-users-refresh" style="background:#355c7d">تحديث قائمة المسجّلين</button>
+ <div id="admin-users-list" style="margin-top:12px"><p class="muted">اضغط تحديث قائمة المسجّلين.</p></div>
+</div>
 <button type="button" id="admin-refresh">تحديث الطلبات</button>
 <button type="button" id="admin-logout" style="background:#647875">خروج</button>
 <div style="margin-top:15px"><label for="admin-search">🔎 البحث في الطلبات</label><input id="admin-search" type="search" maxlength="120" placeholder="فتّش بالعنوان أو الوصف أو المنطقة أو الرقم..." autocomplete="off"><div class="row" style="gap:10px;flex-wrap:wrap;margin-top:10px"><div style="flex:1;min-width:145px"><label for="admin-category-filter">القسم</label><select id="admin-category-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الأقسام</option><option value="service_requests">الخدمات</option><option value="job_posts">فرص العمل</option><option value="real_estate_posts">العقارات</option><option value="market_posts">السوق</option></select></div><div style="flex:1;min-width:145px"><label for="admin-status-filter">الحالة</label><select id="admin-status-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الحالات</option><option value="pending">في انتظار المراجعة</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option><option value="unpublished">ملغى النشر</option></select></div></div><p class="muted">التنبيه «يحتمل تجريبي» آلي حسب كلمات في الإعلان، ويلزم مراجعة بشرية قبل أي قرار.</p></div><div id="admin-requests" style="margin-top:15px"></div>
@@ -1525,7 +1531,11 @@ async function renderAdmin(){
     const actions=(protectedDemo
       ? '<p class="muted">النشر معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
       : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "")
-      + (protectedDemo ? '<p class="muted">الحذف النهائي معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>' : `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`);
+      + (protectedDemo
+        ? '<p class="muted">الحذف النهائي معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
+        : currentAdminIsOwner
+          ? `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`
+          : '<p class="muted">الحذف النهائي متاح لصاحب المشروع فقط.</p>');
     const imagePreview=Array.isArray(row.image_urls)&&row.image_urls.length
       ? `<div data-admin-image data-admin-table="${item.table}" data-id="${adminEscape(row.id)}"><p class="muted">جاري تحميل معاينة الصورة...</p></div>`
       : "";
@@ -1587,6 +1597,7 @@ function applyAdminSearch(){
   const input=el(id);
   if(input&&!input.dataset.ready){input.dataset.ready="1";input.addEventListener(id==="admin-search"?"input":"change",applyAdminSearch);}
 });
+let currentAdminIsOwner=false;
 async function refreshAdminState(){
  const login=el("admin-login"),panel=el("admin-panel"),host=el("admin-requests");
  try{
@@ -1595,12 +1606,17 @@ async function refreshAdminState(){
   if(error)throw error;
   const logged=!!(data&&data.session);
   if(!logged){
+   currentAdminIsOwner=false;
+   el("admin-user-management")?.classList.add("hidden");
    login.classList.remove("hidden");
    panel.classList.add("hidden");
    return;
   }
   const {data:isAdmin,error:adminError}=await db.rpc("is_admin");
   if(adminError)throw adminError;
+  const {data:isOwner,error:ownerError}=await db.rpc("is_owner");
+  if(ownerError)throw ownerError;
+  currentAdminIsOwner=isOwner===true;
   const allowed=isAdmin===true;
   login.classList.toggle("hidden",allowed);
   panel.classList.toggle("hidden",!allowed);
@@ -1610,7 +1626,12 @@ async function refreshAdminState(){
    return;
   }
   adminMessage("");
-  el("admin-welcome").textContent="تم التثبت من صلاحية الإدارة بنجاح.";
+  el("admin-welcome").textContent=currentAdminIsOwner
+    ? "أهلاً بيك، إنت صاحب المشروع وعندك الصلاحيات الكاملة."
+    : "أهلاً بيك في لوحة المشرف. صلاحيتك تقتصر على مراجعة الإعلانات.";
+  const userManagement=el("admin-user-management");
+  userManagement?.classList.toggle("hidden",!currentAdminIsOwner);
+  if(currentAdminIsOwner)await loadAdminUsers();
   await renderAdmin();
  }catch(error){
   console.error("Admin authorization check:",error);
@@ -1621,6 +1642,48 @@ async function refreshAdminState(){
   throw error;
  }
 }
+async function loadAdminUsers(){
+ const host=el("admin-users-list");
+ if(!host||!currentAdminIsOwner)return;
+ host.innerHTML='<p class="muted">جاري تحميل الحسابات المسجّلة...</p>';
+ try{
+  const {data,error}=await db.rpc("admin_list_users");
+  if(error)throw error;
+  const users=Array.isArray(data)?data:[];
+  if(!users.length){host.innerHTML='<p class="muted">ما فماش حسابات مسجّلة حالياً.</p>';return;}
+  host.innerHTML=users.map(user=>{
+   const role=user.is_moderator ? "مشرف" : "مستخدم عادي";
+   const created=user.created_at ? new Date(user.created_at).toLocaleDateString("fr-TN") : "";
+   const action=user.is_moderator
+    ? '<button type="button" data-admin-role-user="1" data-user-id="'+adminEscape(user.user_id)+'" data-make="false" style="background:#a34b4b">إلغاء صفة المشرف</button>'
+    : '<button type="button" data-admin-role-user="1" data-user-id="'+adminEscape(user.user_id)+'" data-make="true" style="background:#355c7d">تعيينه مشرف</button>';
+   return '<div class="entry" style="margin:8px 0"><b>'+adminEscape(user.email||"بريد غير متوفر")+'</b><p class="muted" style="margin:4px 0">تاريخ التسجيل: '+adminEscape(created)+' | الصفة: '+role+'</p>'+action+'</div>';
+  }).join("");
+ }catch(error){
+  console.error("Admin users list:",error);
+  host.textContent="تعذّر تحميل الحسابات. تثبّت من الصلاحيات والاتصال.";
+ }
+}
+document.addEventListener("click",async event=>{
+ const refresh=event.target.closest("#admin-users-refresh");
+ if(refresh){await loadAdminUsers();return;}
+ const button=event.target.closest("[data-admin-role-user]");
+ if(!button||!currentAdminIsOwner)return;
+ const userId=button.dataset.userId,make=button.dataset.make==="true";
+ if(!userId)return;
+ if(!window.confirm(make?"متأكد تحب تعيّن الحساب هذا مشرف؟":"متأكد تحب تنحّي صفة المشرف من الحساب هذا؟"))return;
+ button.disabled=true;
+ try{
+  const {error}=await db.rpc("admin_set_moderator",{p_user_id:userId,p_make_moderator:make});
+  if(error)throw error;
+  await loadAdminUsers();
+  alert(make?"تم تعيين المشرف.":"تم إلغاء صفة المشرف.");
+ }catch(error){
+  console.error("Moderator role update:",error);
+  alert("ما نجّمش نبدّل الصلاحية. عاود التحديث وتثبّت من الاتصال.");
+  button.disabled=false;
+ }
+});
 function memberMessage(message){const node=el("member-message");if(node)node.textContent=message;}
 const memberStatusLabel=status=>({pending:"في انتظار مراجعة الإدارة",approved:"منشور للعموم",rejected:"مرفوض",unpublished:"توقّف نشره"})[status]||status||"غير معروف";
 async function refreshMemberState(){
@@ -2023,6 +2086,25 @@ if ("serviceWorker" in navigator) {
  // Dictionnaire complémentaire : interface, formulaires, solidarité, compte et administration.
  Object.assign(translations, {
   "توقيت تونس": "Heure de Tunisie",
+  "إدارة المستخدمين والمشرفين": "Gestion des utilisateurs et modérateurs",
+  "كل شخص يسجّل حساب يبقى مستخدم عادي. إنت وحدك تعيّن المشرف أو تنحّيله الصفة.": "Chaque nouvel inscrit reste un utilisateur ordinaire. Vous seul pouvez nommer ou retirer un modérateur.",
+  "تحديث قائمة المسجّلين": "Actualiser la liste des inscrits",
+  "جاري تحميل الحسابات المسجّلة...": "Chargement des comptes inscrits...",
+  "ما فماش حسابات مسجّلة حالياً.": "Aucun compte inscrit pour le moment.",
+  "مشرف": "Modérateur",
+  "مستخدم عادي": "Utilisateur ordinaire",
+  "تاريخ التسجيل: ": "Date d’inscription : ",
+  "إلغاء صفة المشرف": "Retirer le rôle de modérateur",
+  "تعيينه مشرف": "Nommer modérateur",
+  "أهلاً بيك، إنت صاحب المشروع وعندك الصلاحيات الكاملة.": "Bienvenue, vous êtes le propriétaire du projet et disposez de tous les droits.",
+  "أهلاً بيك في لوحة المشرف. صلاحيتك تقتصر على مراجعة الإعلانات.": "Bienvenue dans le panneau du modérateur. Vos droits se limitent à la modération des annonces.",
+  "الحذف النهائي متاح لصاحب المشروع فقط.": "La suppression définitive est réservée au propriétaire du projet.",
+  "تعذّر تحميل الحسابات. تثبّت من الصلاحيات والاتصال.": "Impossible de charger les comptes. Vérifiez les autorisations et la connexion.",
+  "متأكد تحب تعيّن الحساب هذا مشرف؟": "Confirmez-vous la nomination de ce compte comme modérateur ?",
+  "متأكد تحب تنحّي صفة المشرف من الحساب هذا؟": "Confirmez-vous le retrait du rôle de modérateur de ce compte ?",
+  "تم تعيين المشرف.": "Le modérateur a été nommé.",
+  "تم إلغاء صفة المشرف.": "Le rôle de modérateur a été retiré.",
+  "ما نجّمش نبدّل الصلاحية. عاود التحديث وتثبّت من الاتصال.": "Impossible de modifier le rôle. Actualisez et vérifiez la connexion.",
   "خدماتك وفرصتك وعقارك في بلاصة وحدة": "Vos services, vos opportunités et vos biens au même endroit",
   "نبدأوا بصفاقس ونتوسعوا لكل تونس": "Nous commençons à Sfax avant de nous étendre à toute la Tunisie",
   "الخدمات والمشاوير": "Services et courses",
