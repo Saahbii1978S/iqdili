@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
+        settings.setDomStorageEnabled(true);\n        settings.setCacheMode(WebSettings.LOAD_DEFAULT);\n        settings.setLoadsImagesAutomatically(true);
         settings.setDatabaseEnabled(false);
         settings.setAllowFileAccess(false);
         settings.setAllowContentAccess(true);
@@ -112,7 +112,7 @@ public class MainActivity extends Activity {
 
     private boolean routeUrl(Uri uri) {
         String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase();
-        if ("https".equals(scheme) && HOST.equalsIgnoreCase(uri.getHost())) return false;
+        if ("https".equals(scheme) && HOST.equalsIgnoreCase(uri.getHost())\n                && ("/iqdili".equals(uri.getPath()) || (uri.getPath() != null && uri.getPath().startsWith("/iqdili/")))) return false;
         if ("http".equals(scheme) || "https".equals(scheme)
                 || "tel".equals(scheme) || "mailto".equals(scheme)
                 || "sms".equals(scheme) || "whatsapp".equals(scheme)) {
