@@ -59,7 +59,8 @@ public class MainActivity extends Activity {
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
         settings.setSupportMultipleWindows(false);
-        settings.setGeolocationEnabled(true);
+        // Location access is disabled until a proper Android runtime permission flow is implemented.
+        settings.setGeolocationEnabled(false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             settings.setSafeBrowsingEnabled(true);
         }
@@ -101,7 +102,7 @@ public class MainActivity extends Activity {
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin,
                     GeolocationPermissions.Callback callback) {
-                callback.invoke(origin, true, false);
+                callback.invoke(origin, false, false);
             }
         });
 
