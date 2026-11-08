@@ -1509,7 +1509,7 @@ async function renderAdmin(){
     const actions=(protectedDemo
       ? '<p class="muted">النشر معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
       : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "")
-      + `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`;
+      + (protectedDemo ? '<p class="muted">الحذف النهائي معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>' : `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`);
     const imagePreview=Array.isArray(row.image_urls)&&row.image_urls.length
       ? `<div data-admin-image data-admin-table="${item.table}" data-id="${adminEscape(row.id)}"><p class="muted">جاري تحميل معاينة الصورة...</p></div>`
       : "";
