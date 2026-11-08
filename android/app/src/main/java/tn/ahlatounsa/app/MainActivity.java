@@ -13,6 +13,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.GeolocationPermissions;
+import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
@@ -21,6 +22,27 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 701;
     private WebView webView;
     private ValueCallback<Uri[]> fileChooserCallback;
+
+    public class ShareBridge {
+        @JavascriptInterface
+        public void share(String title, String message, String url) {
+            runOnUiThread(() -> {
+                Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                sendIntent.setType("text/plain");
+                String content = (message == null ? "" : message.trim());
+                if (url != null && !url.trim().isEmpty() && !content.contains(url.trim())) {
+                    content = content.isEmpty() ? url.trim() : content + "\\n" + url.trim();
+                }
+                sendIntent.putExtra(Intent.EXTRA_TEXT, content);
+                try {
+                    startActivity(Intent.createChooser(sendIntent,
+                            (title == null || title.trim().isEmpty()) ? "مشاركة أحلى توانسة" : title));
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "ما نجّمش نفتح قائمة المشاركة", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +64,7 @@ public class MainActivity extends Activity {
             settings.setSafeBrowsingEnabled(true);
         }
 
+        webView.addJavascriptInterface(new ShareBridge(), "AndroidShare");
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
 
