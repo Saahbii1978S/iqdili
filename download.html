@@ -6,29 +6,23 @@
   <meta name="theme-color" content="#ffffff">
   <title>تحميل تطبيق أحلى توانسة</title>
   <style>
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:22px;background:#f7f7f5;color:#171717;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-    main{width:min(100%,440px);background:#fff;border:1px solid #e9e9e7;border-radius:22px;padding:28px 22px;text-align:center;box-shadow:0 12px 36px #0000000a}
-    .flag{font-size:36px}h1{font-size:27px;margin:12px 0 8px}p{line-height:1.8;color:#555;margin:8px 0 18px}
-    a{display:block;text-decoration:none;background:#b91c1c;color:#fff;font-weight:700;border-radius:14px;padding:15px 18px;margin:18px 0}
-    small{display:block;color:#777;line-height:1.8}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:#f7f7f5;color:#171717;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{width:min(100%,460px);background:#fff;border:1px solid #e9e9e7;border-radius:22px;padding:30px 22px;text-align:center;box-shadow:0 12px 36px #0000000a}
+    .flag{font-size:38px}h1{font-size:28px;margin:12px 0 8px}p{line-height:1.9;color:#555;margin:10px 0 20px}
+    a{display:block;text-decoration:none;background:#b91c1c;color:#fff;font-weight:800;font-size:18px;border-radius:14px;padding:17px 18px;margin:20px 0}
+    small{display:block;color:#777;line-height:1.9;margin-top:10px}
   </style>
 </head>
 <body>
   <main>
     <div class="flag">🇹🇳</div>
     <h1>أحلى توانسة</h1>
-    <p>تحميل تطبيق أحلى توانسة للأندرويد مباشرة على هاتفك.</p>
-    <a id="download" href="https://github.com/Saahbii1978S/iqdili/releases/download/android-latest/ahla-tounsa.apk">⬇️ تحميل التطبيق APK</a>
-    <small>بعد اكتمال التحميل، افتح الملف واضغط «تثبيت». قد يطلب منك Android السماح لمتصفحك بتثبيت التطبيقات التي حمّلتها منه.</small>
-    <small>إذا لم يبدأ التحميل تلقائياً، اضغط على زر «تحميل التطبيق APK».</small>
+    <p>تطبيق أحلى توانسة للأندرويد<br>اضغط على الزر لتحميل ملف التطبيق APK.</p>
+    <a href="https://github.com/Saahbii1978S/iqdili/releases/download/android-latest/ahla-tounsa.apk">⬇️ تحميل التطبيق APK</a>
+    <small>بعد اكتمال التحميل، افتح ملف <b>ahla-tounsa.apk</b> واضغط «تثبيت».</small>
+    <small>قد يطلب Android تأكيد التحميل أو السماح بالتثبيت من المصدر الذي استعملته. هذا إجراء حماية عادي للتطبيقات المثبّتة خارج Google Play.</small>
+    <small>إذا تحب تبعث التطبيق لصاحبك، ابعث ملف APK نفسه على WhatsApp كـ«مستند»؛ ما تبعثلوش رابط الصفحة فقط.</small>
   </main>
-  <script>
-    // Start the APK download when this page is opened; keep a visible fallback button.
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        window.location.href = document.getElementById('download').href;
-      }, 700);
-    });
-  </script>
 </body>
 </html>
