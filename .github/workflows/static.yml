@@ -29,7 +29,7 @@ jobs:
       - name: Prepare public site
         run: |
           mkdir -p _site
-          cp index.html privacy.html delete-account.html manifest.webmanifest service-worker.js app-icon.svg _site/
+          cp index.html privacy.html delete-account.html download.html manifest.webmanifest service-worker.js app-icon.svg _site/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
