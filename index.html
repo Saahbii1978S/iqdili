@@ -1165,17 +1165,12 @@ let siteVisitHeartbeatStarted=false;
 function startSiteVisitTracking(){
  if(siteVisitHeartbeatStarted||!db)return;
  siteVisitHeartbeatStarted=true;
- let visitorId="";
- try{
-  visitorId=localStorage.getItem("ahla-site-visitor-id")||"";
-  if(!/^[0-9a-f-]{36}$/i.test(visitorId)){
-   visitorId=crypto.randomUUID();
-   localStorage.setItem("ahla-site-visitor-id",visitorId);
-  }
- }catch(error){
-  try{visitorId=crypto.randomUUID();}catch(e){return;}
- }
- const sendHeartbeat=()=>{if(db&&visitorId)db.rpc("record_site_visit",{p_visitor_id:visitorId}).then(({error})=>{if(error)console.warn("Visitor count:",error.message);}).catch(()=>{});};
+ const sendHeartbeat=()=>{
+  if(!db)return;
+  db.rpc("record_site_visit").then(({error})=>{
+   if(error)console.warn("Visitor count:",error.message);
+  }).catch(()=>{});
+ };
  sendHeartbeat();
  window.setInterval(sendHeartbeat,60000);
 }
