@@ -697,7 +697,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
 <div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
 <label for="simage">صورة الخدمة (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="simage" type="file" accept="image/*"><div id="simage-preview" class="muted" aria-live="polite"></div><label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
-<p class="muted" style="margin-top:10px">تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.</p>
+
 <div id="turnstile-services" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
 <button type="button" id="close-service-form" style="margin-top:10px;background:#647875">إغلاق الاستمارة</button>
@@ -715,7 +715,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
 <div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
 <label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jimage">صورة الإعلان (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="jimage" type="file" accept="image/*"><div id="jimage-preview" class="muted" aria-live="polite"></div><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
-<p class="muted" style="margin-top:10px">تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.</p>
+
 <div id="turnstile-jobs" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="jobs">حفظ الإعلان</button><button type="button" data-close-form="job-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -731,7 +731,7 @@ main>section input[type="file"]::file-selector-button{
 <div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
 <div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1"></div></div>
 <label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="rimage" type="file" accept="image/*"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
-<p class="muted" style="margin-top:10px">تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.</p>
+
 <div id="turnstile-realty" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -742,7 +742,7 @@ main>section input[type="file"]::file-selector-button{
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
 <label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mimage">صورة المنتج (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="mimage" type="file" accept="image/*"><div id="mimage-preview" class="muted" aria-live="polite"></div><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="mpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
-<p class="muted" style="margin-top:10px">تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.</p>
+
 <div id="turnstile-market" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="market">إرسال الإعلان</button><button type="button" data-close-form="market-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
@@ -1587,8 +1587,7 @@ async function loadMemberPosts(token){
   all.sort((a,b)=>new Date(b.post.created_at||0)-new Date(a.post.created_at||0));
   if(!all.length){host.innerHTML='<p class="muted">ما عندك حتى إعلان مربوط بالحساب هذا. الإعلانات اللي نشرتها قبل إنشاء الحساب ما تتربطش آلياً به.</p>';return;}
   host.innerHTML=all.map(({table,post})=>{
-   const expiry=post.expires_at?"ينتهي: "+new Date(post.expires_at).toLocaleDateString("ar-TN"):"";
-   const detail=[labels[table],memberStatusLabel(post.status),post.city||"",expiry].filter(Boolean).join(" • ");
+   const detail=[labels[table],memberStatusLabel(post.status),post.city||""].filter(Boolean).join(" • ");
    const packed=safe(JSON.stringify(post));
    return '<div class="entry"><b>'+safe(post.title||"إعلان من غير عنوان")+'</b><small>'+safe(detail)+'</small><p>'+safe(post.description||"")+'</p><button type="button" data-member-repost="1" data-table="'+safe(table)+'" data-post="'+packed+'">عاود انشر إعلان جديد</button></div>';
   }).join("");
@@ -2023,7 +2022,6 @@ if ("serviceWorker" in navigator) {
   "صورة الخدمة (اختيارية، تتجهّز وحدها مهما كان حجمها)": "Photo du service (facultative, optimisée automatiquement quelle que soit sa taille)",
   "رقم الهاتف": "Numéro de téléphone",
   "نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي": "J’autorise l’affichage public de mon numéro dans l’annonce afin d’être contacté.",
-  "تنبيه: الإعلان المنشور صالح لمدة 30 يوماً من تاريخ موافقة الإدارة. بعد ذلك يتحذف هو وصوره آلياً، وتنجم تعاود تنشر إعلانك من جديد.": "Attention : l’annonce reste publiée pendant 30 jours à compter de son approbation par l’administration. Ensuite, elle et ses photos sont supprimées automatiquement. Vous pourrez la republier.",
   "حفظ الطلب": "Enregistrer la demande",
   "إغلاق الاستمارة": "Fermer le formulaire",
   "فرص العمل والإعلانات المهنية": "Emploi et annonces professionnelles",
