@@ -74,3 +74,65 @@ section>h2:before{background:linear-gradient(180deg,#087f78 0%,#3976c6 55%,#8064
 @media(prefers-reduced-motion:reduce){
   #home .cards .card{transition:none}
 }
+
+/* احترام الوضع الداكن وإعداد ألوان النظام */
+:root[data-theme="dark"] header{
+  background:
+    radial-gradient(circle at 9% 16%,rgba(128,100,189,.16),transparent 24%),
+    radial-gradient(circle at 91% 12%,rgba(57,118,198,.18),transparent 25%),
+    linear-gradient(135deg,#1d2936 0%,#172b35 52%,#20283a 100%);
+}
+:root[data-theme="dark"] header .topbar-title h1{color:#eef6fb}
+:root[data-theme="dark"] header>div:not(.topbar){color:#c3d1dc}
+:root[data-theme="dark"] header small{background:#263d47;color:#bce9df;border-color:#3d5963}
+:root[data-theme="dark"] nav{background:rgba(23,35,49,.97);border-color:#344354}
+:root[data-theme="dark"] nav button{background:#243447;color:#e7edf5;border-color:#40546a}
+:root[data-theme="dark"] nav button.active,
+:root[data-theme="dark"] nav button[aria-current="page"]{background:linear-gradient(110deg,#087f78,#176b83);color:#fff}
+:root[data-theme="dark"] #home>.box:first-child{
+  background:
+    radial-gradient(circle at 88% 16%,rgba(57,118,198,.18),transparent 24%),
+    radial-gradient(circle at 8% 90%,rgba(128,100,189,.14),transparent 25%),
+    linear-gradient(115deg,#203b3c 0%,#1d2e3d 58%,#2b2940 100%);
+  border-color:#3a555c;
+}
+:root[data-theme="dark"] #home>.box:first-child h2{color:#eef6fb}
+:root[data-theme="dark"] #home>.box:first-child p{color:#c5d3df}
+:root[data-theme="dark"] #home .cards .card,
+:root[data-theme="dark"] #home .cards .card:nth-child(n){
+  background:linear-gradient(145deg,#1d2936 0%,#223344 100%);
+  border-color:#3a4c60;
+}
+:root[data-theme="dark"] #home .cards .card h3{color:#edf4fb}
+:root[data-theme="dark"] #home .cards .card p{color:#b8c5d3}
+@media(prefers-color-scheme:dark){
+  :root[data-theme="system"] header{
+    background:
+      radial-gradient(circle at 9% 16%,rgba(128,100,189,.16),transparent 24%),
+      radial-gradient(circle at 91% 12%,rgba(57,118,198,.18),transparent 25%),
+      linear-gradient(135deg,#1d2936 0%,#172b35 52%,#20283a 100%);
+  }
+  :root[data-theme="system"] header .topbar-title h1{color:#eef6fb}
+  :root[data-theme="system"] header>div:not(.topbar){color:#c3d1dc}
+  :root[data-theme="system"] header small{background:#263d47;color:#bce9df;border-color:#3d5963}
+  :root[data-theme="system"] nav{background:rgba(23,35,49,.97);border-color:#344354}
+  :root[data-theme="system"] nav button{background:#243447;color:#e7edf5;border-color:#40546a}
+  :root[data-theme="system"] nav button.active,
+  :root[data-theme="system"] nav button[aria-current="page"]{background:linear-gradient(110deg,#087f78,#176b83);color:#fff}
+  :root[data-theme="system"] #home>.box:first-child{
+    background:
+      radial-gradient(circle at 88% 16%,rgba(57,118,198,.18),transparent 24%),
+      radial-gradient(circle at 8% 90%,rgba(128,100,189,.14),transparent 25%),
+      linear-gradient(115deg,#203b3c 0%,#1d2e3d 58%,#2b2940 100%);
+    border-color:#3a555c;
+  }
+  :root[data-theme="system"] #home>.box:first-child h2{color:#eef6fb}
+  :root[data-theme="system"] #home>.box:first-child p{color:#c5d3df}
+  :root[data-theme="system"] #home .cards .card,
+  :root[data-theme="system"] #home .cards .card:nth-child(n){
+    background:linear-gradient(145deg,#1d2936 0%,#223344 100%);
+    border-color:#3a4c60;
+  }
+  :root[data-theme="system"] #home .cards .card h3{color:#edf4fb}
+  :root[data-theme="system"] #home .cards .card p{color:#b8c5d3}
+}
