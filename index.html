@@ -2242,6 +2242,32 @@ if ("serviceWorker" in navigator) {
  const attrs = {
  "اكتب نوع الخدمة أو المنطقة...":"Type de service ou région...","اكتب المهنة أو المنطقة...":"Métier ou région...","اكتب نوع العقار أو المنطقة...":"Type de bien ou région...","اسمك ولقبك":"Nom et prénom","مثال: عامل إنتاج / مساعد إداري":"Ex. : agent de production / assistant administratif","صفاقس":"Sfax","اكتب سؤالك باختصار، إلى 1000 حرف.":"Rédigez brièvement votre question (1000 caractères maximum).","فتّش في طلبات الخدمات...":"Rechercher des services...","فتّش في فرص العمل...":"Rechercher des emplois...","فتّش في العقارات...":"Rechercher des biens...","فتّش في إعلانات السوق...":"Rechercher dans le marché..."
  };
+ Object.assign(translations, {
+  "CV من أجل الخير 📄": "CV solidaire 📄",
+  "🔎 فتّش في إعلانات السوق": "🔎 Rechercher dans les annonces du marché",
+  "الإعلانات ما تظهرش للعموم قبل موافقة الإدارة. رقم الهاتف ما يظهرش في المنشور العام إلا إذا تختار صراحةً إظهار وسيلة الاتصال للناس. الصور المرفوعة تنجم تظهر مع الإعلان المقبول.": "Les annonces ne sont pas visibles du public avant l’approbation de l’administration. Le numéro de téléphone n’apparaît dans l’annonce publique que si vous autorisez explicitement l’affichage de vos coordonnées. Les photos envoyées peuvent être affichées avec l’annonce approuvée.",
+  "المعلومات والصورة اللي تدخلهم في أداة CV يستعملهم المتصفح على جهازك لصناعة السيرة الذاتية، وما يلزمش تبعثهم في استمارات الإعلانات. حمّل نسخة قبل ما تسكّر الصفحة.": "Les informations et la photo saisies dans l’outil CV sont utilisées par le navigateur de votre appareil pour créer le CV. Ne les saisissez pas dans les formulaires d’annonces. Téléchargez une copie avant de fermer la page.",
+  "السؤال اللي تكتبه يتبعث للخدمة المخصّصة للإجابة حتى تتم معالجته. ما تكتبش فيه كلمات سر أو أرقام بطاقات أو وثائق شخصية أو معلومات صحية حساسة.": "La question que vous rédigez est transmise au service chargé d’y répondre afin d’être traitée. N’y saisissez aucun mot de passe, numéro de carte, document personnel ni information médicale sensible.",
+  "باستعمالك أحلى توانسة، توافق على احترام الناس والقوانين وعدم استعمال المنصة في الغش أو التهديد أو التشهير أو نشر محتوى غير قانوني أو مضلّل.": "En utilisant Ahla Tounsa, vous acceptez de respecter les personnes et les lois. La plateforme ne doit pas servir à escroquer, menacer, diffamer ou publier des contenus illégaux ou trompeurs.",
+  "ما تبعثش فلوس أو بيانات بنكية لشخص ما تثبّتّش من هويته. قابل الطرف الآخر في مكان آمن وتثبّت من السلعة أو العقار والوثائق قبل أي اتفاق.": "N’envoyez pas d’argent ni de coordonnées bancaires à une personne dont vous n’avez pas vérifié l’identité. Rencontrez l’autre partie dans un lieu sûr et vérifiez le produit, le bien immobilier et les documents avant tout accord.",
+  "إذا شفت إعلاناً مشبوهاً أو فيه معلومات مخالفة، ابعث للإدارة رابط الإعلان أو عنوانه ورقم الهاتف الظاهر فيه وسبب التبليغ. ما تعاودش تنشر بيانات الشخص المبلّغ عليه في العلن.": "Si vous repérez une annonce suspecte ou non conforme, envoyez à l’administration son lien ou son titre, le numéro de téléphone affiché et le motif du signalement. Ne republiez pas publiquement les données de la personne signalée."
+});
+ Object.assign(attrs, {
+  "اسمك ولقبك": "Nom et prénom",
+  "مثال: عامل إنتاج / مساعد إداري": "Ex. : agent de production / assistant administratif",
+  "صفاقس": "Sfax",
+  "مثال: شخص جدي ومنظم، نحب نتعلم ونخدم ضمن فريق...": "Ex. : personne sérieuse et organisée, motivée pour apprendre et travailler en équipe…",
+  "مثال: السنة التاسعة أساسي، شهادة تكوين مهني...": "Ex. : neuvième année de base, diplôme de formation professionnelle…",
+  "اسم المؤسسة، الخطة، والمدة. ما تكتبش تجربة ما عشتهاش.": "Nom de l’établissement, poste et durée. N’indiquez pas une expérience que vous n’avez pas vécue.",
+  "مثال: العمل ضمن فريق، الانضباط، استعمال الحاسوب...": "Ex. : travail en équipe, discipline, utilisation de l’ordinateur…",
+  "العربية: ممتاز؛ الفرنسية: متوسط؛ الإنجليزية: مبتدئ": "Arabe : excellent ; français : intermédiaire ; anglais : débutant",
+  "مثال: صنف B": "Ex. : catégorie B",
+  "البحث في الخدمات المنشورة": "Rechercher parmi les services publiés",
+  "مثال: صباحاً أو بعد الظهر": "Ex. : le matin ou l’après-midi",
+  "أدخل رقم هاتفك": "Saisissez votre numéro de téléphone",
+  "اكتب اسم منتج أو منطقة...": "Saisissez le nom du produit ou la région…",
+  "فتّش بالعنوان أو الوصف أو المنطقة أو الرقم...": "Rechercher par titre, description, région ou numéro…"
+});
  let current="tn";
  const originals=new WeakMap();
  function normalizeText(value){return value.replace(/\\s+/g," ").trim();}
