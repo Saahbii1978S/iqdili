@@ -1477,8 +1477,10 @@ const adminTables=[
 ];
 // حماية إضافية في لوحة الإدارة: الإعلانات التجريبية المعروفة لا يظهر لها زر نشر.
 const protectedDemoIds={
- market_posts:["2","3","7"],
- real_estate_posts:["1","2"]
+ service_requests:["13"],
+ job_posts:["7"],
+ market_posts:["2","3","7","8","9"],
+ real_estate_posts:["1","2","6"]
 };
 async function renderAdmin(){
   const host=el("admin-requests");
