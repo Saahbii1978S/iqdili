@@ -111,6 +111,11 @@ header .topbar{
 header .topbar-brand{
   display:flex;align-items:center;justify-content:center;gap:14px;min-width:0;
 }
+.header-share-actions{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:12px auto 16px}
+.header-share-actions button{min-height:42px;padding:8px 16px;border-radius:999px;font-size:15px}
+.header-share-actions .header-copy-button{background:#fff;color:#24505a;border:1px solid #cbdde2;box-shadow:none}
+.header-share-status{flex-basis:100%;min-height:1.4em;color:#315b58;font-size:13px;font-weight:700}
+@media(max-width:520px){.header-share-actions{gap:7px}.header-share-actions button{font-size:13px;padding:8px 12px;min-height:40px}}
 header .topbar-brand:before{
   content:"أ";display:grid;place-items:center;flex:0 0 auto;
   width:clamp(48px,6vw,68px);height:clamp(48px,6vw,68px);
@@ -658,6 +663,11 @@ main>section input[type="file"]::file-selector-button{
     <div class="topbar-title"><h1>أحلى توانسة</h1><div class="brand-fr" lang="fr" dir="ltr">AHLA TOUNSA</div></div>
   </div>
   <div class="live-clock" role="timer" aria-label="الساعة والتاريخ بتوقيت تونس"><span class="clock-time" id="clock-time">--:--:--</span><span class="clock-date" id="clock-date">توقيت تونس</span></div>
+</div>
+<div class="header-share-actions" aria-label="مشاركة أحلى توانسة">
+  <button type="button" id="share-app-button" class="header-share-button">📤 مشاركة التطبيق</button>
+  <button type="button" id="copy-project-link" class="header-copy-button">🔗 نسخ رابط المشروع</button>
+  <span id="header-share-status" class="header-share-status" aria-live="polite"></span>
 </div>
 <div>خدماتك وفرصتك وعقارك في بلاصة وحدة</div>
 <small>نبدأوا بصفاقس ونتوسعوا لكل تونس</small>
@@ -2100,7 +2110,8 @@ if ("serviceWorker" in navigator) {
 (function(){
  const translations = {
  "الرئيسية":"Accueil","الخدمات":"Services","فرص العمل":"Offres d’emploi","العقارات":"Immobilier","السوق":"Marché","باب الخير ❤️":"Porte du bien ❤️","اسأل أحلى توانسة":"Demandez à Ahla Tounsa","المنشورات الحية":"Publications en ligne","CV من أجل الخير":"CV solidaire","حسابي":"Mon compte","الإدارة":"Administration","تواصل مع الإدارة":"Contacter l’administration",
- "خدماتك وفرصتك وعقارك في بلاصة وحدة":"Vos services, opportunités et biens au même endroit","نبدأوا بصفاقس ونتوسعوا لكل تونس":"Nous commençons à Sfax, puis dans toute la Tunisie",
+ "خدماتك وفرصتك وعقارك في بلاصة وحدة":"Vos services, opportunités et biens au même endroit",
+ "📤 مشاركة التطبيق":"📤 Partager l’application","🔗 نسخ رابط المشروع":"🔗 Copier le lien du projet","نبدأوا بصفاقس ونتوسعوا لكل تونس":"Nous commençons à Sfax, puis dans toute la Tunisie",
  "منصة أحلى توانسة: تنجم تنشر طلب خدمة أو فرصة عمل أو إعلان عقاري أو منتج. النشر السحابي يتطلب اتصالاً بقاعدة البيانات.":"Ahla Tounsa : publiez une demande de service, une offre d’emploi, une annonce immobilière ou un produit. La publication en ligne nécessite une connexion à la base de données.",
  "مرحبا بيك في أحلى توانسة 👋":"Bienvenue sur Ahla Tounsa 👋","نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.":"Nous rapprochons les services des citoyens et facilitons l’accès aux emplois, à l’immobilier et à un marché ouvert.",
  "الخدمات والمشاوير":"Services et courses","توصيل، بحث عن مختصين، وقضاء مصالح.":"Livraison, recherche de professionnels et démarches du quotidien.","فرص العمل":"Offres d’emploi","فتّش على خدمة أو أضف عرض انتداب.":"Cherchez un emploi ou publiez une offre de recrutement.","ديار ومحلات وأراضٍ للبيع والكراء.":"Maisons, locaux et terrains à vendre ou à louer.","سوق أحلى توانسة":"Le marché Ahla Tounsa","بيع واشري واعرض منتجاتك مجاناً.":"Vendez, achetez et présentez vos produits gratuitement.","باب الخير":"La porte de la solidarité","مبادرات خيرية، تطوّع، تعليم ومساندة الناس بالعمل.":"Initiatives solidaires, bénévolat, éducation et entraide concrète.","حضّر سيرة ذاتية مرتبة ومجانية، حتى كان ما عندكش خبرة.":"Créez gratuitement un CV soigné, même sans expérience.",
@@ -2545,5 +2556,28 @@ if ("serviceWorker" in navigator) {
 })();
 </script>
 
+<script id="ahla-app-sharing">
+(function(){
+ const projectUrl="https://saahbii1978s.github.io/iqdili/";
+ const shareButton=document.getElementById("share-app-button");
+ const copyButton=document.getElementById("copy-project-link");
+ const status=document.getElementById("header-share-status");
+ async function copyText(value){
+  if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return true;}
+  const field=document.createElement("textarea");field.value=value;field.setAttribute("readonly","");field.style.position="fixed";field.style.opacity="0";document.body.appendChild(field);field.select();
+  let ok=false;try{ok=document.execCommand("copy");}catch(error){}field.remove();return ok;
+ }
+ if(copyButton)copyButton.addEventListener("click",async()=>{
+  try{const ok=await copyText(projectUrl);if(status)status.textContent=ok?"تم نسخ رابط أحلى توانسة. ابعثه لأصحابك ❤️":"ما نجّمش ننسخ الرابط آلياً؛ انسخه من شريط العنوان.";}
+  catch(error){if(status)status.textContent="ما نجّمش ننسخ الرابط؛ جرّب المشاركة.";}
+ });
+ if(shareButton)shareButton.addEventListener("click",async()=>{
+  try{
+   if(navigator.share){await navigator.share({title:"أحلى توانسة – AHLA TOUNSA",text:"خدماتك وفرصتك وعقارك في بلاصة وحدة. اكتشف منصة أحلى توانسة وشاركها مع أصحابك.",url:projectUrl});if(status)status.textContent="تنجم تختار واتساب أو أي تطبيق مشاركة ❤️";}
+   else{const ok=await copyText(projectUrl);if(status)status.textContent=ok?"المشاركة غير متاحة هنا؛ نسخنالك الرابط باش تبعثه لأصحابك.":"المشاركة غير متاحة؛ انسخ الرابط من شريط العنوان.";}
+  }catch(error){if(error&&error.name!=="AbortError"&&status)status.textContent="تعذّرت المشاركة. جرّب زر نسخ الرابط.";}
+ });
+})();
+</script>
 </body>
 </html>
