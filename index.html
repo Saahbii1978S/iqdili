@@ -1502,7 +1502,7 @@ async function renderAdmin(){
     const phoneHtml=phone ? '<p>📞 <a href="tel:'+phone.replace(/[^+0-9]/g,"") + '">' + adminEscape(phone) + '</a></p>' : "";
     const searchable=normalizeListingSearch([title,desc,city,row.id,phone].join(" "));
     const likelyDemo=/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(searchable);
-    const protectedDemo=(protectedDemoIds[item.table]||[]).includes(String(row.id)) || (likelyDemo && ["market_posts","real_estate_posts"].includes(item.table));
+    const protectedDemo=(protectedDemoIds[item.table]||[]).includes(String(row.id)) || likelyDemo;
     const demoLabel=protectedDemo
       ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">🔒 إعلان تجريبي محمي — ممنوع نشره</span>'
       : likelyDemo ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">يحتمل أنّه تجريبي — راجع المحتوى</span>' : "";
