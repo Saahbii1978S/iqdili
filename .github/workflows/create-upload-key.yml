@@ -1,0 +1,56 @@
+name: Create Ahla Tounsa Upload Key
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  create-key:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+      RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+    steps:
+      - name: Check signing secrets
+        shell: bash
+        run: |
+          for name in RELEASE_STORE_PASSWORD RELEASE_KEY_PASSWORD RELEASE_KEY_ALIAS; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing Actions secret: $name"
+              exit 1
+            fi
+          done
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Generate encrypted upload keystore
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/ahla-key"
+          keytool -genkeypair -v \
+            -keystore "$RUNNER_TEMP/ahla-key/ahla-tounsa-upload.jks" \
+            -storetype JKS \
+            -storepass "$RELEASE_STORE_PASSWORD" \
+            -keypass "$RELEASE_KEY_PASSWORD" \
+            -alias "$RELEASE_KEY_ALIAS" \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=Ahla Tounsa, OU=Android, O=Ahla Tounsa, L=Sfax, ST=Sfax, C=TN"
+          base64 -w 0 "$RUNNER_TEMP/ahla-key/ahla-tounsa-upload.jks" > "$RUNNER_TEMP/ahla-key/ANDROID_KEYSTORE_BASE64.txt"
+          chmod 600 "$RUNNER_TEMP/ahla-key/"*
+
+      - name: Upload encrypted keystore and encoded copy
+        uses: actions/upload-artifact@v4
+        with:
+          name: ahla-tounsa-upload-key-backup
+          path: |
+            ${{ runner.temp }}/ahla-key/ahla-tounsa-upload.jks
+            ${{ runner.temp }}/ahla-key/ANDROID_KEYSTORE_BASE64.txt
+          if-no-files-found: error
+          retention-days: 30
