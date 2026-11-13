@@ -370,6 +370,8 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
  body.cv-printing #cv-sheet .cv-part{break-inside:avoid}
  body.cv-printing #cv-preview{font-size:11pt}
  body.cv-printing #cv-preview .cv-name{font-size:23pt}
+ body.cv-printing #cv-sheet{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ body.cv-printing #cv-preview,body.cv-printing #cv-preview *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 
 /* واجهة محسّنة: ترتيب أوضح ولمسات متناسقة على الهاتف والحاسوب */
@@ -1077,8 +1079,8 @@ el("cv-print").addEventListener("click",()=>{
  if(!cvPlainText){el("cv-status").textContent="حضّر السيرة الذاتية أولاً.";return;}
  document.body.classList.add("cv-printing");
  window.print();
- document.body.classList.remove("cv-printing");
 });
+window.addEventListener("afterprint",()=>document.body.classList.remove("cv-printing"));
 el("cv-copy").addEventListener("click",async()=>{
  if(!cvPlainText)return;
  try{
