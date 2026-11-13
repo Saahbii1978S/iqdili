@@ -1482,7 +1482,9 @@ function contactActions(phone){
 }
 function listingShareButton(item,section,meta){
  const shareText=[item.title,meta,item.description,"منصة أحلى توانسة"].filter(Boolean).join("\n");
- return '<div class="listing-share-actions"><button type="button" data-listing-share data-share-title="'+safe(item.title||"إعلان من أحلى توانسة")+'" data-share-text="'+safe(shareText).replace(/\n/g,"&#10;")+'" data-share-section="'+section+'" style="background:#28745f;margin-top:10px">↗ شارك الإعلان</button></div>';
+ const reportText=["أريد التبليغ عن إعلان في منصة أحلى توانسة","القسم: "+section,"العنوان: "+(item.title||"غير محدد"),"التفاصيل: "+(meta||"غير محددة"),"الرابط: "+window.location.origin+window.location.pathname+"#"+section,"سبب التبليغ: "].join("\n");
+ const reportUrl="https://wa.me/21628637773?text="+encodeURIComponent(reportText);
+ return '<div class="listing-share-actions" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" data-listing-share data-share-title="'+safe(item.title||"إعلان من أحلى توانسة")+'" data-share-text="'+safe(shareText).replace(/\n/g,"&#10;")+'" data-share-section="'+section+'" style="background:#28745f;margin-top:10px">↗ شارك الإعلان</button><a href="'+reportUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 14px;margin-top:10px;border:1px solid #d9a7a7;border-radius:10px;background:#fff7f7;color:#963b3b;font-weight:700;text-decoration:none">⚑ بلّغ عن الإعلان</a></div>';
 }
 document.addEventListener("click",async event=>{
  const button=event.target instanceof Element?event.target.closest("[data-listing-share]"):null;
