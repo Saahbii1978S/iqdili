@@ -225,8 +225,12 @@ p{overflow-wrap:anywhere}
 .cards .card:nth-child(6n+5){--card-accent:#438b63}
 .cards .card:nth-child(6n){--card-accent:#4386a5}
 .cards .card .icon{
-  display:grid;place-items:center;width:58px;height:58px;margin:0 auto 9px;
-  border-radius:17px;background:#eef5f5;color:var(--card-accent,#0d9488);font-size:31px;
+  display:grid;place-items:center;width:76px;height:76px;margin:0 auto 11px;
+  overflow:hidden;border:3px solid #fff;border-radius:20px;
+  background:#eef5f5;box-shadow:0 4px 13px rgba(24,48,68,.13);
+}
+.cards .card .icon img{
+  display:block;width:100%;height:100%;object-fit:cover;
 }
 .cards .card:nth-child(6n+2) .icon{background:#edf3fc}
 .cards .card:nth-child(6n+3) .icon{background:#f2effa}
@@ -693,13 +697,13 @@ main>section input[type="file"]::file-selector-button{
 <section id="home">
 <div class="box"><h2>مرحبا بيك في أحلى توانسة 👋</h2><p>نقرّبوا الخدمات للناس ونساعدوهم يلقاو فرص عمل وعقارات مناسبة وسوق مفتوح.</p></div>
 <div class="cards">
-<div class="card"><div class="icon">🛠️</div><h3>الخدمات والمشاوير</h3><p>توصيل، بحث عن مختصين، وقضاء مصالح.</p><button type="button" data-page="services" onclick="if(window.show){window.show('services');} return false;">ادخل</button></div>
-<div class="card"><div class="icon">💼</div><h3>فرص العمل</h3><p>فتّش على خدمة أو أضف عرض انتداب.</p><button type="button" data-page="jobs" onclick="if(window.show){window.show('jobs');} return false;">ادخل</button></div>
-<div class="card"><div class="icon">🏠</div><h3>العقارات</h3><p>ديار ومحلات وأراضٍ للبيع والكراء.</p><button type="button" data-page="realty" onclick="if(window.show){window.show('realty');} return false;">ادخل</button></div>
-<div class="card"><div class="icon">🛒</div><h3>سوق أحلى توانسة</h3><p>بيع واشري واعرض منتجاتك مجاناً.</p><button type="button" data-page="market" onclick="if(window.show){window.show('market');} return false;">ادخل</button></div>
-<div class="card"><div class="icon">❤️</div><h3>باب الخير</h3><p>مبادرات خيرية، تطوّع، تعليم ومساندة الناس بالعمل.</p><button type="button" data-page="good" onclick="if(window.show){window.show('good');} return false;">ساهم بالخير</button></div>
-<div class="card"><div class="icon">🧭</div><h3>الدليل التونسي</h3><p>اكتشف الجهات والمعالم والمطاعم والأنشطة، مع توضيح حالة التثبت من كل معلومة.</p><button type="button" data-page="guide" onclick="if(window.show){window.show('guide');} return false;">اكتشف الدليل</button></div>
-<div class="card"><div class="icon">📄</div><h3>CV من أجل الخير</h3><p>حضّر سيرة ذاتية مرتبة ومجانية، حتى كان ما عندكش خبرة.</p><button type="button" data-page="cv" onclick="if(window.show){window.show('cv');} return false;">حضّر CV مجاناً</button></div>
+<div class="card"><div class="icon"><img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&amp;fit=crop&amp;w=240&amp;h=240&amp;q=78" alt="صورة أدوات وخدمات وصيانة" loading="lazy" decoding="async"></div><h3>الخدمات والمشاوير</h3><p>توصيل، بحث عن مختصين، وقضاء مصالح.</p><button type="button" data-page="services" onclick="if(window.show){window.show('services');} return false;">ادخل</button></div>
+<div class="card"><div class="icon"><img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&amp;fit=crop&amp;w=240&amp;h=240&amp;q=78" alt="صورة فريق عمل وفرص مهنية" loading="lazy" decoding="async"></div><h3>فرص العمل</h3><p>فتّش على خدمة أو أضف عرض انتداب.</p><button type="button" data-page="jobs" onclick="if(window.show){window.show('jobs');} return false;">ادخل</button></div>
+<div class="card"><div class="icon"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&amp;fit=crop&amp;w=240&amp;h=240&amp;q=78" alt="صورة منزل وعقارات" loading="lazy" decoding="async"></div><h3>العقارات</h3><p>ديار ومحلات وأراضٍ للبيع والكراء.</p><button type="button" data-page="realty" onclick="if(window.show){window.show('realty');} return false;">ادخل</button></div>
+<div class="card"><div class="icon"><img src="https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&amp;fit=crop&amp;w=240&amp;h=240&amp;q=78" alt="صورة تسوّق وسوق" loading="lazy" decoding="async"></div><h3>سوق أحلى توانسة</h3><p>بيع واشري واعرض منتجاتك مجاناً.</p><button type="button" data-page="market" onclick="if(window.show){window.show('market');} return false;">ادخل</button></div>
+<div class="card"><div class="icon"><img src="https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&amp;fit=crop&amp;w=240&amp;h=240&amp;q=78" alt="صورة عمل تطوعي ومساعدة مجتمعية" loading="lazy" decoding="async"></div><h3>باب الخير</h3><p>مبادرات خيرية، تطوّع، تعليم ومساندة الناس بالعمل.</p><button type="button" data-page="good" onclick="if(window.show){window.show('good');} return false;">ساهم بالخير</button></div>
+<div class="card"><div class="icon"><img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&amp;fit=crop&amp;w=240&amp;h=240&amp;q=78" alt="صورة سفر واكتشاف أماكن" loading="lazy" decoding="async"></div><h3>الدليل التونسي</h3><p>اكتشف الجهات والمعالم والمطاعم والأنشطة، مع توضيح حالة التثبت من كل معلومة.</p><button type="button" data-page="guide" onclick="if(window.show){window.show('guide');} return false;">اكتشف الدليل</button></div>
+<div class="card"><div class="icon"><img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&amp;fit=crop&amp;w=240&amp;h=240&amp;q=78" alt="صورة إعداد سيرة ذاتية ووثائق مهنية" loading="lazy" decoding="async"></div><h3>CV من أجل الخير</h3><p>حضّر سيرة ذاتية مرتبة ومجانية، حتى كان ما عندكش خبرة.</p><button type="button" data-page="cv" onclick="if(window.show){window.show('cv');} return false;">حضّر CV مجاناً</button></div>
 </div>
 </section>
 
