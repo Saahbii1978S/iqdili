@@ -943,6 +943,10 @@ main>section input[type="file"]::file-selector-button{
 <div class="card guide-landmark-card" data-governorate="تطاوين" data-category="parks"><div class="icon">🌿</div><h3>المنتزه العائلي بتطاوين – تطاوين</h3><p>منتزه حضري مسجل ضمن بيانات المنتزهات الموضوعة على ذمة الجماعات المحلية. الموقع المحلي: تطاوين.</p><a href="https://opendata.interieur.gov.tn/ar/catalog/liste-des-parcs-urbains-a-la-disposition-des-collectivites-locales" target="_blank" rel="noopener noreferrer">مصدر البيانات المفتوحة</a></div>
 <div class="card guide-landmark-card" data-governorate="مدنين" data-category="leisure"><div class="icon">🐊</div><h3>حديقة جربة إكسبلور – مدنين</h3><p>فضاء سياحي يجمع القرية التراثية والمتحف ومنطقة الحياة البرية، في ميدون بجربة.</p><span class="muted">معلومة من الموقع الرسمي؛ تثبّت من التفاصيل قبل الزيارة.</span><a href="https://www.djerbaexplore.com/en/pratical_info/" target="_blank" rel="noopener noreferrer">الموقع الرسمي ومعلومات الزيارة</a></div>
 <div class="card guide-landmark-card" data-governorate="سوسة" data-category="leisure"><div class="icon">🎡</div><h3>هانيبال بارك – سوسة</h3><p>فضاء ألعاب وترفيه عائلي في المنطقة السياحية بالقنطاوي.</p><span class="muted">معلومة من الموقع الرسمي؛ تثبّت من التفاصيل قبل الزيارة.</span><a href="https://www.hannibalpark.com/" target="_blank" rel="noopener noreferrer">الموقع الرسمي</a></div>
+<div class="card guide-landmark-card" data-governorate="صفاقس" data-category="family-cafe restaurant leisure"><div class="icon">☕</div><h3>YOLO PARK by Moon – صفاقس</h3><p>فضاء عائلي يجمع المنتزه والألعاب والمطعم والـCoffee Shop والأنشطة.</p><span class="muted">اقتراح أولي من الموقع الرسمي؛ تأكد من الخدمات المتاحة قبل الزيارة.</span><a href="https://www.yolopark.tn/" target="_blank" rel="noopener noreferrer">الموقع الرسمي</a></div>
+<div class="card guide-landmark-card" data-governorate="صفاقس" data-category="family-cafe restaurant leisure"><div class="icon">🌴</div><h3>FunLac – بوزيان، صفاقس</h3><p>فضاء على البحيرة يجمع المطعم والـCoffee Shop والأنشطة العائلية.</p><span class="muted">اقتراح أولي من الموقع الرسمي؛ تأكد من الخدمات المتاحة قبل الزيارة.</span><a href="https://funlac.tn/en" target="_blank" rel="noopener noreferrer">الموقع الرسمي</a></div>
+<div class="card guide-landmark-card" data-governorate="تونس" data-category="family-cafe restaurant"><div class="icon">🧸</div><h3>Twiggy Club Lac 2 – تونس</h3><p>مقهى ومطعم عائلي مع فضاء ألعاب مخصص للأطفال حسب الدليل المحلي.</p><span class="muted">اقتراح أولي من مصدر محلي؛ يلزم تأكيد التفاصيل من صاحب المكان.</span><a href="https://linstant-m.tn/single-article/ar9991_sorties-en-famille-nos-adresses-food-restos-kids-friendly-sur-tunis" target="_blank" rel="noopener noreferrer">مصدر الدليل المحلي</a></div>
+<div class="card guide-landmark-card" data-governorate="سوسة" data-category="family-cafe restaurant leisure"><div class="icon">🎠</div><h3>Hadhood Park – حمام سوسة</h3><p>فضاء ألعاب للأطفال مع ركن للمأكولات والمشروبات للوالدين.</p><span class="muted">اقتراح أولي من دليل سياحي؛ تثبّت من النشاط والتجهيزات قبل الزيارة.</span><a href="https://hadhood.tn/FR/accueil" target="_blank" rel="noopener noreferrer">موقع المكان</a></div>
 </div>
 <h3>كيفاش نعرضوا المعلومات؟</h3>
 <ul>
@@ -2848,7 +2852,7 @@ if ("serviceWorker" in navigator) {
   let visible=0;
   cards.forEach(card=>{
    const matchPlace=!place||card.dataset.governorate===place;
-   const matchKind=!kind||card.dataset.category===kind;
+   const matchKind=!kind||String(card.dataset.category||"").split(/\\s+/).includes(kind);
    const matchText=!term||normalize(card.textContent).includes(term);
    const show=matchPlace&&matchKind&&matchText;
    card.classList.toggle("hidden",!show);
