@@ -854,16 +854,26 @@ main>section input[type="file"]::file-selector-button{
 <div class="card"><div class="icon">🏖️</div><h3>الساحل والوسط</h3><p><strong>سوسة، المنستير، المهدية، القيروان، القصرين، سيدي بوزيد</strong></p><p>مدن عتيقة وشواطئ ومعالم تاريخية ومواقع أثرية، من القيروان إلى الجم وسبيطلة.</p><a href="https://whc.unesco.org/en/statesparties/TN/" target="_blank" rel="noopener noreferrer">مواقع التراث العالمي في تونس</a> · <a href="https://www.discovertunisia.com/en/discover" target="_blank" rel="noopener noreferrer">اكتشف الجهات</a></div>
 <div class="card"><div class="icon">🌴</div><h3>الجنوب التونسي</h3><p><strong>صفاقس، قابس، مدنين، تطاوين، قفصة، توزر، قبلي</strong></p><p>قرقنة، الواحات، الجزر، القصور والقرى الجبلية والصحراء. أمثلة: جربة، مطماطة، توزر ودوز.</p><a href="https://www.discovertunisia.com/en/discover" target="_blank" rel="noopener noreferrer">اكتشف الجنوب والجهات</a></div>
 </div>
+<h3>فتّش في الدليل حسب الولاية ونوع المكان</h3>
+<div class="box" style="box-shadow:none;background:#f8fbfc">
+<div class="row" style="flex-wrap:wrap;gap:10px">
+<div style="flex:1 1 210px"><label for="guide-governorate">الولاية</label><select id="guide-governorate"><option value="">كل الولايات</option><option>تونس</option><option>أريانة</option><option>بن عروس</option><option>منوبة</option><option>نابل</option><option>زغوان</option><option>بنزرت</option><option>باجة</option><option>جندوبة</option><option>الكاف</option><option>سليانة</option><option>سوسة</option><option>المنستير</option><option>المهدية</option><option>القيروان</option><option>القصرين</option><option>سيدي بوزيد</option><option>صفاقس</option><option>قابس</option><option>مدنين</option><option>تطاوين</option><option>قفصة</option><option>توزر</option><option>قبلي</option></select></div>
+<div style="flex:1 1 210px"><label for="guide-category">نوع المكان</label><select id="guide-category"><option value="">كل الأنواع</option><option value="heritage">معالم وتراث</option><option value="nature">طبيعة ومحميات</option><option value="culture">ثقافة وجزر</option><option value="food">مطاعم ومقاهي</option><option value="stay">إقامة وضيافة</option><option value="leisure">ترفيه وأنشطة</option></select></div>
+<div style="flex:1 1 210px"><label for="guide-search">اسم المكان أو كلمة مفتاحية</label><input id="guide-search" type="search" maxlength="100" placeholder="مثال: قرطاج، شاطئ، متحف..."></div>
+</div>
+<p id="guide-results-count" class="muted" aria-live="polite">عرض كل الأماكن الموثقة المدرجة حالياً.</p>
+<p id="guide-no-results" class="note hidden" aria-live="polite">ما عناش حالياً مكان مدرج ومثبت حسب الاختيار هذا. الدليل يتوسع تدريجياً بعد مراجعة المصادر.</p>
+</div>
 <h3>أمثلة لمعالم تونسية موثقة</h3>
 <p class="muted">أمثلة موزعة على أكثر من جهة، وليست قائمة كاملة. وجود رابط مصدر لا يعني أن ساعات الزيارة أو معلوم الدخول تم التثبت منهما اليوم.</p>
-<div class="cards guide-places">
-<div class="card"><div class="icon">🏛️</div><h3>قرطاج – تونس</h3><p>موقع أثري من مواقع التراث العالمي.</p><a href="https://whc.unesco.org/en/list/37/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
-<div class="card"><div class="icon">🧱</div><h3>دقّة – باجة</h3><p>مدينة أثرية رومانية مدرجة ضمن التراث العالمي.</p><a href="https://whc.unesco.org/en/list/794/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
-<div class="card"><div class="icon">🏟️</div><h3>مسرح الجم – المهدية</h3><p>مدرّج روماني أثري من أبرز مواقع التراث العالمي في تونس.</p><a href="https://whc.unesco.org/en/list/38/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
-<div class="card"><div class="icon">🕌</div><h3>القيروان</h3><p>مدينة تاريخية مدرجة ضمن قائمة التراث العالمي.</p><a href="https://whc.unesco.org/en/list/499/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
-<div class="card"><div class="icon">🦩</div><h3>حديقة إشكل – بنزرت</h3><p>موقع طبيعي مدرج ضمن التراث العالمي.</p><a href="https://whc.unesco.org/en/list/8/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
-<div class="card"><div class="icon">🏝️</div><h3>جربة – مدنين</h3><p>جزيرة ذات نمط استقرار وتراث ثقافي مميز ومدرجة ضمن التراث العالمي.</p><a href="https://whc.unesco.org/en/list/1640/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
-<div class="card"><div class="icon">🏘️</div><h3>المدينة العتيقة بصفاقس</h3><p>مكوّن من التراث العمراني والتاريخي للمدينة.</p><a href="https://whc.unesco.org/en/tentativelists/5689/" target="_blank" rel="noopener noreferrer">القائمة التمهيدية لليونسكو</a></div>
+<div class="cards guide-places" id="guide-landmarks-grid">
+<div class="card guide-landmark-card" data-governorate="تونس" data-category="heritage"><div class="icon">🏛️</div><h3>قرطاج – تونس</h3><p>موقع أثري من مواقع التراث العالمي.</p><a href="https://whc.unesco.org/en/list/37/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
+<div class="card guide-landmark-card" data-governorate="باجة" data-category="heritage"><div class="icon">🧱</div><h3>دقّة – باجة</h3><p>مدينة أثرية رومانية مدرجة ضمن التراث العالمي.</p><a href="https://whc.unesco.org/en/list/794/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
+<div class="card guide-landmark-card" data-governorate="المهدية" data-category="heritage"><div class="icon">🏟️</div><h3>مسرح الجم – المهدية</h3><p>مدرّج روماني أثري من أبرز مواقع التراث العالمي في تونس.</p><a href="https://whc.unesco.org/en/list/38/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
+<div class="card guide-landmark-card" data-governorate="القيروان" data-category="heritage"><div class="icon">🕌</div><h3>القيروان</h3><p>مدينة تاريخية مدرجة ضمن قائمة التراث العالمي.</p><a href="https://whc.unesco.org/en/list/499/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
+<div class="card guide-landmark-card" data-governorate="بنزرت" data-category="nature"><div class="icon">🦩</div><h3>حديقة إشكل – بنزرت</h3><p>موقع طبيعي مدرج ضمن التراث العالمي.</p><a href="https://whc.unesco.org/en/list/8/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
+<div class="card guide-landmark-card" data-governorate="مدنين" data-category="culture"><div class="icon">🏝️</div><h3>جربة – مدنين</h3><p>جزيرة ذات نمط استقرار وتراث ثقافي مميز ومدرجة ضمن التراث العالمي.</p><a href="https://whc.unesco.org/en/list/1640/" target="_blank" rel="noopener noreferrer">مصدر اليونسكو</a></div>
+<div class="card guide-landmark-card" data-governorate="صفاقس" data-category="heritage"><div class="icon">🏘️</div><h3>المدينة العتيقة بصفاقس</h3><p>مكوّن من التراث العمراني والتاريخي للمدينة.</p><a href="https://whc.unesco.org/en/tentativelists/5689/" target="_blank" rel="noopener noreferrer">القائمة التمهيدية لليونسكو</a></div>
 </div>
 <h3>كيفاش نعرضوا المعلومات؟</h3>
 <ul>
@@ -2749,6 +2759,39 @@ if ("serviceWorker" in navigator) {
    else{const ok=await copyText(projectUrl);if(status)status.textContent=ok?"المشاركة غير متاحة هنا؛ نسخنالك الرابط باش تبعثه لأصحابك.":"المشاركة غير متاحة؛ انسخ الرابط من شريط العنوان.";}
   }catch(error){if(error&&error.name!=="AbortError"&&status)status.textContent="تعذّرت المشاركة. جرّب زر نسخ الرابط.";}
  });
+})();
+</script>
+
+<script id="ahla-guide-filters">
+(function(){
+ const governorate=document.getElementById("guide-governorate");
+ const category=document.getElementById("guide-category");
+ const search=document.getElementById("guide-search");
+ const count=document.getElementById("guide-results-count");
+ const empty=document.getElementById("guide-no-results");
+ const cards=Array.from(document.querySelectorAll("#guide-landmarks-grid .guide-landmark-card"));
+ if(!governorate||!category||!search||!count||!empty||!cards.length)return;
+ function normalize(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").toLowerCase().trim();}
+ function filter(){
+  const place=governorate.value;
+  const kind=category.value;
+  const term=normalize(search.value);
+  let visible=0;
+  cards.forEach(card=>{
+   const matchPlace=!place||card.dataset.governorate===place;
+   const matchKind=!kind||card.dataset.category===kind;
+   const matchText=!term||normalize(card.textContent).includes(term);
+   const show=matchPlace&&matchKind&&matchText;
+   card.classList.toggle("hidden",!show);
+   if(show)visible++;
+  });
+  count.textContent="النتائج: "+visible+" من "+cards.length+" أماكن مدرجة حالياً.";
+  empty.classList.toggle("hidden",visible!==0);
+ }
+ governorate.addEventListener("change",filter);
+ category.addEventListener("change",filter);
+ search.addEventListener("input",filter);
+ filter();
 })();
 </script>
 </body>
