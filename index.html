@@ -2105,7 +2105,7 @@ if(document.readyState!=="loading")showInitialPage();
 /* Keep section navigation available even if an unrelated app script fails. */
 if (typeof window.show !== "function") {
   window.show = function (id) {
-    const pages = ["home","services","jobs","realty","market","good","cv","ask","saved","admin","reset-password"];
+    const pages = ["home","services","jobs","realty","market","good","cv","ask","saved","account","admin","reset-password"];
     if (!pages.includes(id)) return;
     pages.forEach(function (name) {
       const section = document.getElementById(name);
