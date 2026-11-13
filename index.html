@@ -2852,7 +2852,7 @@ if ("serviceWorker" in navigator) {
   let visible=0;
   cards.forEach(card=>{
    const matchPlace=!place||card.dataset.governorate===place;
-   const matchKind=!kind||String(card.dataset.category||"").split(/\\s+/).includes(kind);
+   const matchKind=!kind||String(card.dataset.category||"").split(/\s+/).includes(kind);
    const matchText=!term||normalize(card.textContent).includes(term);
    const show=matchPlace&&matchKind&&matchText;
    card.classList.toggle("hidden",!show);
