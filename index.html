@@ -336,11 +336,18 @@ input::placeholder,textarea::placeholder{color:#8492a1;opacity:1}
 }
 
 @media print{
+ body.cv-printing{background:#fff!important}
  body.cv-printing *{visibility:hidden!important}
  body.cv-printing #cv-sheet,body.cv-printing #cv-sheet *{visibility:visible!important}
- body.cv-printing #cv-sheet{position:absolute!important;inset:0 auto auto 0!important;width:100%!important;max-width:none!important;margin:0!important;padding:22px!important;border:0!important;box-shadow:none!important}
- body.cv-printing #cv-sheet .cv-part{break-inside:avoid;margin-top:17px}
+ body.cv-printing #cv-sheet{
+  position:absolute!important;inset:0!important;width:auto!important;max-width:none!important;
+  box-sizing:border-box!important;margin:0!important;padding:8mm!important;
+  border:0!important;box-shadow:none!important;background:#fff!important;
+ }
+ body.cv-printing #cv-sheet .cv-head{break-inside:avoid;page-break-inside:avoid}
+ body.cv-printing #cv-sheet .cv-part{break-inside:avoid;page-break-inside:avoid;margin-top:14px}
  body.cv-printing #cv-sheet h3{color:#14566a;border-bottom:1px solid #dcecea;padding-bottom:5px;margin-bottom:5px}
+ body.cv-printing #cv-sheet p{orphans:3;widows:3}
  @page{size:A4;margin:12mm}
 }
 
