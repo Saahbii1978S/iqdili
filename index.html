@@ -1113,6 +1113,19 @@ el("cv-copy").addEventListener("click",async()=>{
  }catch(error){el("cv-status").textContent="ما نجّمش ننسخ آلياً. تنجم تحدد النص من المعاينة وتنسخو.";}
 });
 
+// منع طباعة أو نسخ نسخة قديمة بعد تغيير أي معلومة في الاستمارة.
+const cvEditableFields=["name","job","city","phone","email","photo","link","summary","education","experience","skills","languages","training","license","template","language"];
+cvEditableFields.forEach(id=>{
+ const field=el("cv-"+id);
+ if(!field)return;
+ field.addEventListener(id==="photo"||id==="template"||id==="language"?"change":"input",()=>{
+  if(!cvPlainText)return;
+  el("cv-print").disabled=true;
+  el("cv-copy").disabled=true;
+  el("cv-status").textContent="بدّلت معلومة في الاستمارة. اضغط «حضّر سيرتي الذاتية» من جديد قبل الطباعة أو النسخ.";
+ });
+});
+
 
 
 // التقاط ضغطات التنقّل في مرحلة الالتقاط قبل أي مستمع آخر؛ هذا أكثر توافقاً
