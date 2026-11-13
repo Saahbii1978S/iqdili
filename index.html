@@ -721,6 +721,7 @@ main>section input[type="file"]::file-selector-button{
 <button type="button" id="cv-generate">حضّر سيرتي الذاتية</button>
 <button type="button" id="cv-print" style="background:#14566a" disabled>طباعة / حفظ PDF</button>
 <button type="button" id="cv-copy" style="background:#647875" disabled>نسخ النص</button>
+<button type="button" id="cv-reset" style="background:#8a5960">تفريغ الاستمارة</button>
 <div id="cv-status" class="muted" role="status" aria-live="polite" style="margin-top:10px"></div>
 </div>
 <div id="cv-preview-wrap" class="hidden">
@@ -1082,6 +1083,21 @@ function cvGenerate(){
  el("cv-preview-wrap").scrollIntoView({behavior:"smooth",block:"start"});
 }
 el("cv-generate").addEventListener("click",cvGenerate);
+el("cv-reset").addEventListener("click",()=>{
+ ["name","job","city","phone","email","photo","link","summary","education","experience","skills","languages","training","license"].forEach(id=>{
+  const field=el("cv-"+id);if(field)field.value="";
+ });
+ el("cv-template").value="modern";
+ el("cv-language").value="fr";
+ cvPhotoData="";
+ cvPlainText="";
+ el("cv-preview").innerHTML="";
+ el("cv-preview-wrap").classList.add("hidden");
+ el("cv-print").disabled=true;
+ el("cv-copy").disabled=true;
+ el("cv-status").textContent="تم تفريغ الاستمارة. تنجم تبدأ سيرة ذاتية جديدة.";
+ el("cv-name").focus();
+});
 el("cv-print").addEventListener("click",()=>{
  if(!cvPlainText){el("cv-status").textContent="حضّر السيرة الذاتية أولاً.";return;}
  document.body.classList.add("cv-printing");
