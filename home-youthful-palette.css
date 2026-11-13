@@ -136,3 +136,39 @@ section>h2:before{background:linear-gradient(180deg,#087f78 0%,#3976c6 55%,#8064
   :root[data-theme="system"] #home .cards .card h3{color:#edf4fb}
   :root[data-theme="system"] #home .cards .card p{color:#b8c5d3}
 }
+
+
+/* ahla-milk-white-refinement: approved visual direction */
+:root{--page:#f8f7f2;--paper:#fff}
+html,body{background:#f8f7f2}
+header{
+  background:linear-gradient(135deg,#fff 0%,#fdfcf8 100%);
+}
+header:before,header:after{border-color:rgba(8,127,120,.07)}
+header .topbar-title h1{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  color:#183b43;
+}
+header .topbar-title .brand-flag{
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:.72em;line-height:1;
+  padding:5px;border-radius:8px;background:#fff;
+  box-shadow:0 1px 5px rgba(24,48,68,.10);
+}
+nav{background:#fff;border-bottom:1px solid #e9e8e1}
+nav button:nth-child(n){border-bottom:1px solid #e8e9e3}
+nav button.active,nav button[aria-current="page"]{
+  background:#087f78;border-color:#087f78;color:#fff;
+}
+#home>.box:first-child{
+  background:#fff;border:1px solid #e9e8e1;
+  border-right:4px solid #087f78;
+}
+#home .cards .card,#home .cards .card:nth-child(n){
+  background:#fff;border-color:#e9e8e1;
+}
+#home .cards .card:hover{border-color:#cbded8}
+section>h2:before{background:#087f78}
+@media(prefers-color-scheme:dark){
+  :root[data-theme="system"] header{background:#1d2936}
+}
