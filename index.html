@@ -1467,6 +1467,25 @@ function contactActions(phone){
  const tel=raw.replace(/[^+0-9]/g,"");
  return '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a href="tel:'+tel+'">📞 اتصل</a><a href="https://wa.me/'+digits+'" target="_blank" rel="noopener noreferrer">واتساب</a></div>';
 }
+function listingShareButton(item,section,meta){
+ const shareText=[item.title,meta,item.description,"منصة أحلى توانسة"].filter(Boolean).join("\n");
+ return '<div class="listing-share-actions"><button type="button" data-listing-share data-share-title="'+safe(item.title||"إعلان من أحلى توانسة")+'" data-share-text="'+safe(shareText).replace(/\n/g,"&#10;")+'" data-share-section="'+section+'" style="background:#28745f;margin-top:10px">↗ شارك الإعلان</button></div>';
+}
+document.addEventListener("click",async event=>{
+ const button=event.target instanceof Element?event.target.closest("[data-listing-share]"):null;
+ if(!button)return;
+ const title=button.dataset.shareTitle||"إعلان من أحلى توانسة";
+ const url=window.location.origin+window.location.pathname+"#"+(button.dataset.shareSection||"home");
+ const payload={title,text:(button.dataset.shareText||"إعلان من منصة أحلى توانسة")+"\n"+url,url};
+ const original=button.textContent;
+ button.disabled=true;
+ try{
+  if(navigator.share){await navigator.share(payload);button.textContent="تم فتح المشاركة ✓";}
+  else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(payload.text);button.textContent="تم نسخ الإعلان ✓";}
+  else{button.textContent="المشاركة غير مدعومة هنا";}
+ }catch(error){if(error&&error.name!=="AbortError")button.textContent="تعذّرت المشاركة";}
+ finally{window.setTimeout(()=>{button.disabled=false;button.textContent=original;},2200);}
+});
 function renderList(id,rows,makeHtml,error){
 const target=el(id);if(!target)return;
 if(error){target.innerHTML='<p class="muted">تعذّر تحميل المنشورات. تثبّت من الاتصال وإعدادات قاعدة البيانات ثم عاود المحاولة.</p>';return;}
@@ -1486,13 +1505,13 @@ db.rpc("public_service_requests").order("created_at",{ascending:false}),
 db.rpc("public_job_posts").order("created_at",{ascending:false}),
 db.rpc("public_real_estate_posts").order("created_at",{ascending:false})
 ]);
-renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+marketImageHtml(x.image_urls,x.title)+contactActions(x.phone)+'</div>',market.error);
+renderList("market-list",market.data,(x)=>'<div class="entry"><b>['+safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+marketImageHtml(x.image_urls,x.title)+contactActions(x.phone)+listingShareButton(x,"market", "السعر: "+(x.price==null?"غير محدد":x.price+" د.ت")+" | الصنف: "+x.category+" | المنطقة: "+x.city)+'</div>',market.error);
 renderList("market-live",market.data,(x)=>'<div class="entry"><b>[' + safe(x.listing_type)+'] '+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>الصنف: '+safe(x.category)+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+marketImageHtml(x.image_urls,x.title)+contactActions(x.phone)+'</div>',market.error);
-renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'services')+contactActions(x.phone)+'</div>',services.error);
+renderList("sl",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'services')+contactActions(x.phone)+listingShareButton(x,"services","المنطقة: "+x.city)+'</div>',services.error);
 renderList("public-services-list",services.data,(x)=>'<div class="entry"><b>طلب خدمة: '+safe(x.title)+'</b> (📍 '+safe(x.city)+')<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'services')+contactActions(x.phone)+'</div>',services.error);
-renderList("public-jobs-list",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+safe(x.job_type)+' | '+safe(x.work_nature)+' 📍 '+safe(x.city)+'<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'jobs')+contactActions(x.phone)+'</div>',jobs.error);
+renderList("public-jobs-list",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+safe(x.job_type)+' | '+safe(x.work_nature)+' 📍 '+safe(x.city)+'<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'jobs')+contactActions(x.phone)+listingShareButton(x,"jobs","نوع الإعلان: "+x.job_type+" | نوع العمل: "+x.work_nature+" | المنطقة: "+x.city)+'</div>',jobs.error);
 renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - نوع العمل: '+safe(x.job_type)+' ('+safe(x.work_nature)+') 📍 '+safe(x.city)+'<br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'jobs')+contactActions(x.phone)+'</div>',jobs.error);
-renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'realty')+contactActions(x.phone)+'</div>',realty.error);
+renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'realty')+contactActions(x.phone)+listingShareButton(x,"realty","السعر: "+(x.price==null?"غير محدد":x.price+" د.ت")+" | المنطقة: "+x.city)+'</div>',realty.error);
 renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'realty')+contactActions(x.phone)+'</div>',realty.error);
 setupListingSearch();
 }catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
