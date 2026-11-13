@@ -1604,9 +1604,7 @@ async function renderAdmin(){
       ? '<p class="muted">النشر معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
       : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "")
       + (protectedDemo
-        ? currentAdminIsOwner
-          ? `<div style="margin-top:8px"><button type="button" data-admin-action="delete_test" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف إعلان تجريبي</button></div>`
-          : '<p class="muted">حذف الإعلانات التجريبية متاح لصاحب المشروع فقط.</p>'
+        ? '<p class="muted">🔒 الإعلان التجريبي محمي: لا يمكن نشره أو حذفه من لوحة الإدارة.</p>'
         : currentAdminIsOwner
           ? `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`
           : '<p class="muted">الحذف النهائي متاح لصاحب المشروع فقط.</p>');
@@ -1979,12 +1977,12 @@ el("admin-login-button").addEventListener("click",async()=>{
    alert("هذا إعلان تجريبي محمي، وما ينجمش يتنشر من لوحة الإدارة.");
    return;
   }
-  if(status==="delete_test" && adminEntry?.dataset.protectedDemo!=="yes"){
-   alert("الحذف التجريبي مخصّص للإعلانات المصنّفة كتجارب فقط.");
+  if(status==="delete_test" || (status==="delete" && adminEntry?.dataset.protectedDemo==="yes")){
+   alert("الإعلانات التجريبية محمية: لا يمكن حذفها أو نشرها من لوحة الإدارة.");
    return;
   }
   const allowedTables=["service_requests","job_posts","real_estate_posts","market_posts"];
-  if(!allowedTables.includes(table)||!["approved","rejected","unpublished","delete","delete_test"].includes(status)||!id){
+  if(!allowedTables.includes(table)||!["approved","rejected","unpublished","delete"].includes(status)||!id){
    alert("العملية غير صالحة. حدّث صفحة الإدارة وعاود.");
    return;
   }
