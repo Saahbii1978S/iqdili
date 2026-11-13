@@ -1548,6 +1548,10 @@ function filterListing(inputId,listId){
   entry.classList.toggle("hidden",!match);
   if(match)visible++;
  });
+ const status=el(inputId+"-search-status");
+ if(status)status.textContent=query
+  ? "النتائج: "+visible+" من "+entries.length
+  : "عدد الإعلانات: "+entries.length;
  let notice=list.querySelector("[data-search-empty]");
  if(query&&visible===0){
   if(!notice){
@@ -1569,7 +1573,23 @@ function setupListingSearch(){
  const pairs=[["market-search","market-list"],["public-jobs-search","public-jobs-list"],["public-realty-search","public-realty-list"],["services-search","sl"],["public-services-search","public-services-list"],["jobs-search","jl"],["realty-search","rl"],["market-live-search","market-live"]];
  pairs.forEach(([inputId,listId])=>{
   const input=el(inputId);if(!input)return;
-  if(!input.dataset.ready){input.dataset.ready="1";input.addEventListener("input",()=>filterListing(inputId,listId));}
+  if(!input.dataset.ready){
+   input.dataset.ready="1";
+   input.addEventListener("input",()=>filterListing(inputId,listId));
+   const clear=document.createElement("button");
+   clear.type="button";
+   clear.textContent="مسح البحث";
+   clear.setAttribute("aria-label","مسح كلمة البحث");
+   clear.style.cssText="min-height:36px;padding:5px 12px;margin:6px 6px 6px 0;background:#eef3f5;color:#405469;border:1px solid #dce5e9;box-shadow:none;font-size:14px";
+   clear.addEventListener("click",()=>{input.value="";filterListing(inputId,listId);input.focus();});
+   input.insertAdjacentElement("afterend",clear);
+   const status=document.createElement("small");
+   status.id=inputId+"-search-status";
+   status.className="muted";
+   status.setAttribute("aria-live","polite");
+   status.style.cssText="display:block;margin:3px 0 8px";
+   clear.insertAdjacentElement("afterend",status);
+  }
   filterListing(inputId,listId);
  });
 }
