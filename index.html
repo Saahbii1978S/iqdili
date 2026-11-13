@@ -678,6 +678,7 @@ main>section input[type="file"]::file-selector-button{
 <button type="button" data-page="realty" onclick="if(window.show){window.show('realty');} return false;">العقارات</button>
 <button type="button" data-page="market" onclick="if(window.show){window.show('market');} return false;">السوق</button>
 <button type="button" data-page="good" onclick="if(window.show){window.show('good');} return false;">باب الخير ❤️</button>
+<button type="button" data-page="guide" onclick="if(window.show){window.show('guide');} return false;">الدليل التونسي 🧭</button>
 <button type="button" data-page="ask" onclick="if(window.show){window.show('ask');} return false;">اسأل أحلى توانسة</button>
 <button type="button" data-page="saved" onclick="if(window.show){window.show('saved');} return false;">المنشورات الحية</button>
 <button type="button" data-page="cv" onclick="if(window.show){window.show('cv');} return false;">CV من أجل الخير</button>
@@ -697,6 +698,7 @@ main>section input[type="file"]::file-selector-button{
 <div class="card"><div class="icon">🏠</div><h3>العقارات</h3><p>ديار ومحلات وأراضٍ للبيع والكراء.</p><button type="button" data-page="realty" onclick="if(window.show){window.show('realty');} return false;">ادخل</button></div>
 <div class="card"><div class="icon">🛒</div><h3>سوق أحلى توانسة</h3><p>بيع واشري واعرض منتجاتك مجاناً.</p><button type="button" data-page="market" onclick="if(window.show){window.show('market');} return false;">ادخل</button></div>
 <div class="card"><div class="icon">❤️</div><h3>باب الخير</h3><p>مبادرات خيرية، تطوّع، تعليم ومساندة الناس بالعمل.</p><button type="button" data-page="good" onclick="if(window.show){window.show('good');} return false;">ساهم بالخير</button></div>
+<div class="card"><div class="icon">🧭</div><h3>الدليل التونسي</h3><p>اكتشف الجهات والمعالم والمطاعم والأنشطة، مع توضيح حالة التثبت من كل معلومة.</p><button type="button" data-page="guide" onclick="if(window.show){window.show('guide');} return false;">اكتشف الدليل</button></div>
 <div class="card"><div class="icon">📄</div><h3>CV من أجل الخير</h3><p>حضّر سيرة ذاتية مرتبة ومجانية، حتى كان ما عندكش خبرة.</p><button type="button" data-page="cv" onclick="if(window.show){window.show('cv');} return false;">حضّر CV مجاناً</button></div>
 </div>
 </section>
@@ -831,6 +833,28 @@ main>section input[type="file"]::file-selector-button{
 <p class="note">تنبيه: «باب الخير» حالياً للتوعية والتشجيع على المبادرات الآمنة فقط. المنصة لا تجمع أموالاً ولا تستقبل طلبات مساعدة أو بيانات حالات إنسانية في الوقت الحالي. أي خدمة مستقبلية من النوع هذا يلزمها تحقق وحماية خصوصية قبل تفعيلها.</p>
 <button type="button" id="share-good" style="margin-top:8px">📣 شارك باب الخير</button>
 <p id="share-good-status" class="muted" aria-live="polite"></p>
+</div>
+</section>
+
+<section id="guide" class="hidden">
+<div class="box">
+<h2>🧭 الدليل التونسي – نكتشفوا بلادنا</h2>
+<p>مساحة للتعرّف على الجهات والمعالم والأنشطة والمطاعم والمقاهي ودور الضيافة في تونس. نبدأوا بصفاقس ونتوسعوا تدريجياً لكل الولايات.</p>
+<div class="cards good-topics">
+<div class="card"><div class="icon">🏛️</div><h3>معالم وثقافة</h3><p>مواقع تاريخية وثقافية ومتاحف وأماكن تستحق الزيارة.</p></div>
+<div class="card"><div class="icon">🌿</div><h3>طبيعة وترفيه</h3><p>فضاءات طبيعية وأنشطة عائلية وتجارب ترفيهية.</p></div>
+<div class="card"><div class="icon">🍽️</div><h3>مطاعم ومقاهي</h3><p>أماكن للأكل والقهوة، مع معلومات واضحة حول المصدر والتثبت.</p></div>
+<div class="card"><div class="icon">🛏️</div><h3>إقامة وضيافة</h3><p>نزل ودور ضيافة ومبيت، دون عرض تفاصيل غير مؤكدة.</p></div>
+</div>
+<h3>كيفاش نعرضوا المعلومات؟</h3>
+<ul>
+<li><strong>مقترح من الذكاء الاصطناعي:</strong> معلومة أولية يلزمها تحقق، وما تتعرضش كحقيقة مؤكدة.</li>
+<li><strong>مقترح من المستخدمين:</strong> إضافة من زائر، تستحق المراجعة.</li>
+<li><strong>تم التثبت:</strong> تمت مراجعة المعلومة بالرجوع إلى مصدر موثوق ومذكور.</li>
+<li><strong>مؤكد من صاحب المكان:</strong> صاحب النشاط أكد بياناته بنفسه.</li>
+</ul>
+<p class="note">الدليل في مرحلته التأسيسية: مازلنا ما ننشروش قائمة أماكن أو أرقام أو ساعات عمل قبل التثبت منها. يلزم مراجعة العنوان، وسائل الاتصال، الأسعار وساعات العمل قبل الزيارة.</p>
+<a href="https://wa.me/21628637773?text=%D9%86%D8%AD%D8%A8%20%D9%86%D9%82%D8%AA%D8%B1%D8%AD%20%D8%A5%D8%B6%D8%A7%D9%81%D8%A9%20%D9%84%D9%84%D8%AF%D9%84%D9%8A%D9%84%20%D8%A7%D9%84%D8%AA%D9%88%D9%86%D8%B3%D9%8A" target="_blank" rel="noopener noreferrer" style="display:inline-flex;padding:10px 16px;border-radius:12px;background:#14566a;color:#fff;text-decoration:none;font-weight:700">اقترح مكاناً للدليل</a>
 </div>
 </section>
 
@@ -999,7 +1023,7 @@ function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&a
 
 
 function show(id){
-const allowed=["home","services","jobs","realty","market","good","cv","ask","saved","account","admin","reset-password"];
+const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
@@ -2172,14 +2196,14 @@ function showInitialPage(){
  const query=new URLSearchParams(window.location.search);
  const rawHash=window.location.hash.replace(/^#/,"");
  const hash=new URLSearchParams(rawHash);
- const deepPages=["home","services","jobs","realty","market","good","cv","ask","saved","account"];
+ const deepPages=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account"];
  if(query.get("recovery")==="1" || hash.get("type")==="recovery")show("reset-password");
  else if(deepPages.includes(rawHash))show(rawHash);
  else show("home");
 }
 window.addEventListener("hashchange",()=>{
  const page=window.location.hash.replace(/^#/,"");
- if(["home","services","jobs","realty","market","good","cv","ask","saved","account"].includes(page))show(page);
+ if(["home","services","jobs","realty","market","good","guide","cv","ask","saved","account"].includes(page))show(page);
 });
 document.addEventListener("DOMContentLoaded",showInitialPage);
 if(document.readyState!=="loading")showInitialPage();
@@ -2189,7 +2213,7 @@ if(document.readyState!=="loading")showInitialPage();
 /* Keep section navigation available even if an unrelated app script fails. */
 if (typeof window.show !== "function") {
   window.show = function (id) {
-    const pages = ["home","services","jobs","realty","market","good","cv","ask","saved","account","admin","reset-password"];
+    const pages = ["home","services","jobs","realty","market","good","guide","cv","ask","saved","account","admin","reset-password"];
     if (!pages.includes(id)) return;
     pages.forEach(function (name) {
       const section = document.getElementById(name);
