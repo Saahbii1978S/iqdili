@@ -1,7 +1,7 @@
-const CACHE_NAME = "ahla-tounsa-shell-v152";
+const CACHE_NAME = "ahla-tounsa-shell-v153";
 const APP_ROOT = "/iqdili/";
 const INDEX_URL = APP_ROOT + "index.html";
-const APP_SHELL = [APP_ROOT, INDEX_URL, APP_ROOT + "app-icon.svg", APP_ROOT + "home-youthful-palette.css?v=2", APP_ROOT + "manifest.webmanifest", APP_ROOT + "privacy.html", APP_ROOT + "delete-account.html", APP_ROOT + "404.html"];
+const APP_SHELL = [APP_ROOT, INDEX_URL, APP_ROOT + "app-icon.svg", APP_ROOT + "home-youthful-palette.css?v=2", APP_ROOT + "manifest.webmanifest", APP_ROOT + "privacy.html", APP_ROOT + "delete-account.html", APP_ROOT + "terms.html", APP_ROOT + "404.html"];
 
 self.addEventListener("install", event => {
   event.waitUntil(
