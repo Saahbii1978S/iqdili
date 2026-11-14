@@ -2011,7 +2011,7 @@ db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
  if(event==="SIGNED_IN"){
   notifyRecentConfirmedSignup(session);
-  if(el("admin")&&!el("admin").classList.contains("hidden"))show("admin");
+  if(new URLSearchParams(window.location.search).get("open-admin")==="1" || (el("admin")&&!el("admin").classList.contains("hidden")))show("admin");
  }
 });
 authListenerInstalled=true;
@@ -2914,7 +2914,7 @@ el("admin-magic-link").addEventListener("click",async()=>{
   if(!email){adminMessage("اكتب بريدك الإلكتروني أولاً.");return;}
   button.disabled=true;button.textContent="جاري إرسال رابط الدخول...";
   try{
-   const redirectTo=window.location.origin+window.location.pathname;
+   const redirectTo=window.location.origin+window.location.pathname+"?open-admin=1";
    const {error}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:redirectTo}});
    if(error){console.error("Admin magic-link request:",error);adminMessage("ما نجّمش نبعث رابط الدخول. تثبّت من البريد وعاود بعد شوية.");return;}
    adminMessage("بعثنالك رابط دخول آمن إذا البريد مربوط بحساب. افتح الرسالة واضغط على الرابط؛ ما يلزمكش كلمة مرور.");
