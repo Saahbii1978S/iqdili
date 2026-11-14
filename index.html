@@ -2114,6 +2114,7 @@ async function prepareImageForUpload(file){
  }
 }
 
+const submissionsInProgress = new Set();
 async function sendData(table){
 if(!db){alert("الاتصال بقاعدة البيانات غير متوفر حالياً. تأكد من الإنترنت.");return;}
 let target="",data={},required=[];
@@ -2150,6 +2151,8 @@ if(String(data.title||"").trim().length>100||String(data.description||"").trim()
 const numericFields=table==="realty"?["r_price","size","rooms"]:table==="market"?["mp"]:[];
 if(numericFields.some(id=>val(id)!==""&&(!Number.isFinite(Number(val(id)))||Number(val(id))<0))){alert("السعر والمساحة وعدد الغرف يلزمهم أرقام موجبة أو صفر.");return;}
 if(table==="realty" && val("rooms")!=="" && !Number.isInteger(Number(val("rooms")))){alert("عدد الغرف يلزمو يكون عدد صحيح، من غير فاصلة.");return;}
+if(submissionsInProgress.has(table))return;
+submissionsInProgress.add(table);
 try{
 const imageInputs={services:"simage",jobs:"jimage",realty:"rimage",market:"mimage"};
 const imageInput=el(imageInputs[table]);
@@ -2192,6 +2195,7 @@ if(el("mimage-preview"))el("mimage-preview").textContent="";
 ["st","jk","jn","rt","rp","mt","mc"].forEach(id=>{if(el(id))el(id).selectedIndex=0;});
 await loadData();
 }catch(error){resetTurnstile(table);console.error(error);alert("صار خطأ في الاتصال. جرّب مرة أخرى.");}
+finally{submissionsInProgress.delete(table);}
 }
 
 function listingImageHtml(paths,title,folder){
