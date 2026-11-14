@@ -2757,7 +2757,7 @@ async function loadMemberPosts(token){
   host.innerHTML=all.map(({table,post})=>{
    const detail=[labels[table],memberStatusLabel(post.status),post.city||""].filter(Boolean).join(" • ");
    const packed=safe(JSON.stringify(post));
-   return '<div class="entry"><b>'+safe(post.title||"إعلان من غير عنوان")+'</b><small>'+safe(detail)+'</small><p>'+safe(post.description||"")+'</p><button type="button" data-member-repost="1" data-table="'+safe(table)+'" data-post="'+packed+'">عاود انشر إعلان جديد</button></div>';
+   return '<div class="entry"><b>'+safe(post.title||"إعلان من غير عنوان")+'</b><small>'+safe(detail)+'</small><p>'+safe(post.description||"")+'</p><div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" data-member-repost="1" data-table="'+safe(table)+'" data-post="'+packed+'">عاود انشر إعلان جديد</button><button type="button" data-member-delete="1" data-table="'+safe(table)+'" data-id="'+safe(post.id)+'" style="background:#8b3d3d">حذف إعلاني</button></div></div>';
   }).join("");
  }catch(error){console.error("Member posts error:",error);host.textContent="صار خطأ في الاتصال. عاود التحديث.";}
 }
@@ -2791,7 +2791,22 @@ function repostMemberPost(table,post){
  form?.scrollIntoView({behavior:"smooth",block:"start"});
  alert("عمرنالك الاستمارة بمعلومات إعلانك السابق. راجعها وحدّثها، واختار الصورة من جديد إذا تحب، وبعد ابعث الإعلان للمراجعة.");
 }
+async function deleteMemberPost(table,id,button){
+ if(!confirm("متأكد تحب تحذف الإعلان هذا وصورته؟ الحذف نهائي وما ينجمش يرجع."))return;
+ const oldText=button.textContent;button.disabled=true;button.textContent="جاري الحذف...";
+ try{
+  const {data:{session}}=await db.auth.getSession();
+  if(!session?.access_token){alert("انتهت جلسة الدخول. سجّل الدخول من جديد.");return;}
+  const {data,error}=await db.functions.invoke("delete-my-post",{body:{table,id}});
+  if(error||!data?.ok){alert(data?.error||"ما نجّمش نحذف الإعلان. عاود التحديث.");return;}
+  await loadMemberPosts(session.access_token);
+  alert(data.message||"تم حذف الإعلان.");
+ }catch(error){console.error("Member post deletion error:",error);alert("صار خطأ في الاتصال. عاود المحاولة.");}
+ finally{button.disabled=false;button.textContent=oldText;}
+}
 document.addEventListener("click",event=>{
+ const deleteButton=event.target.closest("[data-member-delete]");
+ if(deleteButton){deleteMemberPost(deleteButton.dataset.table,deleteButton.dataset.id,deleteButton);return;}
  const button=event.target.closest("[data-member-repost]");
  if(!button)return;
  try{repostMemberPost(button.dataset.table,JSON.parse(button.dataset.post));}
