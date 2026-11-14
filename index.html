@@ -2281,7 +2281,10 @@ document.addEventListener("click",async event=>{
  const original=button.textContent;
  button.disabled=true;
  try{
-  if(navigator.share){await navigator.share(payload);button.textContent="تم فتح المشاركة ✓";}
+  if(window.AndroidShare&&typeof window.AndroidShare.share==="function"){
+   window.AndroidShare.share(title,payload.text,url);
+   button.textContent="اختار تطبيق المشاركة ❤️";
+  }else if(navigator.share){await navigator.share(payload);button.textContent="تم فتح المشاركة ✓";}
   else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(payload.text);button.textContent="تم نسخ الإعلان ✓";}
   else{button.textContent="المشاركة غير مدعومة هنا";}
  }catch(error){if(error&&error.name!=="AbortError")button.textContent="تعذّرت المشاركة";}
