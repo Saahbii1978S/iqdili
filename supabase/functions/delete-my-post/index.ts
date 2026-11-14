@@ -49,7 +49,7 @@ Deno.serve(async(req:Request)=>{
      const encoded=path.split("/").map(encodeURIComponent).join("/");
      const check=await fetch(url+"/storage/v1/object/info/"+bucket+"/"+encoded,{method:"HEAD",headers:{apikey:key,Authorization:"Bearer "+key}});
      if(check.ok)existing.push(path);
-     else if(check.status!==404)return reply({error:"تعذّر التثبت من ملفات الصور بأمان؛ الإعلان مازال موجوداً."},502);
+     else if(check.status!==404){console.error("Post deleted but image preflight failed",bucket,check.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان من قاعدة البيانات، لكن تعذّر التثبت من بعض الصور وتنظيفها. تواصل مع الإدارة لإتمام التنظيف."});}
     }
     if(existing.length){
      const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:existing})});
