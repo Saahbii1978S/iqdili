@@ -1972,7 +1972,21 @@ if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textConten
 });
 
 let authListenerInstalled=false;
+let adminSignupNotificationAttemptedFor="";
 let siteVisitHeartbeatStarted=false;
+function notifyRecentConfirmedSignup(session){
+ const user=session?.user;
+ if(!db||!user?.id||!user?.email_confirmed_at||!user?.created_at)return;
+ const createdAt=Date.parse(user.created_at);
+ if(!Number.isFinite(createdAt)||Date.now()-createdAt>7*24*60*60*1000)return;
+ if(adminSignupNotificationAttemptedFor===user.id)return;
+ adminSignupNotificationAttemptedFor=user.id;
+ window.setTimeout(()=>{
+  db.functions.invoke("notify-admin-new-user").then(({error})=>{
+   if(error)console.warn("Admin signup notification:",error.message);
+  }).catch(error=>console.warn("Admin signup notification:",error));
+ },0);
+}
 function startSiteVisitTracking(){
  if(siteVisitHeartbeatStarted||!db)return;
  siteVisitHeartbeatStarted=true;
@@ -1993,15 +2007,13 @@ db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
- if(event==="SIGNED_IN" && session?.user?.email_confirmed_at){
-  window.setTimeout(()=>{
-   db.functions.invoke("notify-admin-new-user").then(({error})=>{
-    if(error)console.warn("Admin signup notification:",error.message);
-   }).catch(error=>console.warn("Admin signup notification:",error));
-  },0);
- }
+ if(event==="SIGNED_IN")notifyRecentConfirmedSignup(session);
 });
 authListenerInstalled=true;
+db.auth.getSession().then(({data,error})=>{
+ if(error)console.warn("Signup notification session check:",error.message);
+ else notifyRecentConfirmedSignup(data?.session);
+}).catch(error=>console.warn("Signup notification session check:",error));
 }
 if(db)startSiteVisitTracking();
 }catch(error){console.error("Supabase connection setup:",error);}
