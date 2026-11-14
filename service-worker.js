@@ -1,4 +1,4 @@
-const CACHE_NAME = "ahla-tounsa-shell-v140";
+const CACHE_NAME = "ahla-tounsa-shell-v141";
 const APP_ROOT = "/iqdili/";
 const INDEX_URL = APP_ROOT + "index.html";
 const APP_SHELL = [APP_ROOT, INDEX_URL, APP_ROOT + "app-icon.svg", APP_ROOT + "home-youthful-palette.css?v=2"];
