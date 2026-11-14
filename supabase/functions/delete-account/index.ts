@@ -93,13 +93,13 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const rowsByTable: Record<string, Array<{ id: number; image_urls?: string[] }>> = {};
+    const rowsByTable: Record<string, Array<{ id: number; image_urls?: string[]; title?: string; description?: string }>> = {};
     for (const table of tables) {
-      const all: Array<{ id: number; image_urls?: string[] }> = [];
+      const all: Array<{ id: number; image_urls?: string[]; title?: string; description?: string }> = [];
       let complete = false;
       for (let offset = 0; offset < 10000; offset += 1000) {
         const query = new URLSearchParams({
-          select: "id,image_urls",
+          select: "id,image_urls,title,description",
           user_id: "eq." + user.id,
           order: "id.asc",
           limit: "1000",
@@ -122,6 +122,26 @@ Deno.serve(async (req: Request) => {
         return reply({ error: "عدد الإعلانات المرتبطة بالحساب كبير بشكل غير متوقع. تواصل مع الإدارة لإتمام الحذف بأمان." }, 413);
       }
       rowsByTable[table.name] = all;
+    }
+
+    // Protect known demo IDs and any clearly labelled test/demo post before deleting anything.
+    const protectedIds: Record<string, string[]> = {
+      service_requests: ["13"],
+      job_posts: ["7"],
+      market_posts: ["2", "3", "7", "8", "9"],
+      real_estate_posts: ["1", "2", "6"],
+    };
+    const demoPattern = /(تجريب|تجريبي|اختبار|test|demo|مثال)/i;
+    for (const table of tables) {
+      for (const row of rowsByTable[table.name] || []) {
+        const demoText = (String(row.title || "") + " " + String(row.description || "")).toLowerCase();
+        if ((protectedIds[table.name] || []).includes(String(row.id)) || demoPattern.test(demoText)) {
+          return reply({
+            error: "الحساب مرتبط بإعلان تجريبي محمي. لم نحذف أي إعلان أو صورة أو الحساب؛ تواصل مع الإدارة لمراجعته.",
+            code: "PROTECTED_TEST_POST",
+          }, 409);
+        }
+      }
     }
 
     // Validate and collect image paths first; do not touch Storage yet.
