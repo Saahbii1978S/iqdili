@@ -118,7 +118,11 @@ form.addEventListener("submit",async function(event){
   if(auth.error){message("كلمة المرور غير صحيحة أو تعذّر التثبت. ما تحذف حتى شيء.");return;}
   const result=await client.functions.invoke("delete-account",{body:{confirm:"DELETE"}});
   if(result.error){
-   message("ما كملش حذف الحساب. إذا الحساب عنده صلاحيات إدارة، يلزم نقل الصلاحيات أولاً. تنجم تتواصل مع الإدارة للمساعدة.");
+   let details=null;
+   try{
+    if(result.error.context&&typeof result.error.context.json==="function")details=await result.error.context.json();
+   }catch(_){}
+   message(details&&details.error?details.error:"ما كملش حذف الحساب. إذا الحساب عنده صلاحيات إدارة، يلزم نقل الصلاحيات أولاً. تنجم تتواصل مع الإدارة للمساعدة.");
    return;
   }
   if(!result.data||result.data.ok!==true){
