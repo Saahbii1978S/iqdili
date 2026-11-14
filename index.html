@@ -2020,11 +2020,11 @@ el("save-new-password").addEventListener("click",async()=>{
  try{
   const {error}=await db.auth.updateUser({password});
   if(error){message.textContent="ما نجّمش نبدّل كلمة المرور. افتح رابط الاسترجاع الجديد وعاود.";return;}
-  message.textContent=recoveryMode==="member"?"تم تغيير كلمة المرور بنجاح. تنجم توّة تدخل لحسابك.":"تم تغيير كلمة المرور بنجاح. تنجم توّة تدخل للإدارة.";
+  message.textContent="تم تغيير كلمة المرور بنجاح. تنجم توّة تدخل لحسابك أو للإدارة حسب صلاحية حسابك.";
   el("new-password").value="";el("confirm-password").value="";
   try{await db.auth.signOut();}
   catch(signOutError){console.warn("Password updated; sign-out could not be confirmed:",signOutError);}
-  show(recoveryMode==="member"?"account":"admin");
+  show("account");
  }catch(error){
   console.error("Password update error:",error);
   message.textContent="صار خطأ في الاتصال أثناء تغيير كلمة المرور. تثبّت من الإنترنت وعاود.";
@@ -2846,7 +2846,7 @@ el("member-forgot").addEventListener("click",async()=>{
  if(!db){memberMessage("خدمة الحسابات غير متوفرة حالياً.");return;}
  button.disabled=true;
  try{
-  const redirectTo=window.location.origin+window.location.pathname+"?recovery=member";
+  const redirectTo=window.location.origin+window.location.pathname+"?recovery=1";
   const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
   if(error){memberMessage("ما نجّمش نبعث رابط الاسترجاع. تثبّت من البريد وعاود.");return;}
   memberMessage("إذا البريد مربوط بحساب، توصلك رسالة لاسترجاع كلمة السر. تثبّت من الوارد والرسائل غير المرغوب فيها.");
@@ -2866,7 +2866,7 @@ el("admin-forgot-password").addEventListener("click",async()=>{
   if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
   button.disabled=true;button.textContent="جاري إرسال الرابط...";
   try{
-   const redirectTo=window.location.origin+window.location.pathname+"?recovery=admin";
+   const redirectTo=window.location.origin+window.location.pathname+"?recovery=1";
    const {error}=await db.auth.resetPasswordForEmail(email,{redirectTo});
    if(error){console.error("Password recovery request:",error);adminMessage("ما نجّمش نبعث رابط الاسترجاع. تثبّت من البريد والاتصال، وعاود بعد شوية.");return;}
    adminMessage("إذا البريد مربوط بحساب، توصلك رسالة فيها رابط استرجاع. تثبّت من الوارد والرسائل غير المرغوب فيها.");
