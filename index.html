@@ -2269,15 +2269,18 @@ document.addEventListener("click",async event=>{
  }catch(error){if(error&&error.name!=="AbortError")button.textContent="تعذّرت المشاركة";}
  finally{window.setTimeout(()=>{button.disabled=false;button.textContent=original;},2200);}
 });
+function listingLoadError(message){
+ return '<p class="muted">'+safe(message)+'</p><button type="button" data-retry-public-data style="margin:8px 0 14px">↻ إعادة المحاولة</button>';
+}
 function renderList(id,rows,makeHtml,error){
 const target=el(id);if(!target)return;
-if(error){target.innerHTML='<p class="muted">تعذّر تحميل المنشورات. تثبّت من الاتصال وإعدادات قاعدة البيانات ثم عاود المحاولة.</p>';return;}
+if(error){target.innerHTML=listingLoadError("تعذّر تحميل المنشورات. تثبّت من الاتصال وعاود المحاولة.");return;}
 target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="muted">ما فماش منشورات حالياً.</p>';
 }
 async function loadData(){
 if(!db){
  const message="خدمة قاعدة البيانات غير متوفرة حالياً. تثبّت من الاتصال وعاود المحاولة.";
- ["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">'+safe(message)+'</p>';});
+ ["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML=listingLoadError(message);});
  setupListingSearch();
  return;
 }
@@ -2318,8 +2321,16 @@ setupListingSearch();
    }
   }
  }
-}catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
+}catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML=listingLoadError("تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.");});}
 }
+document.addEventListener("click",event=>{
+ const target=event.target instanceof Element?event.target:null;
+ const retry=target&&target.closest("[data-retry-public-data]");
+ if(!retry)return;
+ retry.disabled=true;
+ retry.textContent="جاري إعادة المحاولة...";
+ loadData().finally(()=>{if(retry.isConnected){retry.disabled=false;retry.textContent="↻ إعادة المحاولة";}});
+});
 
 function normalizeListingSearch(value){
  return String(value||"").normalize("NFKC")
