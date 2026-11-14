@@ -2835,6 +2835,34 @@ if ("serviceWorker" in navigator) {
 })();
 </script>
 
+<style id="guide-source-badges">
+.guide-source-badge{display:inline-flex;align-items:center;gap:5px;margin:4px 0 7px;padding:3px 8px;border:1px solid #dce7ec;border-radius:999px;background:#f5f8fa;color:#526779;font-size:11px;font-weight:800;line-height:1.5}
+.guide-source-badge[data-source-type="official"]{background:#edf7f3;border-color:#cfe8da;color:#236448}
+.guide-source-badge[data-source-type="unesco"]{background:#eef3fb;border-color:#d5e1f3;color:#315b91}
+.guide-source-badge[data-source-type="external"]{background:#fff8e9;border-color:#f1dfb7;color:#76571e}
+</style>
+<script id="guide-source-labels">
+(function(){
+ const cards=document.querySelectorAll("#guide-landmarks-grid .guide-landmark-card");
+ cards.forEach(card=>{
+  if(card.querySelector(".guide-source-badge"))return;
+  const link=card.querySelector("a[href]");
+  const title=card.querySelector("h3");
+  if(!link||!title)return;
+  let host="";
+  try{host=new URL(link.href,location.href).hostname.toLowerCase();}catch(error){}
+  let label="مصدر خارجي — تثبّت من التفاصيل",type="external";
+  if(host==="whc.unesco.org"){label="مرجع اليونسكو";type="unesco";}
+  else if(host==="gov.tn"||host.endsWith(".gov.tn")||host==="environnement.tn"||host.endsWith(".environnement.tn")||host==="opendata.interieur.gov.tn"){label="مصدر حكومي";type="official";}
+  const badge=document.createElement("span");
+  badge.className="guide-source-badge";
+  badge.dataset.sourceType=type;
+  badge.textContent=label;
+  badge.setAttribute("aria-label","تصنيف المصدر: "+label);
+  title.insertAdjacentElement("afterend",badge);
+ });
+})();
+</script>
 <script id="ahla-guide-filters">
 (function(){
  const governorate=document.getElementById("guide-governorate");
