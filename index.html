@@ -766,7 +766,7 @@ main>section input[type="file"]::file-selector-button{
 <h2>الخدمات وطلبات المساعدة</h2>
 <div class="box">
 <p>هنا تلقى طلبات الخدمات المنشورة والمقبولة. الطلبات اللي مازالت في المراجعة أو المرفوضة ما تظهرش للعموم.</p>
-<label for="public-services-search">🔎 فتّش في طلبات الخدمات</label><input id="public-services-search" maxlength="100" type="search" placeholder="اكتب نوع الخدمة أو المنطقة..." aria-label="البحث في الخدمات المنشورة">
+<label for="public-services-search">🔎 فتّش في طلبات الخدمات</label><input id="public-services-search" maxlength="100" type="search" placeholder="اكتب نوع الخدمة أو المنطقة..." aria-label="البحث في الخدمات المنشورة"><label for="services-governorate-filter">الولاية</label><select id="services-governorate-filter" aria-label="تصفية الخدمات حسب الولاية"></select>
 <div id="public-services-list" aria-live="polite"><p class="muted">جاري تحميل الخدمات...</p></div>
 </div>
 <div class="box">
@@ -778,8 +778,8 @@ main>section input[type="file"]::file-selector-button{
 <h2>نشر طلب خدمة</h2><div class="box">
 <label for="st">نوع الخدمة</label><select id="st"><option>مشوار أو توصيل</option><option>بحث عن معلومة</option><option>موعد أو إجراء</option><option>البحث عن حرفي أو فني</option><option>استشارة أو مساعدة</option><option>أخرى</option></select>
 <label for="sd">التفاصيل</label><textarea id="sd" maxlength="1400" aria-describedby="service-description-help"></textarea><p id="service-description-help" class="muted">حتى 1400 حرف؛ نزيدوا وقت الخدمة آلياً في الطلب.</p>
-<div class="row"><div><label for="sa">المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
-<label for="simage">صورة الخدمة (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="simage" type="file" accept="image/*"><div id="simage-preview" class="muted" aria-live="polite"></div><label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<div class="row"><div><label for="sa">المدينة أو المنطقة</label><input id="sa" value="صفاقس" maxlength="80" autocomplete="address-level2"></div><div><label for="sw">الوقت المناسب</label><input id="sw" maxlength="40" placeholder="مثال: صباحاً أو بعد الظهر"></div></div>
+<label for="sg">الولاية</label><select id="sg" required></select>\n<label for="simage">صورة الخدمة (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="simage" type="file" accept="image/*"><div id="simage-preview" class="muted" aria-live="polite"></div><label for="sc">رقم الهاتف</label><input id="sc" type="tel" inputmode="tel" autocomplete="tel" placeholder="أدخل رقم هاتفك" maxlength="20"><label><input id="spublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 
 <div id="turnstile-services" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="services" style="margin-top:15px">حفظ الطلب</button>
@@ -790,14 +790,14 @@ main>section input[type="file"]::file-selector-button{
 <section id="jobs" class="hidden">
 <h2>فرص العمل والإعلانات المهنية</h2>
 <div class="box"><p>هنا تلقى عروض الانتداب وفرص العمل المنشورة والمقبولة. الإعلانات المعلّقة أو المرفوضة ما تظهرش للعموم.</p>
-<label for="public-jobs-search">🔎 فتّش في فرص العمل</label><input id="public-jobs-search" maxlength="100" type="search" placeholder="اكتب المهنة أو المنطقة...">
+<label for="public-jobs-search">🔎 فتّش في فرص العمل</label><input id="public-jobs-search" maxlength="100" type="search" placeholder="اكتب المهنة أو المنطقة..."><label for="jobs-governorate-filter">الولاية</label><select id="jobs-governorate-filter" aria-label="تصفية فرص العمل حسب الولاية"></select>
 <div id="public-jobs-list" aria-live="polite"><p class="muted">جاري تحميل فرص العمل...</p></div></div>
 <div class="box"><h3>تحب تنشر فرصة أو تبحث عن عمل؟</h3><button type="button" data-toggle-form="job-form">أضف إعلان عمل</button></div>
 <div id="job-form" class="hidden"><div class="box"><h3>نشر إعلان عمل</h3>
 <label for="jk">نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
 <label for="jt">المهنة أو الوظيفة</label><input id="jt" maxlength="100">
-<div class="row"><div><label for="ja">المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
-<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jimage">صورة الإعلان (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="jimage" type="file" accept="image/*"><div id="jimage-preview" class="muted" aria-live="polite"></div><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<div class="row"><div><label for="ja">المدينة أو المنطقة</label><input id="ja" value="صفاقس" maxlength="80"></div><div><label for="jn">نوع العمل</label><select id="jn"><option>قار</option><option>مؤقت</option><option>يومي</option><option>عن بعد</option><option>تربص</option></select></div></div>
+<label for="jg">الولاية</label><select id="jg" required></select>\n<label for="ji">التفاصيل والأجر</label><textarea id="ji" maxlength="1500"></textarea><label for="jimage">صورة الإعلان (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="jimage" type="file" accept="image/*"><div id="jimage-preview" class="muted" aria-live="polite"></div><label for="jc">رقم الهاتف</label><input id="jc" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="jpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 
 <div id="turnstile-jobs" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="jobs">حفظ الإعلان</button><button type="button" data-close-form="job-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
@@ -816,26 +816,26 @@ main>section input[type="file"]::file-selector-button{
 </ul>
 <p class="muted">هذه قائمة توعوية عامة وليست استشارة قانونية ولا ضماناً لسلامة أي عرض. المنصة لا تعوّض التثبت المستقل من الوثائق والأطراف.</p>
 </div>
-<label for="public-realty-search">🔎 فتّش في العقارات</label><input id="public-realty-search" maxlength="100" type="search" placeholder="اكتب نوع العقار أو المنطقة...">
+<label for="public-realty-search">🔎 فتّش في العقارات</label><input id="public-realty-search" maxlength="100" type="search" placeholder="اكتب نوع العقار أو المنطقة..."><label for="realty-governorate-filter">الولاية</label><select id="realty-governorate-filter" aria-label="تصفية العقارات حسب الولاية"></select>
 <div id="public-realty-list" aria-live="polite"><p class="muted">جاري تحميل العقارات...</p></div></div>
 <div class="box"><h3>تحب تنشر إعلان عقاري؟</h3><button type="button" data-toggle-form="realty-form">أضف إعلان عقاري</button></div>
 <div id="realty-form" class="hidden"><div class="box"><h3>نشر إعلان عقاري</h3>
 <label for="rt">نوع العملية</label><select id="rt"><option>نبحث عن كراء</option><option>نبحث عن شراء</option><option>عرض كراء</option><option>عرض بيع</option></select>
 <label for="rp">نوع العقار</label><select id="rp"><option>دار</option><option>شقة</option><option>استوديو</option><option>محل تجاري</option><option>مكتب</option><option>مستودع</option><option>أرض</option><option>مقر شركة</option><option>عقار آخر</option></select>
-<div class="row"><div><label for="ra">المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
+<div class="row"><div><label for="ra">المدينة أو المنطقة</label><input id="ra" value="صفاقس" maxlength="80"></div><div><label for="r_price">السعر بالدينار</label><input id="r_price" type="number" min="0" step="any"></div></div>
 <div class="row"><div><label for="size">المساحة م²</label><input id="size" type="number" min="0" step="any"></div><div><label for="rooms">عدد الغرف</label><input id="rooms" type="number" min="0" step="1"></div></div>
-<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="rimage" type="file" accept="image/*"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="rg">الولاية</label><select id="rg" required></select>\n<label for="ri">الوصف</label><textarea id="ri" maxlength="1500"></textarea><label for="rimage">صور العقار (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="rimage" type="file" accept="image/*"><div id="rimage-preview" class="muted" aria-live="polite"></div><label for="rc">رقم الهاتف</label><input id="rc" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="rpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 
 <div id="turnstile-realty" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="market" class="hidden"><h2>🛒 سوق أحلى توانسة المفتوح</h2>
-<div class="box"><p>تصفّح المنتجات والإعلانات المقبولة المنشورة للعموم.</p><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" maxlength="100" type="search" placeholder="اكتب اسم منتج أو منطقة..."><div id="market-list" aria-live="polite"><p class="muted">جاري تحميل إعلانات السوق...</p></div></div>
+<div class="box"><p>تصفّح المنتجات والإعلانات المقبولة المنشورة للعموم.</p><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" maxlength="100" type="search" placeholder="اكتب اسم منتج أو منطقة..."><label for="market-governorate-filter">الولاية</label><select id="market-governorate-filter" aria-label="تصفية السوق حسب الولاية"></select><div id="market-list" aria-live="polite"><p class="muted">جاري تحميل إعلانات السوق...</p></div></div>
 <div class="box"><h3>تحب تعرض منتج أو تفتّش على حاجة؟</h3><button type="button" data-toggle-form="market-form">أضف إعلان للسوق</button></div>
 <div id="market-form" class="hidden"><div class="box"><h3>نشر إعلان في السوق</h3>
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
 <label for="mc">صنف المنتج</label><select id="mc"><option>ملابس وأحذية</option><option>إلكترونيات وهواتف</option><option>أثاث وتجهيزات منزلية</option><option>سيارات ووسائل نقل</option><option>مواد غذائية</option><option>أدوات ومعدات</option><option>عقارات وأراضي</option><option>حيوانات ومواشي</option><option>أخرى</option></select>
-<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mimage">صورة المنتج (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="mimage" type="file" accept="image/*"><div id="mimage-preview" class="muted" aria-live="polite"></div><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="mpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
+<label for="mn">اسم المنتج</label><input id="mn" maxlength="100"><label for="mimage">صورة المنتج (اختيارية، تتجهّز وحدها مهما كان حجمها)</label><input id="mimage" type="file" accept="image/*"><div id="mimage-preview" class="muted" aria-live="polite"></div><label for="mp">السعر بالدينار</label><input id="mp" type="number" min="0" step="any"><label for="ma">المدينة أو المنطقة</label><input id="ma" value="صفاقس" maxlength="80"><label for="mg">الولاية</label><select id="mg" required></select><label for="md">الوصف</label><textarea id="md" maxlength="1500"></textarea><label for="mphone">رقم التواصل</label><input id="mphone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="أدخل رقم هاتفك"><label><input id="mpublic" type="checkbox"> نسمح بإظهار رقمي للعموم مع الإعلان للاتصال بي</label>
 
 <div id="turnstile-market" class="turnstile-slot" style="margin-top:12px"></div>
 <button type="button" class="send" data-table="market">إرسال الإعلان</button><button type="button" data-close-form="market-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
@@ -1744,6 +1744,11 @@ let db=null;
 function el(id){return document.getElementById(id)}
 function val(id){const node=el(id);return node ? node.value.trim() : ""}
 function safe(value){return String(value ?? "").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
+function combinedRegion(cityId,governorateId){
+ const city=val(cityId),governorate=val(governorateId);
+ if(!governorate||city.includes(governorate))return city;
+ return [city,governorate].filter(Boolean).join("، ");
+}
 
 // عدّاد أحرف مباشر لمساعدة المستخدم على احترام حدود النص قبل الإرسال.
 ["sd","ji","ri","md","q","jt","mn"].forEach(id=>{
@@ -2108,20 +2113,20 @@ if(!db){alert("الاتصال بقاعدة البيانات غير متوفر ح
 let target="",data={},required=[];
 if(table==="services"){
 target="service_requests";
-data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\n"+val("sd")),city:val("sa"),phone:val("sc"),image_urls:[],contact_public:!!el("spublic")?.checked};
-required=["sd","sc","sa"];
+data={title:val("st"),description:("الوقت المناسب: "+(val("sw")||"غير محدد")+"\n"+val("sd")),city:combinedRegion("sa","sg"),phone:val("sc"),image_urls:[],contact_public:!!el("spublic")?.checked};
+required=["sd","sc","sa","sg"];
 }else if(table==="jobs"){
 target="job_posts";
-data={title:val("jt"),description:val("ji"),city:val("ja"),phone:val("jc"),job_type:val("jk"),work_nature:val("jn"),image_urls:[],contact_public:!!el("jpublic")?.checked};
-required=["jt","ji","jc","ja"];
+data={title:val("jt"),description:val("ji"),city:combinedRegion("ja","jg"),phone:val("jc"),job_type:val("jk"),work_nature:val("jn"),image_urls:[],contact_public:!!el("jpublic")?.checked};
+required=["jt","ji","jc","ja","jg"];
 }else if(table==="realty"){
 target="real_estate_posts";
-data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:val("ra"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10),image_urls:[],contact_public:!!el("rpublic")?.checked};
-required=["ri","rc","ra"];
+data={title:val("rt")+" - "+val("rp"),property_type:val("rp"),listing_type:val("rt"),description:val("ri"),city:combinedRegion("ra","rg"),phone:val("rc"),price:val("r_price")===""?null:Number(val("r_price")),size:val("size")===""?null:Number(val("size")),rooms:val("rooms")===""?null:parseInt(val("rooms"),10),image_urls:[],contact_public:!!el("rpublic")?.checked};
+required=["ri","rc","ra","rg"];
 }else if(table==="market"){
 target="market_posts";
-data={title:val("mn"),description:val("md"),category:val("mc"),price:val("mp")===""?null:Number(val("mp")),city:val("ma"),phone:val("mphone"),listing_type:val("mt"),image_urls:[],contact_public:!!el("mpublic")?.checked};
-required=["mn","md","mphone","ma"];
+data={title:val("mn"),description:val("md"),category:val("mc"),price:val("mp")===""?null:Number(val("mp")),city:combinedRegion("ma","mg"),phone:val("mphone"),listing_type:val("mt"),image_urls:[],contact_public:!!el("mpublic")?.checked};
+required=["mn","md","mphone","ma","mg"];
 }else{return;}
 const missingField=required.find(id=>!val(id));
 if(missingField){alert("نجح التحقق من Cloudflare ✅ لم يتم إرسال أي إعلان. إذا تحب تنشر، عمّر الخانات المطلوبة.");el(missingField)?.focus();return;}
@@ -2132,7 +2137,7 @@ if(Object.entries(fieldLimits).some(([id,max])=>val(id).trim().length>max)){
  alert("بعض الخانات طويلة أكثر من اللازم. اختصر النص وعاود المحاولة.");
  return;
 }
-if(String(data.title||"").trim().length>100||String(data.description||"").trim().length>1500||String(data.city||"").trim().length>80){
+if(String(data.title||"").trim().length>100||String(data.description||"").trim().length>1500||String(data.city||"").trim().length>100){
  alert("راجع طول العنوان أو الوصف أو المدينة.");
  return;
 }
@@ -2172,6 +2177,7 @@ required.forEach(id=>{if(el(id))el(id).value="";});
 ["sd","ji","ri","md","sc","jc","rc","mphone","mp","r_price","size","rooms","sw"].forEach(id=>{if(el(id))el(id).value="";});
 ["sd","ji","ri","md","q","jt","mn"].forEach(id=>{const field=el(id),counter=el("counter-"+id);if(field&&counter)counter.textContent=field.value.length+" / "+field.maxLength+" حرف";});
 ["sa","ja","ra","ma"].forEach(id=>{if(el(id))el(id).value="صفاقس";});
+["sg","jg","rg","mg"].forEach(id=>{if(el(id))el(id).value="صفاقس";});
 ["spublic","jpublic","rpublic","mpublic"].forEach(id=>{if(el(id))el(id).checked=false;});
 clearImagePreviewUrl("mimage");
 if(marketImageInput)marketImageInput.value="";
@@ -2277,6 +2283,7 @@ function renderList(id,rows,makeHtml,error){
 const target=el(id);if(!target)return;
 if(error){target.innerHTML=listingLoadError("تعذّر تحميل المنشورات. تثبّت من الاتصال وعاود المحاولة.");return;}
 target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="muted">ما فماش منشورات حالياً.</p>';
+if(rows&&rows.length){target.querySelectorAll(".entry").forEach((entry,index)=>{entry.dataset.city=String(rows[index]?.city||"");});}
 }
 async function loadData(){
 if(!db){
@@ -2342,35 +2349,52 @@ function normalizeListingSearch(value){
 function filterListing(inputId,listId){
  const input=el(inputId),list=el(listId);if(!input||!list)return;
  const query=normalizeListingSearch(input.value.trim());
+ const governorateFilterIds={"public-services-list":"services-governorate-filter","public-jobs-list":"jobs-governorate-filter","public-realty-list":"realty-governorate-filter","market-list":"market-governorate-filter"};
+ const governorateNode=el(governorateFilterIds[listId]||"");
+ const governorate=normalizeListingSearch(governorateNode?governorateNode.value:"");
  const entries=[...list.querySelectorAll(".entry")];
  let visible=0;
  entries.forEach(entry=>{
-  const match=!query||normalizeListingSearch(entry.textContent).includes(query);
+  const textMatch=!query||normalizeListingSearch(entry.textContent).includes(query);
+  const cityMatch=!governorate||normalizeListingSearch(entry.dataset.city||"").includes(governorate);
+  const match=textMatch&&cityMatch;
   entry.classList.toggle("hidden",!match);
   if(match)visible++;
  });
+ const hasFilter=!!query||!!governorate;
  const status=el(inputId+"-search-status");
- if(status)status.textContent=query
+ if(status)status.textContent=hasFilter
   ? "النتائج: "+visible+" من "+entries.length
   : "عدد الإعلانات: "+entries.length;
  let notice=list.querySelector("[data-search-empty]");
- if(query&&visible===0){
+ if(hasFilter&&visible===0){
+  const emptyMessage=entries.length
+   ?(governorate&&!query?"ما فماش إعلانات في الولاية المختارة.":"ما لقيناش نتيجة مطابقة. جرّب كلمة أخرى.")
+   :"ما فماش إعلانات منشورة في القائمة حالياً.";
   if(!notice){
    notice=document.createElement("p");
    notice.className="muted";
    notice.dataset.searchEmpty="1";
-   notice.textContent=entries.length
-    ?"ما لقيناش نتيجة مطابقة. جرّب كلمة أخرى."
-    :"ما فماش إعلانات منشورة في القائمة حالياً للبحث فيها.";
+   notice.textContent=emptyMessage;
    list.appendChild(notice);
-  }else{
-   notice.textContent=entries.length
-    ?"ما لقيناش نتيجة مطابقة. جرّب كلمة أخرى."
-    :"ما فماش إعلانات منشورة في القائمة حالياً للبحث فيها.";
-  }
+  }else{notice.textContent=emptyMessage;}
  }else if(notice){notice.remove();}
 }
+const TUNISIA_GOVERNORATES=["تونس","أريانة","بن عروس","منوبة","نابل","زغوان","بنزرت","باجة","جندوبة","الكاف","سليانة","سوسة","المنستير","المهدية","القيروان","القصرين","سيدي بوزيد","صفاقس","قابس","مدنين","تطاوين","قفصة","توزر","قبلي"];
+function setupGovernorateControls(){
+ const controls=[
+  ["sg","اختر الولاية","صفاقس"],["jg","اختر الولاية","صفاقس"],["rg","اختر الولاية","صفاقس"],["mg","اختر الولاية","صفاقس"],
+  ["services-governorate-filter","كل الولايات",""],["jobs-governorate-filter","كل الولايات",""],["realty-governorate-filter","كل الولايات",""],["market-governorate-filter","كل الولايات",""]
+ ];
+ controls.forEach(([id,firstLabel,defaultValue])=>{
+  const select=el(id);if(!select||select.dataset.optionsReady)return;
+  select.innerHTML='<option value="">'+safe(firstLabel)+'</option>'+TUNISIA_GOVERNORATES.map(name=>'<option value="'+safe(name)+'">'+safe(name)+'</option>').join("");
+  select.value=defaultValue;
+  select.dataset.optionsReady="1";
+ });
+}
 function setupListingSearch(){
+ setupGovernorateControls();
  const pairs=[["market-search","market-list"],["public-jobs-search","public-jobs-list"],["public-realty-search","public-realty-list"],["services-search","sl"],["public-services-search","public-services-list"],["jobs-search","jl"],["realty-search","rl"],["market-live-search","market-live"]];
  pairs.forEach(([inputId,listId])=>{
   const input=el(inputId);if(!input)return;
@@ -2392,6 +2416,12 @@ function setupListingSearch(){
    clear.insertAdjacentElement("afterend",status);
   }
   filterListing(inputId,listId);
+ });
+ const governoratePairs=[["services-governorate-filter","public-services-search","public-services-list"],["jobs-governorate-filter","public-jobs-search","public-jobs-list"],["realty-governorate-filter","public-realty-search","public-realty-list"],["market-governorate-filter","market-search","market-list"]];
+ governoratePairs.forEach(([filterId,inputId,listId])=>{
+  const filter=el(filterId);if(!filter||filter.dataset.ready)return;
+  filter.dataset.ready="1";
+  filter.addEventListener("change",()=>filterListing(inputId,listId));
  });
 }
 window.loadData=loadData;
