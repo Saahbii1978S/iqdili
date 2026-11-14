@@ -2024,6 +2024,7 @@ el("save-new-password").addEventListener("click",async()=>{
   el("new-password").value="";el("confirm-password").value="";
   try{await db.auth.signOut();}
   catch(signOutError){console.warn("Password updated; sign-out could not be confirmed:",signOutError);}
+  window.history.replaceState({},document.title,window.location.pathname);
   show("account");
  }catch(error){
   console.error("Password update error:",error);
