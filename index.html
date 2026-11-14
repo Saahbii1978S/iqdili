@@ -902,6 +902,11 @@ main>section input[type="file"]::file-selector-button{
 <div style="flex:1 1 210px"><label for="guide-category">نوع المكان</label><select id="guide-category"><option value="">كل الأنواع</option><option value="heritage">معالم وتراث</option><option value="nature">طبيعة ومحميات</option><option value="culture">ثقافة وجزر</option><option value="restaurant">مطاعم</option><option value="family-cafe">مقاهي عائلية</option><option value="parks">منتزهات وحدائق</option><option value="stay">إقامة وضيافة</option><option value="leisure">ترفيه وأنشطة</option><option value="cafe">مقاهي</option><option value="family">فضاءات عائلية</option><option value="park">حدائق</option><option value="garden">حدائق عمومية</option><option value="walking">مسارات ومماشي</option><option value="waterpark">مدن مائية</option><option value="sports">رياضة وأنشطة</option></select></div>
 <div style="flex:1 1 210px"><label for="guide-search">اسم المكان أو كلمة مفتاحية</label><input id="guide-search" type="search" maxlength="100" placeholder="مثال: قرطاج، شاطئ، متحف..."></div>
 </div>
+<div class="row" style="align-items:center;flex-wrap:wrap;margin-top:12px">
+ <button type="button" id="guide-nearby-button">📍 ابحث عن الأقرب لموقعي</button>
+ <p id="guide-nearby-status" class="muted" role="status" aria-live="polite">اختار نوع المكان واسمح باستعمال موقعك؛ باش نفتحولك النتائج القريبة في خرائط Google.</p>
+</div>
+<p class="muted" style="font-size:13px">ملاحظة: البحث القريب يفتح نتائج خرائط Google حسب موقعك، وقد تتضمن أماكن خارج القائمة الموثقة في دليل أحلى توانسة.</p>
 <p id="guide-results-count" class="muted" aria-live="polite">عرض كل الأماكن الموثقة المدرجة حالياً.</p>
 <p id="guide-no-results" class="note hidden" aria-live="polite">ما عناش حالياً مكان مدرج ومثبت حسب الاختيار هذا. الدليل يتوسع تدريجياً بعد مراجعة المصادر.</p>
 </div>
@@ -3601,6 +3606,56 @@ if ("serviceWorker" in navigator) {
  category.addEventListener("change",filter);
  search.addEventListener("input",filter);
  filter();
+})();
+</script>
+<script id="ahla-guide-nearby-search">
+(function(){
+ const button=document.getElementById("guide-nearby-button");
+ const category=document.getElementById("guide-category");
+ const status=document.getElementById("guide-nearby-status");
+ if(!button||!category||!status)return;
+ const searches={
+  restaurant:"مطاعم عائلية",
+  "family-cafe":"مقاهي عائلية",
+  parks:"منتزهات وحدائق",
+  park:"حدائق ومنتزهات",
+  garden:"حدائق عمومية",
+  family:"فضاءات عائلية",
+  leisure:"أماكن ترفيه عائلية",
+  cafe:"مقاهي",
+  waterpark:"مدن مائية",
+  sports:"فضاءات رياضية"
+ };
+ button.addEventListener("click",function(){
+  const kind=category.value;
+  const query=searches[kind];
+  if(!query){
+   status.textContent="اختار أولاً نوع المكان: مطاعم، مقاهي عائلية، أو منتزهات وحدائق.";
+   category.focus();
+   return;
+  }
+  if(!navigator.geolocation){
+   status.textContent="المتصفح ما يدعمش تحديد الموقع. تنجم تختار الولاية وتفتّش يدوياً.";
+   return;
+  }
+  button.disabled=true;
+  status.textContent="نستناو موافقتك على تحديد الموقع…";
+  navigator.geolocation.getCurrentPosition(function(position){
+   const lat=position.coords.latitude;
+   const lng=position.coords.longitude;
+   const mapsUrl="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(query+" near "+lat+","+lng);
+   status.textContent="تم تحديد موقعك. نفتحولك الأماكن القريبة في الخرائط…";
+   window.location.assign(mapsUrl);
+  },function(error){
+   button.disabled=false;
+   const messages={
+    1:"ما وافقتش على مشاركة الموقع. فعّل إذن الموقع من إعدادات المتصفح إذا تحب تستعمل البحث القريب.",
+    2:"تعذّر تحديد موقعك حالياً. جرّب مرة أخرى أو استعمل البحث حسب الولاية.",
+    3:"تأخر تحديد الموقع. عاود المحاولة."
+   };
+   status.textContent=messages[error.code]||"صار خطأ في تحديد الموقع. عاود المحاولة.";
+  },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
+ });
 })();
 </script>
 </body>
