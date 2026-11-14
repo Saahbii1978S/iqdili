@@ -2830,7 +2830,8 @@ el("member-signup").addEventListener("click",async()=>{
  if(password.length<8){memberMessage("كلمة المرور يلزمها 8 أحرف على الأقل.");return;}
  button.disabled=true;button.textContent="جاري إنشاء الحساب...";
  try{
-  const {data,error}=await db.auth.signUp({email,password});
+  const emailRedirectTo=new URL("./",window.location.href).toString();
+   const {data,error}=await db.auth.signUp({email,password,options:{emailRedirectTo}});
   if(error){memberMessage(error.message.includes("already registered")?"البريد هذا مسجّل من قبل. جرّب الدخول لحسابك.":"ما نجّمش ننشئ الحساب. تثبّت من البريد وكلمة المرور وعاود.");return;}
   if(data?.session){memberMessage("تم إنشاء الحساب بنجاح.");await refreshMemberState();}
   else memberMessage("بعثنالك رسالة تأكيد للبريد الإلكتروني. افتحها وأكّد حسابك، وبعد ارجع للموقع وسجّل الدخول.");
