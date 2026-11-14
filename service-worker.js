@@ -1,4 +1,4 @@
-const CACHE_NAME = "ahla-tounsa-shell-v139";
+const CACHE_NAME = "ahla-tounsa-shell-v140";
 const APP_ROOT = "/iqdili/";
 const INDEX_URL = APP_ROOT + "index.html";
 const APP_SHELL = [APP_ROOT, INDEX_URL, APP_ROOT + "app-icon.svg", APP_ROOT + "home-youthful-palette.css?v=2"];
@@ -14,7 +14,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(keys => Promise.all(keys.filter(key => key.startsWith("ahla-tounsa-shell-") && key !== CACHE_NAME).map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
