@@ -2086,17 +2086,23 @@ function contactActions(phone){
  const tel=raw.replace(/[^+0-9]/g,"");
  return '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><a href="tel:'+tel+'">📞 اتصل</a><a href="https://wa.me/'+digits+'" target="_blank" rel="noopener noreferrer">واتساب</a></div>';
 }
+function listingDeepLink(section,id){
+ const params=new URLSearchParams();
+ params.set("listing",section+":"+String(id||""));
+ return window.location.origin+window.location.pathname+"?"+params.toString()+"#"+section;
+}
 function listingShareButton(item,section,meta){
  const shareText=[item.title,meta,item.description,"منصة أحلى توانسة"].filter(Boolean).join("\n");
- const reportText=["أريد التبليغ عن إعلان في منصة أحلى توانسة","القسم: "+section,"العنوان: "+(item.title||"غير محدد"),"التفاصيل: "+(meta||"غير محددة"),"الرابط: "+window.location.origin+window.location.pathname+"#"+section,"سبب التبليغ: "].join("\n");
+ const directUrl=listingDeepLink(section,item.id);
+ const reportText=["أريد التبليغ عن إعلان في منصة أحلى توانسة","القسم: "+section,"العنوان: "+(item.title||"غير محدد"),"التفاصيل: "+(meta||"غير محددة"),"الرابط: "+directUrl,"سبب التبليغ: "].join("\n");
  const reportUrl="https://wa.me/21628637773?text="+encodeURIComponent(reportText);
- return '<div class="listing-share-actions" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" data-listing-share data-share-title="'+safe(item.title||"إعلان من أحلى توانسة")+'" data-share-text="'+safe(shareText).replace(/\n/g,"&#10;")+'" data-share-section="'+section+'" style="background:#28745f;margin-top:10px">↗ شارك الإعلان</button><a href="'+reportUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 14px;margin-top:10px;border:1px solid #d9a7a7;border-radius:10px;background:#fff7f7;color:#963b3b;font-weight:700;text-decoration:none">⚑ بلّغ عن الإعلان</a></div>';
+ return '<div class="listing-share-actions" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button type="button" data-listing-share data-share-title="'+safe(item.title||"إعلان من أحلى توانسة")+'" data-share-text="'+safe(shareText).replace(/\n/g,"&#10;")+'" data-share-section="'+section+'" data-share-id="'+safe(item.id||"")+'" style="background:#28745f;margin-top:10px">↗ شارك الإعلان</button><a href="'+reportUrl+'" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:8px 14px;margin-top:10px;border:1px solid #d9a7a7;border-radius:10px;background:#fff7f7;color:#963b3b;font-weight:700;text-decoration:none">⚑ بلّغ عن الإعلان</a></div>';
 }
 document.addEventListener("click",async event=>{
  const button=event.target instanceof Element?event.target.closest("[data-listing-share]"):null;
  if(!button)return;
  const title=button.dataset.shareTitle||"إعلان من أحلى توانسة";
- const url=window.location.origin+window.location.pathname+"#"+(button.dataset.shareSection||"home");
+ const url=listingDeepLink(button.dataset.shareSection||"home",button.dataset.shareId||"");
  const payload={title,text:(button.dataset.shareText||"إعلان من منصة أحلى توانسة")+"\n"+url,url};
  const original=button.textContent;
  button.disabled=true;
@@ -2135,6 +2141,27 @@ renderList("jl",jobs.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - ن
 renderList("public-realty-list",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price==null?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>'+safe(x.city)+'</small><br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'realty')+contactActions(x.phone)+listingShareButton(x,"realty","السعر: "+(x.price==null?"غير محدد":x.price+" د.ت")+" | المنطقة: "+x.city)+'</div>',realty.error);
 renderList("rl",realty.data,(x)=>'<div class="entry"><b>'+safe(x.title)+'</b> - '+(x.price===null||x.price===undefined?'السعر غير محدد':safe(x.price)+' د.ت')+'<br><small>المساحة: '+(x.size===null||x.size===undefined?'غير محددة':safe(x.size)+' م²')+' | عدد الغرف: '+(x.rooms===null||x.rooms===undefined?'غير محدد':safe(x.rooms))+' | 📍 '+safe(x.city)+'</small><br>'+safe(x.description)+listingImageHtml(x.image_urls,x.title,'realty')+contactActions(x.phone)+'</div>',realty.error);
 setupListingSearch();
+ const shared=new URLSearchParams(window.location.search).get("listing");
+ if(shared){
+  const split=shared.indexOf(":");
+  const sharedSection=split>=0?shared.slice(0,split):"";
+  const sharedId=split>=0?shared.slice(split+1):"";
+  if(["market","services","jobs","realty"].includes(sharedSection)&&sharedId){
+   const target=[...document.querySelectorAll("[data-listing-share]")].find(node=>node.dataset.shareSection===sharedSection&&node.dataset.shareId===sharedId);
+   if(target){
+    const card=target.closest(".entry")||target;
+    card.scrollIntoView({behavior:"smooth",block:"center"});
+    card.setAttribute("tabindex","-1");
+    card.focus({preventScroll:true});
+   }else{
+    const notice=document.createElement("p");
+    notice.className="muted";
+    notice.textContent="الإعلان المطلوب ما عادش متاحاً أو الرابط غير صحيح.";
+    const sectionList=document.getElementById(({market:"market-list",services:"sl",jobs:"public-jobs-list",realty:"public-realty-list"})[sharedSection]);
+    if(sectionList)sectionList.prepend(notice);
+   }
+  }
+ }
 }catch(error){console.error("Load error:",error);["market-list","market-live","sl","jl","rl","public-services-list","public-jobs-list","public-realty-list"].forEach(id=>{const target=el(id);if(target)target.innerHTML='<p class="muted">تعذّر الاتصال بقاعدة البيانات. تثبّت من الإنترنت وعاود المحاولة.</p>';});}
 }
 
