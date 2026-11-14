@@ -2379,56 +2379,106 @@ const protectedDemoIds={
  market_posts:["2","3","7","8","9"],
  real_estate_posts:["1","2","6"]
 };
-async function renderAdmin(){
-  const host=el("admin-requests");
-  host.innerHTML="<p>جاري تحميل الطلبات...</p>";
-  let htmlOut="";
-  for(const item of adminTables){
-   const result=await db.from(item.table).select("*").order("created_at",{ascending:false}).limit(100);
-   if(result.error){htmlOut+=`<section data-admin-group="${item.table}"><h3>${item.label}</h3><div class="entry"><p>تعذّر التحميل: ${adminEscape(result.error.message)}</p></div></section>`;continue;}
-   const rows=result.data||[];
-   htmlOut+=`<section data-admin-group="${item.table}"><h3 data-admin-heading>${item.label} (${rows.length})</h3>`;
-   if(!rows.length){htmlOut+='<p class="muted">ما فماش طلبات.</p></section>';continue;}
-   htmlOut+=rows.map(row=>{
-    const title=row.title||row.product_name||"إعلان";
-    const desc=row.description||row.details||"";
-    const city=row.city||row.region||"";
-    const status=row.status||"pending";
-    const statusLabel={pending:"في انتظار المراجعة",approved:"مقبول ومنشور",rejected:"مرفوض",unpublished:"ملغى النشر"}[status]||status;
-    const phone=String(row.phone||"").trim();
-    const phoneHtml=phone ? '<p>📞 <a href="tel:'+phone.replace(/[^+0-9]/g,"") + '">' + adminEscape(phone) + '</a></p>' : "";
-    const searchable=normalizeListingSearch([title,desc,city,row.id,phone].join(" "));
-    const likelyDemo=/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test((String(title||"")+" "+String(desc||"")).toLowerCase());
-    const protectedDemo=(protectedDemoIds[item.table]||[]).includes(String(row.id)) || likelyDemo;
-    const demoLabel=protectedDemo
-      ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">🔒 إعلان تجريبي محمي — ممنوع نشره</span>'
-      : likelyDemo ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">يحتمل أنّه تجريبي — راجع المحتوى</span>' : "";
-    const actions=(protectedDemo
-      ? '<p class="muted">النشر معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
-      : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "")
-      + (protectedDemo
-        ? '<p class="muted">🔒 الإعلان التجريبي محمي: لا يمكن نشره أو حذفه من لوحة الإدارة.</p>'
-        : currentAdminIsOwner
-          ? `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`
-          : '<p class="muted">الحذف النهائي متاح لصاحب المشروع فقط.</p>');
-    const imagePreview=Array.isArray(row.image_urls)&&row.image_urls.length
-      ? `<div data-admin-image data-admin-table="${item.table}" data-id="${adminEscape(row.id)}"><p class="muted">جاري تحميل معاينة الصورة...</p></div>`
-      : "";
-    return `<div class="entry" data-admin-entry data-admin-category="${item.table}" data-admin-status="${adminEscape(status)}" data-search-text="${adminEscape(searchable)}" data-likely-demo="${likelyDemo ? "yes" : "no"}" data-protected-demo="${protectedDemo ? "yes" : "no"}"><b>${adminEscape(title)}</b><br>${demoLabel}<p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(statusLabel)} | رقم: ${adminEscape(row.id)}</small>${imagePreview}${actions}</div>`;
-   }).join("");
-   htmlOut+="</section>";
-  }
-  host.innerHTML=htmlOut;
-  applyAdminSearch();
-  await loadAdminImagePreviews();
-  await loadAdminVisitorStats();
-  if(!window.ahlaVisitorStatsTimer){
-   window.ahlaVisitorStatsTimer=window.setInterval(()=>{
-    const panel=el("admin-panel");
-    if(panel&&!panel.classList.contains("hidden"))loadAdminVisitorStats();
-   },30000);
-  }
+const adminPageSize=100;
+const adminPageOffsets={};
+const adminHasMore={};
+const adminLoading={};
+function renderAdminEntry(row,item){
+ const title=row.title||row.product_name||"إعلان";
+ const desc=row.description||row.details||"";
+ const city=row.city||row.region||"";
+ const status=row.status||"pending";
+ const statusLabel={pending:"في انتظار المراجعة",approved:"مقبول ومنشور",rejected:"مرفوض",unpublished:"ملغى النشر"}[status]||status;
+ const phone=String(row.phone||"").trim();
+ const phoneHtml=phone ? '<p>📞 <a href="tel:'+phone.replace(/[^+0-9]/g,"") + '">' + adminEscape(phone) + '</a></p>' : "";
+ const searchable=normalizeListingSearch([title,desc,city,row.id,phone].join(" "));
+ const likelyDemo=/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test((String(title||"")+" "+String(desc||"")).toLowerCase());
+ const protectedDemo=(protectedDemoIds[item.table]||[]).includes(String(row.id)) || likelyDemo;
+ const demoLabel=protectedDemo
+  ? '<span style="display:inline-block;background:#fff1d6;color:#765316;padding:2px 8px;border-radius:6px;margin:4px 0">🔒 إعلان تجريبي محمي — ممنوع نشره</span>'
+  : "";
+ const actions=(protectedDemo
+  ? '<p class="muted">النشر معطّل لهذا الإعلان التجريبي حفاظاً على بيانات الاختبار.</p>'
+  : status==="pending" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="approved" data-admin-table="${item.table}" data-id="${row.id}">قبول</button><button type="button" data-admin-action="rejected" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">رفض</button></div>` : status==="approved" ? `<div class="row" style="margin-top:10px"><button type="button" data-admin-action="unpublished" data-admin-table="${item.table}" data-id="${row.id}" style="background:#a34b4b">إلغاء النشر</button></div>` : "")
+  + (protectedDemo
+   ? '<p class="muted">🔒 الإعلان التجريبي محمي: لا يمكن نشره أو حذفه من لوحة الإدارة.</p>'
+   : currentAdminIsOwner
+    ? `<div style="margin-top:8px"><button type="button" data-admin-action="delete" data-admin-table="${item.table}" data-id="${row.id}" style="background:#8f2929">حذف نهائي</button></div>`
+    : '<p class="muted">الحذف النهائي متاح لصاحب المشروع فقط.</p>');
+ const imagePreview=Array.isArray(row.image_urls)&&row.image_urls.length
+  ? `<div data-admin-image data-admin-table="${item.table}" data-id="${adminEscape(row.id)}"><p class="muted">جاري تحميل معاينة الصورة...</p></div>`
+  : "";
+ return `<div class="entry" data-admin-entry data-admin-category="${item.table}" data-admin-status="${adminEscape(status)}" data-search-text="${adminEscape(searchable)}" data-likely-demo="${likelyDemo ? "yes" : "no"}" data-protected-demo="${protectedDemo ? "yes" : "no"}"><b>${adminEscape(title)}</b><br>${demoLabel}<p>${adminEscape(desc)}</p>${phoneHtml}<small>📍 ${adminEscape(city)} | الحالة: ${adminEscape(statusLabel)} | رقم: ${adminEscape(row.id)}</small>${imagePreview}${actions}</div>`;
 }
+function updateAdminLoadMore(item){
+ const button=document.querySelector('[data-admin-more="'+item.table+'"]');
+ if(!button)return;
+ button.classList.toggle("hidden",!adminHasMore[item.table]);
+ button.disabled=!!adminLoading[item.table];
+ button.textContent=adminLoading[item.table]?"جاري تحميل الدفعة...":"تحميل 100 إعلان أقدم";
+}
+async function loadMoreAdminRows(table){
+ const item=adminTables.find(x=>x.table===table);
+ if(!item||adminLoading[table]||!adminHasMore[table])return;
+ const button=document.querySelector('[data-admin-more="'+table+'"]');
+ const group=document.querySelector('[data-admin-group="'+table+'"]');
+ if(!group)return;
+ adminLoading[table]=true;updateAdminLoadMore(item);
+ try{
+  const from=adminPageOffsets[table]||0,to=from+adminPageSize-1;
+  const result=await db.from(table).select("*").order("created_at",{ascending:false}).range(from,to);
+  if(result.error)throw result.error;
+  const rows=result.data||[];
+  const holder=group.querySelector("[data-admin-entries]");
+  if(holder&&rows.length)holder.insertAdjacentHTML("beforeend",rows.map(row=>renderAdminEntry(row,item)).join(""));
+  adminPageOffsets[table]=from+rows.length;
+  adminHasMore[table]=rows.length===adminPageSize;
+  const heading=group.querySelector("[data-admin-heading]");
+  if(heading)heading.textContent=item.label+" ("+group.querySelectorAll("[data-admin-entry]").length+")";
+  await loadAdminImagePreviews(group.querySelectorAll("[data-admin-image]:not([data-preview-loaded])"));
+  group.querySelectorAll("[data-admin-image]").forEach(node=>node.dataset.previewLoaded="1");
+  applyAdminSearch();
+ }catch(error){
+  console.warn("Admin pagination:",error);
+  const note=group.querySelector("[data-admin-load-error]");
+  if(note)note.textContent="تعذّر تحميل الدفعة. اضغط على زر التحميل للمحاولة من جديد.";
+ }finally{
+  adminLoading[table]=false;updateAdminLoadMore(item);
+ }
+}
+async function renderAdmin(){
+ const host=el("admin-requests");
+ host.innerHTML="<p>جاري تحميل الطلبات...</p>";
+ adminTables.forEach(item=>{adminPageOffsets[item.table]=0;adminHasMore[item.table]=false;adminLoading[item.table]=false;});
+ let htmlOut="";
+ for(const item of adminTables){
+  const result=await db.from(item.table).select("*").order("created_at",{ascending:false}).range(0,adminPageSize-1);
+  if(result.error){htmlOut+=`<section data-admin-group="${item.table}"><h3>${item.label}</h3><div class="entry"><p>تعذّر التحميل: ${adminEscape(result.error.message)}</p></div></section>`;continue;}
+  const rows=result.data||[];
+  adminPageOffsets[item.table]=rows.length;
+  adminHasMore[item.table]=rows.length===adminPageSize;
+  htmlOut+=`<section data-admin-group="${item.table}"><h3 data-admin-heading>${item.label} (${rows.length})</h3><div data-admin-entries>${rows.map(row=>renderAdminEntry(row,item)).join("")}</div><p class="muted" data-admin-load-error></p><button type="button" data-admin-more="${item.table}" class="${adminHasMore[item.table]?"":"hidden"}" style="margin:10px 0;background:#355c7d">تحميل 100 إعلان أقدم</button>${rows.length?"":'<p class="muted">ما فماش طلبات.</p>'}</section>`;
+ }
+ host.innerHTML=htmlOut;
+ applyAdminSearch();
+ await loadAdminImagePreviews();
+ host.querySelectorAll("[data-admin-image]").forEach(node=>node.dataset.previewLoaded="1");
+ await loadAdminVisitorStats();
+ if(!window.ahlaVisitorStatsTimer){
+  window.ahlaVisitorStatsTimer=window.setInterval(()=>{
+   const panel=el("admin-panel");
+   if(panel&&!panel.classList.contains("hidden"))loadAdminVisitorStats();
+  },30000);
+ }
+}
+if(!document.documentElement.dataset.adminPaginationReady){
+ document.documentElement.dataset.adminPaginationReady="1";
+ document.addEventListener("click",event=>{
+  const button=event.target.closest("[data-admin-more]");
+  if(button)loadMoreAdminRows(button.dataset.adminMore);
+ });
+}
+
 async function loadAdminVisitorStats(){
  const host=el("admin-visitor-stats");
  if(!host||!db)return;
