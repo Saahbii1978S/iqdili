@@ -1652,8 +1652,10 @@ main>section input[type="file"]::file-selector-button{
 <p>الدخول خاص بمسؤول المنصة فقط.</p>
 <label for="admin-email">البريد الإلكتروني</label><input id="admin-email" maxlength="254" type="email" autocomplete="username">
 <label for="admin-password">كلمة المرور</label><input id="admin-password" maxlength="128" type="password" autocomplete="current-password">
-<button type="button" id="admin-login-button" style="margin-top:12px">دخول الإدارة</button>
+<button type="button" id="admin-login-button" style="margin-top:12px">دخول الإدارة بكلمة المرور</button>
+<button type="button" id="admin-magic-link" style="margin-top:8px;background:#355c7d">دخول برابط آمن يوصلك للبريد</button>
 <button type="button" id="admin-forgot-password" style="margin-top:8px;background:#647875">نسيت كلمة السر؟ ابعثلي رابط استرجاع</button>
+<p class="muted" style="margin-top:8px">تنجم تدخل من غير ما تحفظ كلمة المرور: اكتب بريدك واضغط على رابط الدخول الآمن، وبعد افتح الرسالة واضغط على الرابط.</p>
 <p id="admin-login-message" class="muted"></p>
 </div>
 <div id="admin-panel" class="hidden">
@@ -2007,7 +2009,10 @@ db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
- if(event==="SIGNED_IN")notifyRecentConfirmedSignup(session);
+ if(event==="SIGNED_IN"){
+  notifyRecentConfirmedSignup(session);
+  if(el("admin")&&!el("admin").classList.contains("hidden"))show("admin");
+ }
 });
 authListenerInstalled=true;
 db.auth.getSession().then(({data,error})=>{
@@ -2903,6 +2908,21 @@ el("admin-forgot-password").addEventListener("click",async()=>{
   finally{button.disabled=false;button.textContent="نسيت كلمة السر؟ ابعثلي رابط استرجاع";}
  });
 
+el("admin-magic-link").addEventListener("click",async()=>{
+  const email=val("admin-email"),button=el("admin-magic-link");
+  if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
+  if(!email){adminMessage("اكتب بريدك الإلكتروني أولاً.");return;}
+  button.disabled=true;button.textContent="جاري إرسال رابط الدخول...";
+  try{
+   const redirectTo=window.location.origin+window.location.pathname;
+   const {error}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:redirectTo}});
+   if(error){console.error("Admin magic-link request:",error);adminMessage("ما نجّمش نبعث رابط الدخول. تثبّت من البريد وعاود بعد شوية.");return;}
+   adminMessage("بعثنالك رابط دخول آمن إذا البريد مربوط بحساب. افتح الرسالة واضغط على الرابط؛ ما يلزمكش كلمة مرور.");
+  }catch(error){
+   console.error("Admin magic-link error:",error);
+   adminMessage("صار خطأ أثناء إرسال رابط الدخول. تثبّت من الإنترنت وعاود.");
+  }finally{button.disabled=false;button.textContent="دخول برابط آمن يوصلك للبريد";}
+});
 el("admin-login-button").addEventListener("click",async()=>{
   const email=val("admin-email"),password=val("admin-password");
   if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً. عاود بعد شوية.");return;}
@@ -2915,8 +2935,8 @@ el("admin-login-button").addEventListener("click",async()=>{
   }catch(error){
    console.error("Admin login error:",error);
    adminMessage("صار خطأ في الاتصال أثناء الدخول. تثبّت من الإنترنت وعاود.");
-  }finally{b.disabled=false;b.textContent="دخول الإدارة";}
- });
+  }finally{b.disabled=false;b.textContent="دخول الإدارة بكلمة المرور";}
+});
  el("admin-refresh").addEventListener("click",async()=>{
   if(!db){adminMessage("خدمة الحسابات غير متوفرة حالياً.");return;}
   const b=el("admin-refresh");b.disabled=true;
