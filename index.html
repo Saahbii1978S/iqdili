@@ -2940,14 +2940,14 @@ function showInitialPage(){
  const query=new URLSearchParams(window.location.search);
  const rawHash=window.location.hash.replace(/^#/,"");
  const hash=new URLSearchParams(rawHash);
- const deepPages=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account"];
+ const deepPages=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account","admin"];
  if(query.get("recovery")==="1" || hash.get("type")==="recovery")show("reset-password");
  else if(deepPages.includes(rawHash))show(rawHash);
  else show("home");
 }
 window.addEventListener("hashchange",()=>{
  const page=window.location.hash.replace(/^#/,"");
- if(["home","services","jobs","realty","market","good","guide","cv","ask","saved","account"].includes(page))show(page);
+ if(["home","services","jobs","realty","market","good","guide","cv","ask","saved","account","admin"].includes(page))show(page);
 });
 document.addEventListener("DOMContentLoaded",showInitialPage);
 if(document.readyState!=="loading")showInitialPage();
