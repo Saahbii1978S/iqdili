@@ -17,6 +17,10 @@ import android.webkit.WebViewClient;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
+import android.view.WindowInsets;
+import android.graphics.Insets;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 public class MainActivity extends Activity {
     private static final String HOME = "https://saahbii1978s.github.io/iqdili/";
@@ -27,6 +31,7 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> fileChooserCallback;
     private GeolocationPermissions.Callback pendingGeoCallback;
     private String pendingGeoOrigin;
+    private OnBackInvokedCallback backInvokedCallback;
 
     public class ShareBridge {
         @JavascriptInterface
@@ -54,6 +59,40 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         webView = new WebView(this);
         setContentView(webView);
+
+        // Target SDK 36 enforces edge-to-edge. Keep the WebView's interactive
+        // content clear of status/navigation bars and display cutouts.
+        final int basePaddingLeft = webView.getPaddingLeft();
+        final int basePaddingTop = webView.getPaddingTop();
+        final int basePaddingRight = webView.getPaddingRight();
+        final int basePaddingBottom = webView.getPaddingBottom();
+        webView.setOnApplyWindowInsetsListener((view, insets) -> {
+            int left, top, right, bottom;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Insets safe = insets.getInsets(
+                        WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                left = safe.left;
+                top = safe.top;
+                right = safe.right;
+                bottom = safe.bottom;
+            } else {
+                left = insets.getSystemWindowInsetLeft();
+                top = insets.getSystemWindowInsetTop();
+                right = insets.getSystemWindowInsetRight();
+                bottom = insets.getSystemWindowInsetBottom();
+            }
+            view.setPadding(basePaddingLeft + left, basePaddingTop + top,
+                    basePaddingRight + right, basePaddingBottom + bottom);
+            return insets;
+        });
+        webView.requestApplyInsets();
+
+        // Android 13+ predictive-back dispatch no longer relies on onBackPressed.
+        if (Build.VERSION.SDK_INT >= 33) {
+            backInvokedCallback = () -> navigateBack();
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT, backInvokedCallback);
+        }
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -202,14 +241,27 @@ public class MainActivity extends Activity {
         if (webView != null) webView.onResume();
     }
 
+    private void navigateBack() {
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else finish();
+    }
+
     @Override
     public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else super.onBackPressed();
+        if (Build.VERSION.SDK_INT < 33) {
+            if (webView != null && webView.canGoBack()) webView.goBack();
+            else super.onBackPressed();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
     protected void onDestroy() {
+        if (Build.VERSION.SDK_INT >= 33 && backInvokedCallback != null) {
+            getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backInvokedCallback);
+            backInvokedCallback = null;
+        }
         if (fileChooserCallback != null) {
             fileChooserCallback.onReceiveValue(null);
             fileChooserCallback = null;
