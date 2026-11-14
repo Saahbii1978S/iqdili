@@ -2426,7 +2426,7 @@ async function loadMoreAdminRows(table){
  adminLoading[table]=true;updateAdminLoadMore(item);
  try{
   const from=adminPageOffsets[table]||0,to=from+adminPageSize-1;
-  const result=await db.from(table).select("*").order("created_at",{ascending:false}).range(from,to);
+  const result=await db.from(table).select("*").order("created_at",{ascending:false}).order("id",{ascending:true}).range(from,to);
   if(result.error)throw result.error;
   const rows=result.data||[];
   const holder=group.querySelector("[data-admin-entries]");
@@ -2452,7 +2452,7 @@ async function renderAdmin(){
  adminTables.forEach(item=>{adminPageOffsets[item.table]=0;adminHasMore[item.table]=false;adminLoading[item.table]=false;});
  let htmlOut="";
  for(const item of adminTables){
-  const result=await db.from(item.table).select("*").order("created_at",{ascending:false}).range(0,adminPageSize-1);
+  const result=await db.from(item.table).select("*").order("created_at",{ascending:false}).order("id",{ascending:true}).range(0,adminPageSize-1);
   if(result.error){htmlOut+=`<section data-admin-group="${item.table}"><h3>${item.label}</h3><div class="entry"><p>تعذّر التحميل: ${adminEscape(result.error.message)}</p></div></section>`;continue;}
   const rows=result.data||[];
   adminPageOffsets[item.table]=rows.length;
@@ -2494,8 +2494,8 @@ async function loadAdminVisitorStats(){
  el("stats-total").textContent=Number(stats.total_visits||0).toLocaleString("ar-TN");
  const note=el("stats-updated");if(note)note.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-TN")+" · الزائر يُحتسب زيارة جديدة بعد 30 دقيقة من الخمول.";
 }
-async function loadAdminImagePreviews(){
- const placeholders=[...document.querySelectorAll("[data-admin-image]")];
+async function loadAdminImagePreviews(scope){
+ const placeholders=scope ? [...scope] : [...document.querySelectorAll("[data-admin-image]")];
  if(!placeholders.length||!db)return;
  const {data,error}=await db.auth.getSession();
  const token=data?.session?.access_token;
