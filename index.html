@@ -1991,8 +1991,15 @@ if(!db && window.supabase && typeof window.supabase.createClient==="function"){
 db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }
 if(db && !authListenerInstalled){
-db.auth.onAuthStateChange((event)=>{
+db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
+ if(event==="SIGNED_IN" && session?.user?.email_confirmed_at){
+  window.setTimeout(()=>{
+   db.functions.invoke("notify-admin-new-user").then(({error})=>{
+    if(error)console.warn("Admin signup notification:",error.message);
+   }).catch(error=>console.warn("Admin signup notification:",error));
+  },0);
+ }
 });
 authListenerInstalled=true;
 }
