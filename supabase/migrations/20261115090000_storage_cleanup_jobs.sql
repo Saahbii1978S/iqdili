@@ -333,6 +333,8 @@ revoke all on function public.delete_account_posts_and_activate_cleanup(uuid, js
 grant execute on function public.delete_account_posts_and_activate_cleanup(uuid, jsonb) to service_role;
 
 -- Fail closed if another listing still references the exact queued object.
+-- Only rows whose current status uses a given bucket protect its objects.
+-- Pending rows use private pending-images; approved rows use their public bucket.
 create or replace function public.is_storage_cleanup_object_referenced(
   p_bucket text,
   p_object_path text
@@ -355,25 +357,26 @@ begin
   if p_bucket = 'market-images' then
     select exists (
       select 1 from public.market_posts r
-       where p_object_path = any(coalesce(r.image_urls, array[]::text[]))
+       where r.status = 'approved'
+         and p_object_path = any(coalesce(r.image_urls, array[]::text[]))
     ) into referenced;
     return referenced;
   end if;
 
   if p_bucket = 'listing-images' then
     select
-      exists (select 1 from public.service_requests r where p_object_path = any(coalesce(r.image_urls, array[]::text[])))
-      or exists (select 1 from public.job_posts r where p_object_path = any(coalesce(r.image_urls, array[]::text[])))
-      or exists (select 1 from public.real_estate_posts r where p_object_path = any(coalesce(r.image_urls, array[]::text[])))
+      exists (select 1 from public.service_requests r where r.status = 'approved' and p_object_path = any(coalesce(r.image_urls, array[]::text[])))
+      or exists (select 1 from public.job_posts r where r.status = 'approved' and p_object_path = any(coalesce(r.image_urls, array[]::text[])))
+      or exists (select 1 from public.real_estate_posts r where r.status = 'approved' and p_object_path = any(coalesce(r.image_urls, array[]::text[])))
       into referenced;
     return referenced;
   end if;
 
   select
-    exists (select 1 from public.service_requests r where p_object_path = any(coalesce(r.image_urls, array[]::text[])))
-    or exists (select 1 from public.job_posts r where p_object_path = any(coalesce(r.image_urls, array[]::text[])))
-    or exists (select 1 from public.real_estate_posts r where p_object_path = any(coalesce(r.image_urls, array[]::text[])))
-    or exists (select 1 from public.market_posts r where p_object_path = any(coalesce(r.image_urls, array[]::text[])))
+    exists (select 1 from public.service_requests r where r.status = 'pending' and p_object_path = any(coalesce(r.image_urls, array[]::text[])))
+    or exists (select 1 from public.job_posts r where r.status = 'pending' and p_object_path = any(coalesce(r.image_urls, array[]::text[])))
+    or exists (select 1 from public.real_estate_posts r where r.status = 'pending' and p_object_path = any(coalesce(r.image_urls, array[]::text[])))
+    or exists (select 1 from public.market_posts r where r.status = 'pending' and p_object_path = any(coalesce(r.image_urls, array[]::text[])))
     into referenced;
   return referenced;
 end;
