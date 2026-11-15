@@ -5,6 +5,7 @@
 // Runtime secrets remain environment variables and are not included in this snapshot.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { classifyStorageHeadStatus } from "../_shared/storage-head.ts";
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -86,17 +87,27 @@ Deno.serve(async(req:Request)=>{
    const headers=storageHeaders(auth.key);
    // Idempotency: a previous attempt may have completed the copy before its response was lost.
    const destinationHead=await fetch(objectInfoUrl(auth.url,destinationBucket,path),{method:"HEAD",headers});
-   if(!destinationHead.ok){
+   const destinationState=classifyStorageHeadStatus(destinationHead.status);
+   if(destinationState==="error"){
+    console.error("destination image preflight failed",destinationHead.status);
+    return reply({error:"تعذّر التثبت من الصورة في المخزن المنشور. ما تمش نشر الإعلان."},502);
+   }
+   if(destinationState==="missing"){
     const sourceHead=await fetch(objectInfoUrl(auth.url,"pending-images",path),{method:"HEAD",headers});
-    if(!sourceHead.ok)return reply({error:"الصورة غير موجودة في المخزن الخاص؛ ما تمش نشر الإعلان."},409);
+    const sourceState=classifyStorageHeadStatus(sourceHead.status);
+    if(sourceState==="error"){
+     console.error("source image preflight failed",sourceHead.status);
+     return reply({error:"تعذّر التثبت من الصورة في المخزن الخاص. ما تمش نشر الإعلان."},502);
+    }
+    if(sourceState==="missing")return reply({error:"الصورة غير موجودة في المخزن الخاص؛ ما تمش نشر الإعلان."},409);
     const copy=await fetch(auth.url+"/storage/v1/object/copy",{method:"POST",headers:{...headers,"Content-Type":"application/json"},body:JSON.stringify({bucketId:"pending-images",sourceKey:path,destinationBucket,destinationKey:path})});
     if(!copy.ok){
      const detail=await copy.text().catch(()=> "");
      // Confirm whether Storage committed the copy despite returning an error.
      const verify=await fetch(objectInfoUrl(auth.url,destinationBucket,path),{method:"HEAD",headers});
-     if(!verify.ok){
-      console.error("approved image copy failed",copy.status,detail.slice(0,300));
-      return reply({error:"ما نجّمش ننقل الصورة للمخزن المنشور. الإعلان ما تنشرش."},502);
+     if(classifyStorageHeadStatus(verify.status)!=="exists"){
+      console.error("approved image copy failed",copy.status,"verification status",verify.status,detail.slice(0,300));
+      return reply({error:"ما نجّمش نثبت نقل الصورة للمخزن المنشور. الإعلان ما تنشرش."},502);
      }
     }
    }
