@@ -237,7 +237,8 @@ grant execute on function public.activate_storage_cleanup_jobs(jsonb) to service
 -- Delete one account's listing rows and activate their exact image jobs in one transaction.
 create or replace function public.delete_account_posts_and_activate_cleanup(
   p_user_id uuid,
-  p_jobs jsonb
+  p_jobs jsonb,
+  p_expected_rows jsonb
 )
 returns jsonb
 language plpgsql
@@ -254,8 +255,30 @@ declare
 begin
   if p_user_id is null
      or pg_catalog.jsonb_typeof(p_jobs) <> 'array'
-     or pg_catalog.jsonb_array_length(p_jobs) > 500 then
+     or pg_catalog.jsonb_array_length(p_jobs) > 500
+     or pg_catalog.jsonb_typeof(p_expected_rows) <> 'object'
+     or pg_catalog.jsonb_typeof(p_expected_rows->'service_requests') <> 'array'
+     or pg_catalog.jsonb_typeof(p_expected_rows->'job_posts') <> 'array'
+     or pg_catalog.jsonb_typeof(p_expected_rows->'real_estate_posts') <> 'array'
+     or pg_catalog.jsonb_typeof(p_expected_rows->'market_posts') <> 'array' then
     raise exception 'Invalid account cleanup request';
+  end if;
+
+  -- Compare every column and every row, not only image paths. This also detects
+  -- newly-added rows without images and edits to protected/demo content.
+  if (select coalesce(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id), '[]'::jsonb)
+        from public.service_requests r where r.user_id = p_user_id)
+       <> p_expected_rows->'service_requests'
+     or (select coalesce(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id), '[]'::jsonb)
+           from public.job_posts r where r.user_id = p_user_id)
+       <> p_expected_rows->'job_posts'
+     or (select coalesce(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id), '[]'::jsonb)
+           from public.real_estate_posts r where r.user_id = p_user_id)
+       <> p_expected_rows->'real_estate_posts'
+     or (select coalesce(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id), '[]'::jsonb)
+           from public.market_posts r where r.user_id = p_user_id)
+       <> p_expected_rows->'market_posts' then
+    raise exception 'Account listings changed during deletion; retry with a fresh snapshot';
   end if;
 
   select count(*) into requested_count
@@ -381,8 +404,8 @@ begin
 end;
 $$;
 
-revoke all on function public.delete_account_posts_and_activate_cleanup(uuid, jsonb) from public, anon, authenticated;
-grant execute on function public.delete_account_posts_and_activate_cleanup(uuid, jsonb) to service_role;
+revoke all on function public.delete_account_posts_and_activate_cleanup(uuid, jsonb, jsonb) from public, anon, authenticated;
+grant execute on function public.delete_account_posts_and_activate_cleanup(uuid, jsonb, jsonb) to service_role;
 
 -- Fail closed if another listing still references the exact queued object.
 -- Only rows whose current status uses a given bucket protect its objects.
