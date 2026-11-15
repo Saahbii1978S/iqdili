@@ -15,7 +15,25 @@ export function isValidStorageObjectPath(path: unknown): path is string {
 }
 
 export function encodeStorageObjectPath(path: string): string {
+  if (!isValidStorageObjectPath(path)) throw new Error("Invalid storage object path");
   return path.split("/").map(encodeURIComponent).join("/");
+}
+
+export function buildStorageObjectUrl(
+  supabaseUrl: string,
+  bucket: string,
+  path: string,
+  operation: "info" | "delete",
+): string {
+  if (!ALLOWED_BUCKETS.has(bucket) || !isValidStorageObjectPath(path)) {
+    throw new Error("Invalid storage object locator");
+  }
+  const base = new URL(supabaseUrl);
+  if (base.protocol !== "https:" && base.hostname !== "localhost" && base.hostname !== "127.0.0.1") {
+    throw new Error("Storage endpoint must use HTTPS");
+  }
+  return base.origin + "/storage/v1/object/" + operation + "/" + bucket + "/" +
+    encodeStorageObjectPath(path);
 }
 
 export function buildStorageCleanupJobs(
