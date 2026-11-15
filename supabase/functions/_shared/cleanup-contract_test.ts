@@ -27,6 +27,8 @@ Deno.test("cleanup target allowlist rejects foreign buckets and unsafe paths", (
   assert(!isAllowedCleanupTarget("listing-images", "../services/photo.jpg"), "traversal rejected");
   assert(!isAllowedCleanupTarget("listing-images", "services//photo.jpg"), "double slash rejected");
   assert(!isAllowedCleanupTarget("listing-images", "services/photo.jpg?token=x"), "query string rejected");
+  assert(isAllowedCleanupTarget("pending-images", "realty/pending.webp"), "pending bucket allows approved folder");
+  assert(!isAllowedCleanupTarget("pending-images", "unexpected/pending.webp"), "pending bucket rejects unknown folder");
 });
 
 Deno.test("enqueue and row deletion roll back together on injected transaction failure", () => {
