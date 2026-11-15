@@ -32,9 +32,9 @@ create schema if not exists auth;
 create or replace function auth.uid()
 returns uuid
 language sql stable
-as $
+as $auth_stub$
   select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
-$;
+$auth_stub$;
 create or replace function public.is_admin()
 returns boolean
 language sql stable
