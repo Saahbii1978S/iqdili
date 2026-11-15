@@ -45,6 +45,11 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html privacy.html terms.html delete-account.html download.html 404.html manifest.webmanifest service-worker.js app-icon.svg home-youthful-palette.css _site/
+      - name: Render Facebook share preview image
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-core librsvg2-bin
+          rsvg-convert -w 1200 -h 630 social-preview.svg > _site/social-preview.png
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
