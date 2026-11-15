@@ -1,17 +1,16 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 const TOKEN_HASH=Deno.env.get("EXPIRE_POSTS_TOKEN_HASH")||"";
 const tables:Record<string,{bucket:string,folder:string}>={service_requests:{bucket:"listing-images",folder:"services"},job_posts:{bucket:"listing-images",folder:"jobs"},real_estate_posts:{bucket:"listing-images",folder:"realty"},market_posts:{bucket:"market-images",folder:"market"}};
 async function sha(v:string){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");}
 function validPath(p:unknown,f:string):p is string{return typeof p==="string"&&p.startsWith(f+"/")&&/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(p)&&!p.includes("..")&&!p.includes("//");}
-async function remove(url:string,key:string,bucket:string,paths:string[]){if(!paths.length)return true;const r=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:paths})});if(!r.ok){console.error("expiry storage removal",bucket,r.status);return false;}return true;}
 async function sendAdminAlert(subject:string,textContent:string):Promise<void>{
  const apiKey=Deno.env.get("BREVO_API_KEY"),recipient=Deno.env.get("ADMIN_ALERT_EMAIL"),sender=Deno.env.get("BREVO_SENDER_EMAIL");
  if(!apiKey||!recipient||!sender){console.warn("Admin email alerts are not fully configured");return;}
  try{const response=await fetch("https://api.brevo.com/v3/smtp/email",{method:"POST",headers:{"accept":"application/json","api-key":apiKey,"content-type":"application/json"},body:JSON.stringify({sender:{name:"أحلى توانسة",email:sender},to:[{email:recipient}],subject,textContent}),signal:AbortSignal.timeout(7000)});if(!response.ok)console.error("Admin email alert failed",response.status);}
  catch(error){console.error("Admin email alert exception",String(error));}
 }
-function sameTextFilter(column:string,value:unknown):string{return value===null||value===undefined?`${column}=is.null`:`${column}=eq.${encodeURIComponent(String(value))}`;}
 Deno.serve(async(req:Request)=>{
  if(req.method!=="POST")return new Response("Method not allowed",{status:405});
  const auth=req.headers.get("authorization")||"";
@@ -21,7 +20,7 @@ Deno.serve(async(req:Request)=>{
  for(const [table,c] of Object.entries(tables)){
   const now=new Date().toISOString();let lastId:string|null=null,count=0,protectedCount=0;
   while(true){
-   const filters=["status=eq.approved","expires_at=lte."+encodeURIComponent(now),"select=id,title,description,image_urls","order=id.asc","limit=100"];
+   const filters=["status=eq.approved","expires_at=lte."+encodeURIComponent(now),"select=*","order=id.asc","limit=100"];
    if(lastId!==null)filters.push("id=gt."+encodeURIComponent(lastId));
    const q=await fetch(url+"/rest/v1/"+table+"?"+filters.join("&"),{headers:{apikey:key,Authorization:"Bearer "+key}});
    if(!q.ok){scanErrors.push(table);console.error("expiry scan failed",table,q.status);break;}
@@ -33,15 +32,37 @@ Deno.serve(async(req:Request)=>{
     if(isProtectedDemoPost(table,row.id,row.title,row.description)){protectedCount++;continue;}
     const paths=Array.isArray(row.image_urls)?row.image_urls:[];
     if(paths.some((p:unknown)=>!validPath(p,c.folder))){invalidPathSkips.push(table+":"+String(row.id));console.error("expiry skipped unexpected image path",table,String(row.id));continue;}
-    const imageArrayFilter="image_urls=eq."+encodeURIComponent("{"+paths.join(",")+"}");
-    const deleteFilters=["id=eq."+encodeURIComponent(String(row.id)),"status=eq.approved","expires_at=lte."+encodeURIComponent(now),sameTextFilter("title",row.title),sameTextFilter("description",row.description),imageArrayFilter];
-    const d=await fetch(url+"/rest/v1/"+table+"?"+deleteFilters.join("&"),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
-    if(!d.ok){deleteErrors.push(table+":"+String(row.id));console.error("expiry delete failed",table,String(row.id),d.status);continue;}
-    const deleted=await d.json().catch(()=>null);
-    if(!Array.isArray(deleted)||deleted.length!==1)continue;
+    const cleanupJobs=buildStorageCleanupJobs([c.bucket,"pending-images"],paths as string[]);
+    if(cleanupJobs.length>500){
+     cleanupFailures.push(table+":"+String(row.id));
+     console.error("expiry cleanup job batch exceeds safety limit",table,String(row.id));
+     continue;
+    }
+    if(!await enqueueStorageCleanup(url,key,cleanupJobs)){
+     cleanupFailures.push(table+":"+String(row.id));
+     console.error("expiry cleanup could not be staged; listing preserved",table,String(row.id));
+     continue;
+    }
+    const deletion=await fetch(url+"/rest/v1/rpc/delete_post_and_activate_storage_cleanup",{
+     method:"POST",
+     headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
+     body:JSON.stringify({
+      p_table:table,
+      p_id:String(row.id),
+      p_expected_user_id:null,
+      p_require_owner:false,
+      p_expected_row:row,
+      p_jobs:cleanupJobs
+     })
+    });
+    if(!deletion.ok){
+     deleteErrors.push(table+":"+String(row.id));
+     console.error("expiry atomic delete failed",table,String(row.id),deletion.status,await deletion.text().catch(()=> ""));
+     continue;
+    }
+    const outcome=await deletion.json().catch(()=>null);
+    if(!outcome||outcome.deleted!==true)continue;
     count++;
-    const publicClean=await remove(url,key,c.bucket,paths),pendingClean=await remove(url,key,"pending-images",paths);
-    if(!publicClean||!pendingClean){cleanupFailures.push(table+":"+String(row.id));console.error("Expired listing deleted but image cleanup is pending",table,row.id);}
    }
    if(rows.length<100)break;
   }
