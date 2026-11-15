@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
 import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -58,9 +59,7 @@ Deno.serve(async(req:Request)=>{
   const rowRes=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=*",{headers:{apikey:key,Authorization:"Bearer "+key}});
   if(!rowRes.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowRes.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
-  const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
-  const demoText=(String(rows[0].title||"")+" "+String(rows[0].description||"")).toLowerCase();
-  const isKnownDemo=(protectedDemoIds[table]||[]).includes(String(id)) || /(تجر(?:ي)?ب|اختبار|test|demo|مثال)/i.test(demoText);
+  const isKnownDemo=isProtectedDemoPost(table,id,rows[0].title,rows[0].description);
   if(isKnownDemo&&!deleteTest)return reply({error:"هذا إعلان تجريبي محمي. استعمل زر حذف إعلان تجريبي بصلاحية صاحب المشروع."},403);
   if(deleteTest&&!isKnownDemo)return reply({error:"رفض الحذف: الإعلان غير مصنّف كتجربة."},403);
   const paths=Array.isArray(rows[0].image_urls)?rows[0].image_urls:[];
