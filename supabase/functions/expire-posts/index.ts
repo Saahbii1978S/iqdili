@@ -17,7 +17,7 @@ Deno.serve(async(req:Request)=>{
  const auth=req.headers.get("authorization")||"";
  if(!auth.startsWith("Bearer ")||await sha(auth.slice(7))!==TOKEN_HASH)return new Response("Unauthorized",{status:401});
  const url=Deno.env.get("SUPABASE_URL")!,key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
- const result:Record<string,number>={},protectedSkipped:Record<string,number>={},cleanupFailures:string[]=[],scanErrors:string[]=[];
+ const result:Record<string,number>={},protectedSkipped:Record<string,number>={},cleanupFailures:string[]=[],scanErrors:string[]=[],deleteErrors:string[]=[],invalidPathSkips:string[]=[];
  for(const [table,c] of Object.entries(tables)){
   const now=new Date().toISOString();let lastId:string|null=null,count=0,protectedCount=0;
   while(true){
@@ -32,10 +32,10 @@ Deno.serve(async(req:Request)=>{
     lastId=String(row.id);
     if(isProtectedDemoPost(table,row.id,row.title,row.description)){protectedCount++;continue;}
     const paths=Array.isArray(row.image_urls)?row.image_urls:[];
-    if(paths.some((p:unknown)=>!validPath(p,c.folder))){console.error("expiry skipped unexpected image path",table,String(row.id));continue;}
+    if(paths.some((p:unknown)=>!validPath(p,c.folder))){invalidPathSkips.push(table+":"+String(row.id));console.error("expiry skipped unexpected image path",table,String(row.id));continue;}
     const deleteFilters=["id=eq."+encodeURIComponent(String(row.id)),"status=eq.approved","expires_at=lte."+encodeURIComponent(now),sameTextFilter("title",row.title),sameTextFilter("description",row.description)];
     const d=await fetch(url+"/rest/v1/"+table+"?"+deleteFilters.join("&"),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
-    if(!d.ok){console.error("expiry delete failed",table,String(row.id),d.status);continue;}
+    if(!d.ok){deleteErrors.push(table+":"+String(row.id));console.error("expiry delete failed",table,String(row.id),d.status);continue;}
     const deleted=await d.json().catch(()=>null);
     if(!Array.isArray(deleted)||deleted.length!==1)continue;
     count++;
@@ -50,5 +50,7 @@ Deno.serve(async(req:Request)=>{
  if(cleanupFailures.length)await sendAdminAlert("تنبيه تنظيف صور الإعلانات المنتهية","تم حذف الإعلانات من قاعدة البيانات، لكن بقيت صور تحتاج تنظيفاً:\n"+cleanupFailures.join("\n"));
  if(totalDeleted>0)await sendAdminAlert("ملخّص الحذف الآلي في أحلى توانسة","تم حذف إعلانات انتهت مدتها بعد 3 أشهر.\n"+Object.entries(result).map(([table,count])=>table+": "+count).join("\n"));
  if(scanErrors.length)await sendAdminAlert("خطأ تقني في الحذف الآلي","تعذّر فحص بعض أقسام الإعلانات: "+[...new Set(scanErrors)].join(", ")+". راجع سجلات Supabase.");
- return new Response(JSON.stringify({ok:scanErrors.length===0,deleted:result,protectedSkipped}),{headers:{"Content-Type":"application/json"}});
+ if(deleteErrors.length)await sendAdminAlert("تعذّر حذف بعض الإعلانات المنتهية","فشلت عملية حذف بعض السجلات: "+deleteErrors.slice(0,100).join("\\n")+(deleteErrors.length>100?"\\nوبقية السجلات في سجلات الوظيفة.":""));
+ if(invalidPathSkips.length)await sendAdminAlert("مراجعة مسارات صور إعلانات منتهية","تم إيقاف حذف بعض الإعلانات بسبب مسارات صور غير متوقعة: "+invalidPathSkips.slice(0,100).join("\\n")+(invalidPathSkips.length>100?"\\nوبقية السجلات في سجلات الوظيفة.":""));
+ return new Response(JSON.stringify({ok:scanErrors.length===0&&deleteErrors.length===0,deleted:result,protectedSkipped,deleteFailures:deleteErrors.length,invalidImagePathSkips:invalidPathSkips.length,cleanupFailures:cleanupFailures.length}),{headers:{"Content-Type":"application/json"}});
 });
