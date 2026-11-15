@@ -4,6 +4,7 @@ import {
   finishClaimedStorageCleanup,
   failClaimedStorageCleanup,
   encodeStorageObjectPath,
+  isStorageCleanupObjectReferenced,
 } from "../_shared/storage-cleanup-queue.ts";
 
 const reply = (body: unknown, status = 200) =>
@@ -38,6 +39,10 @@ Deno.serve(async (req: Request) => {
 
   for (const job of jobs) {
     try {
+      const referenced = await isStorageCleanupObjectReferenced(url, serviceKey, job);
+      if (referenced === null) throw new Error("Could not verify whether the image is still referenced");
+      if (referenced) throw new Error("Image is still referenced by another listing; deletion is blocked");
+
       const objectUrl = url + "/storage/v1/object/info/" + job.bucket + "/" + encodeStorageObjectPath(job.object_path);
       const head = await fetch(objectUrl, {
         method: "HEAD",
@@ -47,16 +52,14 @@ Deno.serve(async (req: Request) => {
 
       if (head.status !== 404) {
         if (!head.ok) throw new Error("Storage HEAD returned " + head.status);
-        const remove = await fetch(url + "/storage/v1/object/" + job.bucket, {
-          method: "DELETE",
-          headers: {
-            apikey: serviceKey,
-            Authorization: "Bearer " + serviceKey,
-            "Content-Type": "application/json",
+        const remove = await fetch(
+          url + "/storage/v1/object/" + job.bucket + "/" + encodeStorageObjectPath(job.object_path),
+          {
+            method: "DELETE",
+            headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
+            signal: AbortSignal.timeout(7000),
           },
-          body: JSON.stringify({ prefixes: [job.object_path] }),
-          signal: AbortSignal.timeout(7000),
-        });
+        );
         if (!remove.ok) throw new Error("Storage DELETE returned " + remove.status);
       }
 
