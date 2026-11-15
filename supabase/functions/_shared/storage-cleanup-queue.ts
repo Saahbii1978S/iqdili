@@ -67,7 +67,9 @@ export async function enqueueStorageCleanup(
       apikey: serviceKey,
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates,return=minimal",
+      // Never overwrite an existing job: it may be actively leased by a worker.
+      // The SQL activation RPC owns state transitions after the listing transaction.
+      Prefer: "resolution=ignore-duplicates,return=minimal",
     },
     body: JSON.stringify(jobs.map((job) => ({
       ...job,
