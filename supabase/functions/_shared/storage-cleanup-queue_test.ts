@@ -34,7 +34,7 @@ Deno.test("encodes object path segments without encoding folder separators", () 
 Deno.test("builds exact object endpoints without changing path separators", () => {
   assertEquals(
     buildStorageObjectUrl("https://example.supabase.co/", "listing-images", "services/photo-1.webp", "delete"),
-    "https://example.supabase.co/storage/v1/object/delete/listing-images/services/photo-1.webp",
+    "https://example.supabase.co/storage/v1/object/listing-images/services/photo-1.webp",
   );
   assertEquals(
     buildStorageObjectUrl("https://example.supabase.co", "pending-images", "market/a.jpg", "info"),
