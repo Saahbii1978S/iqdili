@@ -56,6 +56,22 @@ Deno.test("records a retry for a transient Storage error", async () => {
   assertEquals(d.calls, ["reference", "head", "fail"]);
 });
 
+Deno.test("fails closed when the reference check is unavailable", async () => {
+  const d = deps();
+  d.value.isReferenced = async () => { d.calls.push("reference"); return null; };
+  const result = await processStorageCleanupJobs([job(7)], d.value);
+  assertEquals(result, { completed: 0, retried: 1, deadLettered: 0, deferred: 0 });
+  assertEquals(d.calls, ["reference", "fail"]);
+});
+
+Deno.test("records a retry when Storage DELETE fails", async () => {
+  const d = deps();
+  d.value.remove = async () => { d.calls.push("delete"); return new Response(null, { status: 503 }); };
+  const result = await processStorageCleanupJobs([job(8)], d.value);
+  assertEquals(result, { completed: 0, retried: 1, deadLettered: 0, deferred: 0 });
+  assertEquals(d.calls, ["reference", "head", "reference", "delete", "fail"]);
+});
+
 Deno.test("dead-letters an exhausted job and continues processing the rest of the batch", async () => {
   const d = deps();
   d.value.inspect = async (item) => {
