@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -48,8 +49,10 @@ Deno.serve(async(req:Request)=>{
   if(!u.ok)return reply({error:"الدخول للإدارة غير مصرح."},401);
   const check=await fetch(url+"/rest/v1/rpc/is_owner",{method:"POST",headers:{apikey:key,Authorization:auth,"Content-Type":"application/json"},body:"{}"});
   if(!check.ok||(await check.json().catch(()=>false))!==true)return reply({error:"صلاحية الإدارة غير متوفرة."},403);
-  const body=await req.json(),table=body?.table,id=body?.id,deleteTest=body?.delete_test===true;
-  if(typeof table!=="string"||!Object.hasOwn(cfg,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
+  const boundedRequest=await readLimitedRequest(req,1024);
+  if(!boundedRequest)return reply({error:"حجم الطلب أكبر من المسموح."},413);
+  const body=await boundedRequest.json().catch(()=>null),table=body?.table,id=body?.id,deleteTest=body?.delete_test===true;
+  if(!body||typeof table!=="string"||!Object.hasOwn(cfg,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
   const rowRes=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=id,title,description,status,image_urls",{headers:{apikey:key,Authorization:"Bearer "+key}});
   if(!rowRes.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowRes.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
