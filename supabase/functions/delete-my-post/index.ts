@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
 import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -11,7 +12,6 @@ const cfg:Record<string,{bucket:string,folder:string}>={
  real_estate_posts:{bucket:"listing-images",folder:"realty"},
  market_posts:{bucket:"market-images",folder:"market"}
 };
-const protectedIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST")return reply({error:"طريقة الطلب غير مدعومة."},405);
@@ -30,7 +30,6 @@ Deno.serve(async(req:Request)=>{
   const body=await boundedRequest.json().catch(()=>null);
   const table=body?.table,id=body?.id;
   if(typeof table!=="string"||!Object.hasOwn(cfg,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
-  if((protectedIds[table]||[]).includes(String(id)))return reply({error:"هذا الإعلان التجريبي محمي ولا يمكن حذفه من حساب المستخدم."},403);
   const query=new URLSearchParams({select:"*","id":"eq."+String(id),"user_id":"eq."+user.id,limit:"2"});
   const rowRes=await fetch(url+"/rest/v1/"+table+"?"+query.toString(),{headers:{apikey:key,Authorization:"Bearer "+key}});
   if(!rowRes.ok)return reply({error:"تعذّر التثبت من ملكية الإعلان."},502);
