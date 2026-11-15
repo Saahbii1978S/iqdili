@@ -43,7 +43,7 @@ export async function enqueueStorageCleanup(
       "Content-Type": "application/json",
       Prefer: "resolution=merge-duplicates,return=minimal",
     },
-    body: JSON.stringify(jobs),
+    body: JSON.stringify(jobs.map((job) => ({ ...job, status: "pending", attempts: 0, last_error: null, completed_at: null }))),
   });
   return response.ok;
 }
@@ -80,7 +80,7 @@ export async function recordStorageCleanupFailure(
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ attempts: 1, last_error: reason.slice(0, 300), status: "pending" }),
+    body: JSON.stringify({ last_error: reason.slice(0, 300), status: "pending", completed_at: null }),
   });
   return response.ok;
 }
