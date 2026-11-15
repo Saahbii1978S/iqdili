@@ -79,7 +79,7 @@ Deno.serve(async(req:Request)=>{
   const auth=await admin(req);if(!auth.ok)return reply({error:"الدخول للإدارة غير مصرح."},401);
   const body=await req.json();const table=body?.table,id=body?.id;
   if(typeof table!=="string"||!Object.hasOwn(tables,table)||!(typeof id==="string"||typeof id==="number")||!/^\d{1,18}$/.test(String(id)))return reply({error:"الطلب غير صالح."},400);
-  const rowResponse=await fetch(auth.url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=id,title,description,status,image_urls",{headers:{apikey:auth.key,Authorization:"Bearer "+auth.key}});
+  const rowResponse=await fetch(auth.url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=*",{headers:{apikey:auth.key,Authorization:"Bearer "+auth.key}});
   if(!rowResponse.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowResponse.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
   const row=rows[0];if(row.status!=="pending")return reply({error:"الإعلان لم يعد في قائمة الانتظار."},409);
@@ -140,9 +140,7 @@ Deno.serve(async(req:Request)=>{
    body:JSON.stringify({
     p_table:table,
     p_id:Number(id),
-    p_expected_title:row.title??null,
-    p_expected_description:row.description??null,
-    p_expected_image_urls:expectedImages,
+    p_expected_row:row,
     p_new_image_urls:replacementImages,
     p_expires_at:expiresAt
    }),
