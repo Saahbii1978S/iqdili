@@ -1,4 +1,4 @@
-// READ-ONLY RECOVERY SNAPSHOT
+// AUDIT CANDIDATE REVISION — not deployed to Supabase.
 // Exported from active Supabase Edge Function "admin-approve-post" on 2026-11-15.
 // Deployed version at export: 11.
 // This file is preserved for audit/recovery only; do not deploy without separate review and approval.
@@ -52,7 +52,7 @@ async function admin(req:Request){
  const userData=await user.json();
  const check=await fetch(url+"/rest/v1/rpc/is_admin",{method:"POST",headers:{apikey:key,Authorization:auth,"Content-Type":"application/json"},body:"{}"});
  if(!check.ok || await check.json().catch(()=>false)!==true) return {ok:false as const,url,key};
- return {ok:true as const,url,key,userId:userData.id as string};
+ return {ok:true as const,url,key,userId:userData.id as string,authorization:auth};
 }
 function safePath(path:unknown,table:string){
  const folder=table==="service_requests"?"services":table==="job_posts"?"jobs":table==="real_estate_posts"?"realty":"market";
@@ -101,7 +101,7 @@ Deno.serve(async(req:Request)=>{
     }
    }
   }
-  const update=await fetch(auth.url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&status=eq.pending",{method:"PATCH",headers:{apikey:auth.key,Authorization:"Bearer "+auth.key,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({status:"approved",expires_at:addCalendarMonths(new Date(),3).toISOString()})});
+  const update=await fetch(auth.url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&status=eq.pending",{method:"PATCH",headers:{apikey:auth.key,Authorization:auth.authorization,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({status:"approved",expires_at:addCalendarMonths(new Date(),3).toISOString()})});
   if(!update.ok){console.error("approval status update failed",update.status,await update.text().catch(()=> ""));return reply({error:"تم تجهيز الصورة لكن لم تتأكد عملية النشر. حدّث القائمة قبل أي محاولة أخرى."},502);}
   const updated=await update.json();if(!Array.isArray(updated)||!updated.length)return reply({error:"الإعلان تبدّلت حالته من قبل. حدّث القائمة."},409);
   await sendAdminAlert("تم نشر إعلان في أحلى توانسة", `تمت الموافقة على إعلان ونشره.\nالقسم: ${table}\nرقم الإعلان: ${id}\nالعنوان: ${String(row.title || "").slice(0, 120)}`);
