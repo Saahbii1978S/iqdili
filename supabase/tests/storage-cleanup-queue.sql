@@ -483,6 +483,34 @@ begin
     raise exception 'Current worker could not complete its own lease';
   end if;
 
+  -- Failed jobs record updated_at and observe bounded exponential retry backoff.
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,updated_at)
+  values ('market-images','market/retry-backoff.webp','pending',now());
+  select * into claimed from public.claim_storage_cleanup_jobs(1)
+   where object_path='market/retry-backoff.webp';
+  if claimed.id is null or claimed.attempts <> 1 then
+    raise exception 'Retry-backoff fixture was not initially claimed';
+  end if;
+  update public.storage_cleanup_jobs
+     set status='pending',lease_until=null,lease_token=null,updated_at=now()
+   where id=claimed.id and status='processing' and lease_token=claimed.lease_token;
+  if exists (
+    select 1 from public.claim_storage_cleanup_jobs(1)
+     where object_path='market/retry-backoff.webp'
+  ) then
+    raise exception 'Pending retry ignored its backoff window';
+  end if;
+  update public.storage_cleanup_jobs set updated_at=now()-interval '3 minutes'
+   where id=claimed.id and status='pending';
+  select * into claimed from public.claim_storage_cleanup_jobs(1)
+   where object_path='market/retry-backoff.webp';
+  if claimed.id is null or claimed.attempts <> 2 then
+    raise exception 'Pending retry was not claimable after its backoff window';
+  end if;
+  update public.storage_cleanup_jobs
+     set status='completed',lease_until=null,lease_token=null,completed_at=now(),updated_at=now()
+   where id=claimed.id and status='processing' and lease_token=claimed.lease_token;
+
   -- Aged staged jobs are reclaimed for crash recovery; referenced jobs can be deferred without a hot loop.
   update public.storage_cleanup_jobs set updated_at=now() where status='staged';
   insert into public.storage_cleanup_jobs(bucket,object_path,status,updated_at)
