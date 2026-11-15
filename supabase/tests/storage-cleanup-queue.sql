@@ -326,6 +326,25 @@ begin
     raise exception 'Current worker could not complete its own lease';
   end if;
 
+  -- Aged staged jobs are reclaimed for crash recovery; referenced jobs can be deferred without a hot loop.
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,updated_at)
+  values ('listing-images','services/staged-recovery.jpg','staged',now()-interval '11 minutes');
+  select * into claimed from public.claim_storage_cleanup_jobs(1)
+   where object_path='services/staged-recovery.jpg';
+  if claimed.id is null or claimed.attempts <> 1 then
+    raise exception 'Worker did not reclaim an aged staged recovery job';
+  end if;
+  update public.storage_cleanup_jobs
+     set status='staged',attempts=0,lease_until=null,lease_token=null,
+         updated_at=now(),last_error='still referenced'
+   where id=claimed.id and status='processing' and lease_token=claimed.lease_token;
+  if exists (
+    select 1 from public.claim_storage_cleanup_jobs(1)
+     where object_path='services/staged-recovery.jpg'
+  ) then
+    raise exception 'A deferred staged job was immediately reclaimed again';
+  end if;
+
   -- Explicit activation RPC confirms every requested job is no longer staged.
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values ('listing-images','jobs/activation.jpg','staged');
