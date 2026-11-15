@@ -55,9 +55,9 @@ begin
   if new_status in ('pending','approved') then
     if exists (
       select 1
-        from pg_catalog.unnest(new_images) as image_path
+        from pg_catalog.unnest(new_images) as paths(path)
         join public.storage_cleanup_jobs cleanup
-          on cleanup.object_path = image_path
+          on cleanup.object_path = paths.path
          and cleanup.bucket = case
            when new_status = 'pending' then 'pending-images'
            when tg_table_name = 'market_posts' then 'market-images'
