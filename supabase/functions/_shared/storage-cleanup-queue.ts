@@ -206,3 +206,29 @@ export async function isStorageCleanupObjectReferenced(
   const result = await response.json().catch(() => null);
   return typeof result === "boolean" ? result : null;
 }
+
+export async function deferClaimedStorageCleanup(
+  url: string,
+  serviceKey: string,
+  job: ClaimedStorageCleanupJob,
+): Promise<boolean> {
+  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing" });
+  const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
+    method: "PATCH",
+    headers: {
+      apikey: serviceKey,
+      Authorization: "Bearer " + serviceKey,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      status: "staged",
+      attempts: 0,
+      lease_until: null,
+      last_error: "Image is still referenced by a live listing; deferred until the final reference is removed",
+    }),
+  });
+  if (!response.ok) return false;
+  const rows = await response.json().catch(() => null);
+  return Array.isArray(rows) && rows.length === 1;
+}
