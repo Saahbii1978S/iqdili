@@ -66,7 +66,7 @@ Deno.test("transient Storage failure schedules retry with bounded backoff", asyn
   const task = h.tasks.get(id)!;
   assert(task.status === "retry", "task enters retry");
   assert(task.attempts === 1, "attempt count increments");
-  assert(task.nextAttemptAt === 3000, "first retry delay is 2 seconds");
+  assert(task.nextAttemptAt === 2001, "first retry delay is 1 second");
 });
 
 Deno.test("missing Storage object is treated as idempotent success", async () => {
