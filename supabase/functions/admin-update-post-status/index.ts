@@ -1,4 +1,4 @@
-// READ-ONLY RECOVERY SNAPSHOT
+// AUDIT CANDIDATE REVISION — not deployed to Supabase.
 // Exported from active Supabase Edge Function "admin-update-post-status" on 2026-11-15.
 // Deployed version at export: 2.
 // This file is preserved for audit/recovery only; do not deploy without separate review and approval.
@@ -32,7 +32,7 @@ Deno.serve(async(req:Request)=>{
   if(row.status!==expected)return reply({error:"حالة الإعلان تبدّلت من قبل. حدّث القائمة."},409);
   const text=(String(row.title||"")+" "+String(row.description||"")).toLowerCase();
   if((protectedDemoIds[table]||[]).includes(String(id))||/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(text))return reply({error:"هذا إعلان تجريبي محمي، لا يمكن تغيير حالته."},403);
-  const update=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&status=eq."+expected,{method:"PATCH",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({status})});
+  const update=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&status=eq."+expected,{method:"PATCH",headers:{apikey:key,Authorization:auth,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({status})});
   if(!update.ok)return reply({error:"تعذّر حفظ قرار المراجعة."},502);
   const changed=await update.json();if(!Array.isArray(changed)||!changed.length)return reply({error:"الإعلان تبدّلت حالته من قبل. حدّث القائمة."},409);
   return reply({ok:true,message:status==="rejected"?"تم رفض الإعلان.":"تم إلغاء نشر الإعلان."});
