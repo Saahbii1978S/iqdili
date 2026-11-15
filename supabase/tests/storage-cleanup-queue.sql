@@ -35,6 +35,8 @@ declare
   result jsonb;
   job record;
   claimed record;
+  stale_lease_token uuid;
+  affected integer;
   n integer;
   u1 uuid := '11111111-1111-4111-8111-111111111111';
   u2 uuid := '22222222-2222-4222-8222-222222222222';
@@ -237,18 +239,38 @@ begin
   values ('market-images','market/a.webp','pending');
   select * into claimed from public.claim_storage_cleanup_jobs(1)
    where object_path='market/a.webp';
-  if claimed.id is null then raise exception 'Worker failed to claim pending job'; end if;
+  if claimed.id is null or claimed.lease_token is null then
+    raise exception 'Worker failed to claim pending job with a lease token';
+  end if;
   if (select status from public.storage_cleanup_jobs where id=claimed.id) <> 'processing'
      or claimed.attempts <> 1 then
     raise exception 'Claim did not set processing lease and attempt count';
   end if;
+  stale_lease_token := claimed.lease_token;
   if exists(select 1 from public.claim_storage_cleanup_jobs(1) where id=claimed.id) then
     raise exception 'Live lease was claimed by a second worker';
   end if;
   update public.storage_cleanup_jobs set lease_until=now()-interval '1 minute' where id=claimed.id;
   select * into claimed from public.claim_storage_cleanup_jobs(1) where object_path='market/a.webp';
-  if claimed.id is null or claimed.attempts <> 2 then
-    raise exception 'Expired lease was not reclaimed';
+  if claimed.id is null or claimed.attempts <> 2 or claimed.lease_token is null
+     or claimed.lease_token = stale_lease_token then
+    raise exception 'Expired lease was not reclaimed with a fresh token';
+  end if;
+
+  -- A stale worker cannot complete or overwrite a job claimed by the newer worker.
+  update public.storage_cleanup_jobs
+     set status='completed', lease_until=null, lease_token=null
+   where id=claimed.id and status='processing' and lease_token=stale_lease_token;
+  get diagnostics affected = row_count;
+  if affected <> 0 then
+    raise exception 'Stale worker changed the newer worker lease';
+  end if;
+  update public.storage_cleanup_jobs
+     set status='completed', lease_until=null, lease_token=null
+   where id=claimed.id and status='processing' and lease_token=claimed.lease_token;
+  get diagnostics affected = row_count;
+  if affected <> 1 then
+    raise exception 'Current worker could not complete its own lease';
   end if;
 
   -- Explicit activation RPC confirms every requested job is no longer staged.
