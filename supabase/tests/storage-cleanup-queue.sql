@@ -54,14 +54,14 @@ create or replace function public.test_account_snapshot(p_user_id uuid)
 returns jsonb
 language sql
 stable
-as $
+as $$
   select pg_catalog.jsonb_build_object(
     'service_requests', coalesce((select pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id) from public.service_requests r where r.user_id=p_user_id), '[]'::jsonb),
     'job_posts', coalesce((select pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id) from public.job_posts r where r.user_id=p_user_id), '[]'::jsonb),
     'real_estate_posts', coalesce((select pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id) from public.real_estate_posts r where r.user_id=p_user_id), '[]'::jsonb),
     'market_posts', coalesce((select pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id) from public.market_posts r where r.user_id=p_user_id), '[]'::jsonb)
   );
-$;
+$$;
 
 do $$
 declare
