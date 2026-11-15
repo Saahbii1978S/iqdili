@@ -205,3 +205,9 @@ The deployed `expire-posts` v5 source still contains a fixed verifier hash, whil
 - The final database transition uses `approve_post_if_unchanged`, an administrator-authorized atomic compare-and-set against the complete row snapshot returned during review. It therefore detects changes to title, description, price, phone, city, category, property/job fields, contact visibility, status, image paths, and other stored columns. It updates status, expiry, and public image paths in one statement.
 - Staged cleanup jobs older than ten minutes are eligible for worker reconciliation. The worker checks references twice before deletion. Approved listings protect only their public bucket objects; pending listings protect only their private pending-images objects. Unpublished/rejected rows do not keep public image jobs stuck. Orphaned copies from failed/ambiguous approval are removed, while the original private source is removed after approval changes the row to public image paths.
 - This is candidate source only. The migration must be applied and the worker safely scheduled before this path can operate in production. No live function or database was changed by this commit.
+
+
+## Live authorization cross-check (read-only, 2026-11-15)
+- The active database has administrator-only SELECT and UPDATE policies on all four listing tables used by the approval function: `service_requests`, `job_posts`, `real_estate_posts`, and `market_posts`.
+- Each UPDATE policy checks `is_admin()` in both USING and WITH CHECK. The approval RPC therefore remains `SECURITY INVOKER` and uses the administrator JWT, preserving the authenticated actor for the status-audit trigger while respecting existing RLS.
+- The live `admin-approve-post` function remains deployed at version 11. The candidate migration is not present in the live migration history, and no live function, database object, listing, or Storage object was changed during this review.
