@@ -107,6 +107,24 @@ begin
     raise exception 'Shared-image rejection changed queue state';
   end if;
 
+  -- The worker must refuse an image still referenced by any live listing.
+  insert into public.service_requests(user_id,title,status,image_urls)
+  values (u2,'shared reference','approved',array['services/retained.jpg']);
+  if not public.is_storage_cleanup_object_referenced('listing-images','services/retained.jpg') then
+    raise exception 'Worker reference check missed a live listing image';
+  end if;
+  if not public.is_storage_cleanup_object_referenced('pending-images','services/retained.jpg') then
+    raise exception 'Worker reference check missed a pending-bucket image reference';
+  end if;
+  if public.is_storage_cleanup_object_referenced('market-images','services/retained.jpg') then
+    raise exception 'Worker reference check crossed bucket boundaries';
+  end if;
+  insert into public.market_posts(user_id,title,status,image_urls)
+  values (u2,'market image reference','approved',array['market/retained.webp']);
+  if not public.is_storage_cleanup_object_referenced('market-images','market/retained.webp') then
+    raise exception 'Worker reference check missed a market image';
+  end if;
+
   -- A stale snapshot is rejected atomically.
   insert into public.service_requests(user_id,title,status,image_urls)
   values (u3,'changed listing','approved',array['services/new.jpg']);
