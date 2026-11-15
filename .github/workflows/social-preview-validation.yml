@@ -1,0 +1,55 @@
+name: Validate social preview assets
+
+on:
+  pull_request:
+    paths:
+      - 'social-preview.svg'
+      - 'index.html'
+      - 'download.html'
+      - '.github/workflows/static.yml'
+      - '.github/workflows/social-preview-validation.yml'
+  push:
+    branches:
+      - fix/facebook-download-preview-2026-11-15
+    paths:
+      - 'social-preview.svg'
+      - 'index.html'
+      - 'download.html'
+      - '.github/workflows/static.yml'
+      - '.github/workflows/social-preview-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install SVG renderer and Arabic fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-core librsvg2-bin
+      - name: Render and verify 1200x630 PNG
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import xml.etree.ElementTree as ET
+          ET.parse("social-preview.svg")
+          PY
+          rsvg-convert -w 1200 -h 630 social-preview.svg > /tmp/social-preview.png
+          python - <<'PY'
+          import struct
+          path = "/tmp/social-preview.png"
+          with open(path, "rb") as image:
+              header = image.read(24)
+          assert header[:8] == b"\x89PNG\r\n\x1a\n", "Output is not a PNG"
+          width, height = struct.unpack(">II", header[16:24])
+          assert (width, height) == (1200, 630), (width, height)
+          print(f"Verified PNG dimensions: {width}x{height}")
+          PY
+      - name: Verify Open Graph image references
+        run: |
+          set -euo pipefail
+          grep -q 'social-preview.png?v=1' index.html
+          grep -q 'social-preview.png?v=1' download.html
