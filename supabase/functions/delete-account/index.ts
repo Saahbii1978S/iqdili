@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { hasRecentAuthentication } from "../_shared/recent-auth.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
 import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {
@@ -133,18 +134,10 @@ Deno.serve(async (req: Request) => {
       rowsByTable[table.name] = all;
     }
 
-    // Protect known demo IDs and any clearly labelled test/demo post before deleting anything.
-    const protectedIds: Record<string, string[]> = {
-      service_requests: ["13"],
-      job_posts: ["7"],
-      market_posts: ["2", "3", "7", "8", "9"],
-      real_estate_posts: ["1", "2", "6"],
-    };
-    const demoPattern = /(تجريب|تجريبي|اختبار|test|demo|مثال)/i;
+    // Use the same protected-demo policy as every post deletion/status endpoint.
     for (const table of tables) {
       for (const row of rowsByTable[table.name] || []) {
-        const demoText = (String(row.title || "") + " " + String(row.description || "")).toLowerCase();
-        if ((protectedIds[table.name] || []).includes(String(row.id)) || demoPattern.test(demoText)) {
+        if (isProtectedDemoPost(table.name, row.id as string | number, row.title, row.description)) {
           return reply({
             error: "الحساب مرتبط بإعلان تجريبي محمي. لم نحذف أي إعلان أو صورة أو الحساب؛ تواصل مع الإدارة لمراجعته.",
             code: "PROTECTED_TEST_POST",
