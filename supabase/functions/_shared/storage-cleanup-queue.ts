@@ -53,16 +53,24 @@ export async function activateStorageCleanup(
   serviceKey: string,
   jobs: readonly StorageCleanupJob[],
 ): Promise<boolean> {
-  for (const job of jobs) {
-    const query = new URLSearchParams({ bucket: "eq." + job.bucket, object_path: "eq." + job.object_path, status: "eq.staged" });
-    const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
-      method: "PATCH",
-      headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey, "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "pending" }),
-    });
-    if (!response.ok) return false;
-  }
-  return true;
+  if (!jobs.length) return true;
+  const alternatives = jobs.map((job) =>
+    "and(bucket.eq." + job.bucket + ",object_path.eq." + job.object_path + ")"
+  );
+  const query = new URLSearchParams({
+    status: "eq.staged",
+    or: "(" + alternatives.join(",") + ")",
+  });
+  const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
+    method: "PATCH",
+    headers: {
+      apikey: serviceKey,
+      Authorization: "Bearer " + serviceKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status: "pending" }),
+  });
+  return response.ok;
 }
 
 export async function completeStorageCleanup(
