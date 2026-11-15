@@ -56,7 +56,7 @@ Deno.serve(async(req:Request)=>{
    method:"POST",
    headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
    body:JSON.stringify({
-    p_table:table,p_id:Number(id),p_expected_user_id:user.id,p_require_owner:true,
+    p_table:table,p_id:String(id),p_expected_user_id:user.id,p_require_owner:true,
     p_title:row.title??null,p_description:row.description??null,p_status:row.status??null,
     p_image_urls:Array.isArray(row.image_urls)?paths:null,p_jobs:cleanupJobs
    })
