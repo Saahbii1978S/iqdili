@@ -55,7 +55,7 @@ Deno.serve(async(req:Request)=>{
   const rows=await rowRes.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
   const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
   const demoText=(String(rows[0].title||"")+" "+String(rows[0].description||"")).toLowerCase();
-  const isKnownDemo=(protectedDemoIds[table]||[]).includes(String(id)) || /(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(demoText);
+  const isKnownDemo=(protectedDemoIds[table]||[]).includes(String(id)) || /(تجر(?:ي)?ب|اختبار|test|demo|مثال)/i.test(demoText);
   if(isKnownDemo&&!deleteTest)return reply({error:"هذا إعلان تجريبي محمي. استعمل زر حذف إعلان تجريبي بصلاحية صاحب المشروع."},403);
   if(deleteTest&&!isKnownDemo)return reply({error:"رفض الحذف: الإعلان غير مصنّف كتجربة."},403);
   const paths=Array.isArray(rows[0].image_urls)?rows[0].image_urls:[];
