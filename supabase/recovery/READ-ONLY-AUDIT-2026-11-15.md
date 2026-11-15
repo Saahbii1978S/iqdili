@@ -50,6 +50,8 @@ The Supabase security advisor reports:
 
 The health advisor returned no findings.
 
+The security advisor also reports that leaked-password protection is disabled. This is a real account-security hardening item, but changing Auth settings can affect sign-in behavior; enable it only after reviewing the current Supabase Auth configuration and planning a user-facing notice if needed.
+
 ## Recovery artifacts
 
 - `supabase/recovery/database.types.ts` is a generated TypeScript schema-types snapshot (25,541 characters at capture time). It helps recover client-side table/function types, but is **not** a complete SQL schema backup.
