@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
-const TOKEN_HASH="5315d23014e4a1d37335410ac337d9f10d5d4408019d9f165a6b557130a09dd3";
+const TOKEN_HASH=Deno.env.get("EXPIRE_POSTS_TOKEN_HASH")||"";
 const tables:Record<string,{bucket:string,folder:string}>={service_requests:{bucket:"listing-images",folder:"services"},job_posts:{bucket:"listing-images",folder:"jobs"},real_estate_posts:{bucket:"listing-images",folder:"realty"},market_posts:{bucket:"market-images",folder:"market"}};
 async function sha(v:string){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");}
 function validPath(p:unknown,f:string):p is string{return typeof p==="string"&&p.startsWith(f+"/")&&/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(p)&&!p.includes("..")&&!p.includes("//");}
