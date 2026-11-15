@@ -49,10 +49,25 @@ $admin_stub$;
 
 \ir ../migrations/20261115090000_storage_cleanup_jobs.sql
 
+
+create or replace function public.test_account_snapshot(p_user_id uuid)
+returns jsonb
+language sql
+stable
+as $
+  select pg_catalog.jsonb_build_object(
+    'service_requests', coalesce((select pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id) from public.service_requests r where r.user_id=p_user_id), '[]'::jsonb),
+    'job_posts', coalesce((select pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id) from public.job_posts r where r.user_id=p_user_id), '[]'::jsonb),
+    'real_estate_posts', coalesce((select pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id) from public.real_estate_posts r where r.user_id=p_user_id), '[]'::jsonb),
+    'market_posts', coalesce((select pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id) from public.market_posts r where r.user_id=p_user_id), '[]'::jsonb)
+  );
+$;
+
 do $$
 declare
   result jsonb;
   expected_row jsonb;
+  expected_account_rows jsonb;
   job record;
   claimed record;
   stale_lease_token uuid;
@@ -175,7 +190,8 @@ begin
 
   result := public.delete_account_posts_and_activate_cleanup(
     u1,
-    '[{"bucket":"listing-images","object_path":"services/a.jpg"},{"bucket":"pending-images","object_path":"services/a.jpg"}]'::jsonb
+    '[{"bucket":"listing-images","object_path":"services/a.jpg"},{"bucket":"pending-images","object_path":"services/a.jpg"}]'::jsonb,
+    public.test_account_snapshot(u1)
   );
   if (result->>'deleted_rows')::integer <> 1 or (result->>'cleanup_jobs')::integer <> 2 then
     raise exception 'Unexpected successful account deletion result: %', result;
@@ -199,7 +215,8 @@ begin
 
   result := public.delete_account_posts_and_activate_cleanup(
     u2,
-    '[{"bucket":"listing-images","object_path":"services/shared.jpg"},{"bucket":"pending-images","object_path":"services/shared.jpg"}]'::jsonb
+    '[{"bucket":"listing-images","object_path":"services/shared.jpg"},{"bucket":"pending-images","object_path":"services/shared.jpg"}]'::jsonb,
+    public.test_account_snapshot(u2)
   );
   -- The approved listing references only the public bucket; its private source copy
   -- is not retained by the approved row and can be cleaned independently.
@@ -218,7 +235,8 @@ begin
 
   result := public.delete_account_posts_and_activate_cleanup(
     u3,
-    '[{"bucket":"listing-images","object_path":"services/shared.jpg"},{"bucket":"pending-images","object_path":"services/shared.jpg"}]'::jsonb
+    '[{"bucket":"listing-images","object_path":"services/shared.jpg"},{"bucket":"pending-images","object_path":"services/shared.jpg"}]'::jsonb,
+    public.test_account_snapshot(u3)
   );
   if (result->>'deleted_rows')::integer <> 1
      or (result->>'cleanup_jobs')::integer <> 2
@@ -253,22 +271,42 @@ begin
     raise exception 'Worker reference check missed a market image';
   end if;
 
-  -- A stale snapshot is rejected atomically.
-  insert into public.service_requests(user_id,title,status,image_urls)
-  values (u3,'changed listing','approved',array['services/new.jpg']);
+  -- A full-row snapshot rejects edits even when image paths stay identical.
+  insert into public.service_requests(user_id,title,description,status,image_urls)
+  values (u3,'changed listing','before edit','approved',array['services/new.jpg']);
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
-  values ('listing-images','services/old.jpg','staged'),('pending-images','services/old.jpg','staged');
+  values ('listing-images','services/new.jpg','staged'),('pending-images','services/new.jpg','staged');
+  expected_account_rows := public.test_account_snapshot(u3);
+  update public.service_requests set description='edited after review'
+   where user_id=u3 and title='changed listing';
   begin
     perform public.delete_account_posts_and_activate_cleanup(
       u3,
-      '[{"bucket":"listing-images","object_path":"services/old.jpg"},{"bucket":"pending-images","object_path":"services/old.jpg"}]'::jsonb
+      '[{"bucket":"listing-images","object_path":"services/new.jpg"},{"bucket":"pending-images","object_path":"services/new.jpg"}]'::jsonb,
+      expected_account_rows
     );
-    raise exception 'Expected stale snapshot to be rejected';
+    raise exception 'Expected changed full-row snapshot to be rejected';
   exception when others then
     if sqlerrm not like '%changed during deletion%' then raise; end if;
   end;
-  if not exists(select 1 from public.service_requests where user_id=u3 and image_urls=array['services/new.jpg']) then
-    raise exception 'Stale snapshot rejection did not preserve the changed row';
+  if not exists(select 1 from public.service_requests where user_id=u3 and title='changed listing' and description='edited after review') then
+    raise exception 'Full-row snapshot rejection did not preserve the edited listing';
+  end if;
+
+  -- A newly-added row with no images must also invalidate the account snapshot.
+  expected_account_rows := public.test_account_snapshot(u3);
+  insert into public.service_requests(user_id,title,status,image_urls)
+  values (u3,'new row without images','pending',array[]::text[]);
+  begin
+    perform public.delete_account_posts_and_activate_cleanup(
+      u3, '[]'::jsonb, expected_account_rows
+    );
+    raise exception 'Expected newly-added empty-image listing to be rejected';
+  exception when others then
+    if sqlerrm not like '%changed during deletion%' then raise; end if;
+  end;
+  if not exists(select 1 from public.service_requests where user_id=u3 and title='new row without images') then
+    raise exception 'Snapshot rejection deleted a newly-added empty-image listing';
   end if;
 
   update public.storage_cleanup_jobs set status='completed'
