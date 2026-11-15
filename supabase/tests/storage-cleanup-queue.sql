@@ -320,9 +320,9 @@ begin
     ('listing-images','services/atomic.jpg','staged'),
     ('pending-images','services/atomic.jpg','staged');
   select id into n from public.service_requests where user_id=u2 and title='atomic post';
+  select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   result := public.delete_post_and_activate_storage_cleanup(
-    'service_requests',n,u2,true,'atomic post','snapshot','pending',
-    array['services/atomic.jpg'],
+    'service_requests',n,u2,true,expected_row,
     '[{"bucket":"listing-images","object_path":"services/atomic.jpg"},{"bucket":"pending-images","object_path":"services/atomic.jpg"}]'::jsonb
   );
   if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 2 then
@@ -345,9 +345,9 @@ begin
     ('listing-images','services/shared-atomic.jpg','staged'),
     ('pending-images','services/shared-atomic.jpg','staged');
   select id into n from public.service_requests where user_id=u2 and title='shared one';
+  select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   result := public.delete_post_and_activate_storage_cleanup(
-    'service_requests',n,u2,true,'shared one','snapshot','approved',
-    array['services/shared-atomic.jpg'],
+    'service_requests',n,u2,true,expected_row,
     '[{"bucket":"listing-images","object_path":"services/shared-atomic.jpg"},{"bucket":"pending-images","object_path":"services/shared-atomic.jpg"}]'::jsonb
   );
   -- Approved rows reference the public object only; the private copy is independent.
@@ -360,9 +360,9 @@ begin
     raise exception 'Public shared image should stay staged while its private copy is independently cleanable';
   end if;
   select id into n from public.service_requests where user_id=u3 and title='shared two';
+  select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   result := public.delete_post_and_activate_storage_cleanup(
-    'service_requests',n,u3,true,'shared two','snapshot','approved',
-    array['services/shared-atomic.jpg'],
+    'service_requests',n,u3,true,expected_row,
     '[{"bucket":"listing-images","object_path":"services/shared-atomic.jpg"},{"bucket":"pending-images","object_path":"services/shared-atomic.jpg"}]'::jsonb
   );
   if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 2 then
@@ -373,17 +373,18 @@ begin
   insert into public.service_requests(user_id,title,description,status,image_urls)
   values (u2,'stale atomic','old','pending',array['services/newer.jpg']);
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
-  values ('listing-images','services/older.jpg','staged'),('pending-images','services/older.jpg','staged');
+  values ('listing-images','services/newer.jpg','staged'),('pending-images','services/newer.jpg','staged');
   select id into n from public.service_requests where user_id=u2 and title='stale atomic';
+  select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
+  update public.service_requests set phone='29999999' where id=n;
   result := public.delete_post_and_activate_storage_cleanup(
-    'service_requests',n,u2,true,'stale atomic','old','pending',
-    array['services/older.jpg'],
-    '[{"bucket":"listing-images","object_path":"services/older.jpg"},{"bucket":"pending-images","object_path":"services/older.jpg"}]'::jsonb
+    'service_requests',n,u2,true,expected_row,
+    '[{"bucket":"listing-images","object_path":"services/newer.jpg"},{"bucket":"pending-images","object_path":"services/newer.jpg"}]'::jsonb
   );
   if result->>'deleted' <> 'false' then
     raise exception 'Stale listing snapshot unexpectedly deleted a row: %', result;
   end if;
-  if not exists(select 1 from public.service_requests where user_id=u2 and title='stale atomic' and image_urls=array['services/newer.jpg']) then
+  if not exists(select 1 from public.service_requests where user_id=u2 and title='stale atomic' and image_urls=array['services/newer.jpg'] and phone='29999999') then
     raise exception 'Stale listing snapshot did not preserve the changed row';
   end if;
 
