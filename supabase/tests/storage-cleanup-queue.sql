@@ -274,6 +274,10 @@ begin
     raise exception 'Cleanup-reserved image was attached to a listing';
   end if;
 
+  -- Isolate the claim test from earlier deletion jobs.
+  update public.storage_cleanup_jobs set status='completed', lease_until=null, lease_token=null
+   where status in ('pending','processing');
+
   -- A queued path that already has a live reference is returned to staged,
   -- not handed to the Storage worker for deletion.
   insert into public.market_posts(user_id,title,status,image_urls)
