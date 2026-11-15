@@ -53,32 +53,6 @@ Deno.serve(async(req:Request)=>{
   const deleted=await del.json().catch(()=>null);
   if(!Array.isArray(deleted)||deleted.length!==1)return reply({error:"لم يتم حذف الإعلان؛ حدّث القائمة وحاول مجدداً."},409);
   if(!await activateStorageCleanup(url,key,cleanupJobs))return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تفعيل مهمة تنظيف الصور. يلزم تدخل الإدارة."});
-  for(const bucket of [cfg[table].bucket,"pending-images"]){
-   const bucketJobs=cleanupJobs.filter(job=>job.bucket===bucket);
-   for(const job of bucketJobs){
-    const encoded=job.object_path.split("/").map(encodeURIComponent).join("/");
-    const check=await fetch(url+"/storage/v1/object/info/"+bucket+"/"+encoded,{method:"HEAD",headers:{apikey:key,Authorization:"Bearer "+key}});
-    if(check.status===404){
-     if(!await completeStorageCleanup(url,key,job))return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن بقي تحديث سجل تنظيف الصور معلقاً."});
-     continue;
-    }
-    if(!check.ok){
-     await recordStorageCleanupFailure(url,key,job,"Storage HEAD returned "+check.status);
-     console.error("Post deleted but image cleanup preflight failed",bucket,check.status);
-     return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، ومهمة تنظيف الصور محفوظة لإعادة المحاولة."});
-    }
-    const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:[job.object_path]})});
-    if(!rm.ok){
-     await recordStorageCleanupFailure(url,key,job,"Storage DELETE returned "+rm.status);
-     console.error("Post deleted but image cleanup failed",bucket,rm.status);
-     return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، ومهمة تنظيف الصور محفوظة لإعادة المحاولة."});
-    }
-    if(!await completeStorageCleanup(url,key,job)){
-     console.error("Image removed but cleanup queue completion failed",bucket,job.object_path);
-     return reply({ok:true,cleanupPending:true,message:"تم تنظيف الصورة، لكن بقي تحديث سجل التنظيف معلقاً."});
-    }
-   }
-  }
-  return reply({ok:true,message:"تم حذف إعلانك وصوره."});
+  return reply({ok:true,cleanupPending:cleanupJobs.length>0,message:cleanupJobs.length?"تم حذف إعلانك، وتنظيف صوره جارٍ في الخلفية.":"تم حذف إعلانك."});
  }catch(error){console.error("delete-my-post error",String(error));return reply({error:"صار خطأ أثناء حذف الإعلان."},500);}
 });
