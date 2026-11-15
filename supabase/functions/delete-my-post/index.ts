@@ -53,7 +53,7 @@ Deno.serve(async(req:Request)=>{
     }
     if(existing.length){
      const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:existing})});
-     if(!rm.ok){console.error("Post deleted but image cleanup failed",bucket,rm.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تنظيف بعض الصور. تم تسجيل المشكلة للإدارة."});}
+     if(!rm.ok){console.error("Post deleted but image cleanup failed",bucket,rm.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تنظيف بعض الصور. يلزم التواصل مع الإدارة لإتمام التنظيف."});}
     }
    }
   }
