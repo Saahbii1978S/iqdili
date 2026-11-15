@@ -333,3 +333,106 @@ $$;
 
 revoke all on function public.is_storage_cleanup_object_referenced(text, text) from public, anon, authenticated;
 grant execute on function public.is_storage_cleanup_object_referenced(text, text) to service_role;
+
+-- Atomically delete one reviewed listing snapshot and activate only images no longer referenced.
+create or replace function public.delete_post_and_activate_storage_cleanup(
+  p_table text,
+  p_id bigint,
+  p_expected_user_id uuid,
+  p_require_owner boolean,
+  p_title text,
+  p_description text,
+  p_status text,
+  p_image_urls text[],
+  p_jobs jsonb
+)
+returns jsonb
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  expected_bucket text;
+  requested_count integer;
+  expected_count integer;
+  queued_count integer;
+  activated_count integer;
+  deleted_count integer;
+begin
+  if p_table not in ('service_requests','job_posts','real_estate_posts','market_posts')
+     or p_id is null
+     or p_require_owner is null
+     or (p_require_owner and p_expected_user_id is null)
+     or pg_catalog.jsonb_typeof(p_jobs) <> 'array'
+     or pg_catalog.jsonb_array_length(p_jobs) > 500 then
+    raise exception 'Invalid post cleanup request';
+  end if;
+
+  expected_bucket := case when p_table = 'market_posts' then 'market-images' else 'listing-images' end;
+
+  with expected as (
+    select expected_bucket as bucket, p.path as object_path
+      from pg_catalog.unnest(coalesce(p_image_urls, array[]::text[])) as p(path)
+    union
+    select 'pending-images'::text, p.path
+      from pg_catalog.unnest(coalesce(p_image_urls, array[]::text[])) as p(path)
+  ),
+  requested as (
+    select distinct x.bucket, x.object_path
+      from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
+  )
+  select
+    (select count(*) from requested),
+    (select count(*) from expected),
+    (select count(*) from (
+      (select bucket, object_path from requested except select bucket, object_path from expected)
+      union all
+      (select bucket, object_path from expected except select bucket, object_path from requested)
+    ) differences)
+  into requested_count, expected_count, queued_count;
+
+  if requested_count <> expected_count or queued_count <> 0 then
+    raise exception 'Cleanup job list does not match the reviewed image snapshot';
+  end if;
+
+  select count(*) into queued_count
+    from public.storage_cleanup_jobs q
+    join pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
+      on q.bucket = x.bucket and q.object_path = x.object_path
+   where q.status in ('staged','pending','processing','completed','dead_letter');
+
+  if queued_count <> requested_count then
+    raise exception 'Cleanup queue is incomplete; post deletion aborted';
+  end if;
+
+  execute pg_catalog.format(
+    'delete from public.%I where id = $1 and title is not distinct from $2 and description is not distinct from $3 and status is not distinct from $4 and image_urls is not distinct from $5 and (not $6 or user_id = $7)',
+    p_table
+  )
+  using p_id, p_title, p_description, p_status, p_image_urls, p_require_owner, p_expected_user_id;
+
+  get diagnostics deleted_count = row_count;
+  if deleted_count <> 1 then
+    return pg_catalog.jsonb_build_object('deleted', false, 'activated_jobs', 0);
+  end if;
+
+  update public.storage_cleanup_jobs q
+     set status = 'pending',
+         updated_at = pg_catalog.now()
+    from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
+   where q.bucket = x.bucket
+     and q.object_path = x.object_path
+     and q.status = 'staged'
+     and not public.is_storage_cleanup_object_referenced(q.bucket, q.object_path);
+
+  get diagnostics activated_count = row_count;
+  return pg_catalog.jsonb_build_object(
+    'deleted', true,
+    'activated_jobs', activated_count,
+    'deferred_jobs', requested_count - activated_count
+  );
+end;
+$$;
+
+revoke all on function public.delete_post_and_activate_storage_cleanup(text, bigint, uuid, boolean, text, text, text, text[], jsonb) from public, anon, authenticated;
+grant execute on function public.delete_post_and_activate_storage_cleanup(text, bigint, uuid, boolean, text, text, text, text[], jsonb) to service_role;
