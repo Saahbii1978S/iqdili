@@ -257,10 +257,10 @@ begin
      or pg_catalog.jsonb_typeof(p_jobs) <> 'array'
      or pg_catalog.jsonb_array_length(p_jobs) > 500
      or pg_catalog.jsonb_typeof(p_expected_rows) <> 'object'
-     or pg_catalog.jsonb_typeof(p_expected_rows->'service_requests') <> 'array'
-     or pg_catalog.jsonb_typeof(p_expected_rows->'job_posts') <> 'array'
-     or pg_catalog.jsonb_typeof(p_expected_rows->'real_estate_posts') <> 'array'
-     or pg_catalog.jsonb_typeof(p_expected_rows->'market_posts') <> 'array' then
+     or pg_catalog.jsonb_typeof(p_expected_rows->'service_requests') is distinct from 'array'
+     or pg_catalog.jsonb_typeof(p_expected_rows->'job_posts') is distinct from 'array'
+     or pg_catalog.jsonb_typeof(p_expected_rows->'real_estate_posts') is distinct from 'array'
+     or pg_catalog.jsonb_typeof(p_expected_rows->'market_posts') is distinct from 'array' then
     raise exception 'Invalid account cleanup request';
   end if;
 
