@@ -248,6 +248,7 @@ export async function deferClaimedStorageCleanup(
       lease_until: null,
       lease_token: null,
       last_error: "Image is still referenced by a live listing; deferred until the final reference is removed",
+      updated_at: new Date().toISOString(),
     }),
   });
   if (!response.ok) return false;
