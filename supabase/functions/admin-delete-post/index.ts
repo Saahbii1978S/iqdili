@@ -88,26 +88,8 @@ Deno.serve(async(req:Request)=>{
   const deleted=await del.json().catch(()=>null);
   if(!Array.isArray(deleted)||deleted.length!==1)return reply({error:"تغيّرت بيانات الإعلان أثناء العملية؛ لم يقع حذف النسخة المحدّثة. حدّث الصفحة وحاول مجدداً."},409);
   if(!await activateStorageCleanup(url,key,cleanupJobs))return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تفعيل مهمة تنظيف الصور. يلزم تدخل الإدارة."});
-  // Remove images only after the database row is gone, so a storage failure cannot leave a live post without its images.
-  for(const bucket of [cfg[table].bucket,"pending-images"]){
-   const bucketJobs=cleanupJobs.filter(job=>job.bucket===bucket);
-   if(!bucketJobs.length)continue;
-   const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:bucketJobs.map(job=>job.object_path)})});
-   if(!rm.ok){
-    console.error("Admin post deleted but image cleanup is pending",bucket,rm.status);
-    for(const job of bucketJobs)await recordStorageCleanupFailure(url,key,job,"Storage DELETE returned "+rm.status);
-    await sendAdminAlert("تنبيه تنظيف صور إعلان محذوف","تم حذف سجل الإعلان من قاعدة البيانات، لكن بقيت صور تحتاج تنظيفاً.\\nالقسم: "+table+"\\nرقم الإعلان: "+id+"\\nالمخزن: "+bucket);
-    return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، وبقيت مهمة تنظيف الصور محفوظة لإعادة المحاولة."});
-   }
-   for(const job of bucketJobs){
-    if(!await completeStorageCleanup(url,key,job)){
-     console.error("Storage cleanup succeeded but queue completion update failed",bucket,job.object_path);
-     await sendAdminAlert("تنبيه تحديث سجل تنظيف الصور","تم تنظيف صورة إعلان، لكن تعذّر تحديث سجل المهمة.\\nالقسم: "+table+"\\nرقم الإعلان: "+id+"\\nالمخزن: "+bucket);
-     return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان وتنظيف الصور، لكن بقي تحديث سجل التنظيف معلقاً."});
-    }
-   }
-  }
-  await sendAdminAlert("تم حذف إعلان من إدارة أحلى توانسة", `تم حذف إعلان من لوحة الإدارة.\nالقسم: ${table}\nرقم الإعلان: ${id}`);
-  return reply({ok:true,message:"تم حذف الإعلان وصوره نهائياً."});
+  const cleanupPending=cleanupJobs.length>0;
+  await sendAdminAlert("تم حذف إعلان من إدارة أحلى توانسة", `تم حذف إعلان من لوحة الإدارة.\nالقسم: ${table}\nرقم الإعلان: ${id}\nمهام تنظيف الصور: ${cleanupPending?"معلّقة في الطابور":"لا توجد"}`);
+  return reply({ok:true,cleanupPending,message:cleanupPending?"تم حذف الإعلان، وتنظيف صوره جارٍ في الخلفية.":"تم حذف الإعلان."});
  }catch(e){await sendAdminAlert("خطأ تقني أثناء حذف إعلان","تعذّر إكمال عملية حذف إعلان. راجع سجلات Supabase لمعرفة التفاصيل.");console.error("admin-delete-post",String(e));return reply({error:"صار خطأ أثناء الحذف."},500);}
 });
