@@ -147,3 +147,52 @@ Before production rollout, choose and test one of these safe designs:
 
 Do not enqueue arbitrary client-supplied paths. Do not delete an object if the listing insert may have committed despite a lost/ambiguous response; reconcile by the server-generated submission identity first. Tests must cover DB rejection, DB timeout after commit, Storage DELETE timeout, worker retry, and preservation of unrelated pending objects. This compensation path is distinct from post-deletion cleanup but may share a carefully scoped worker implementation.
 
+
+
+## Listing lifecycle audit — 2026-11-15
+
+This section records source-level findings from the review of the candidate branch and the currently deployed functions. It is not authorization to deploy, migrate, rotate secrets, or delete data.
+
+### Expiry path
+
+The candidate `expire-posts` improves on the deployed v5 implementation by:
+- loading the verifier from `EXPIRE_POSTS_TOKEN_HASH` and failing closed when it is absent;
+- paginating approved expired rows in batches of 100;
+- skipping protected demo rows;
+- validating every image key against the section-specific folder before deleting the database row;
+- reporting scan, row-delete, invalid-path, and Storage-cleanup failures separately.
+
+Remaining race to close before production: the conditional database DELETE matches the row ID, approved status, expiry timestamp, title, and description, but does not match the `image_urls` snapshot that was read. If an image list changes between the read and DELETE, the function could delete the updated row while only knowing the old paths. Prefer a transactional database operation that enqueues the exact current paths and deletes the row atomically. As an interim measure, add an exact `image_urls` snapshot predicate and test null, empty, and populated arrays; verify PostgREST JSONB filter encoding against staging before relying on it.
+
+### Reject / unpublish path
+
+The candidate `admin-update-post-status` changes status using the verified administrator JWT and a conditional status predicate. It then checks public image objects and treats only HTTP 404 as proof of absence; other HEAD errors fail closed. This is safer than interpreting every non-2xx response as a missing object.
+
+Open policy decision: the function cleans the public bucket only. A rejected pending post may still have its private `pending-images` original. Do not automatically delete that original until the product policy is decided: rejection may need to preserve the private upload for the owner to correct and resubmit, while an explicit permanent removal may require cleanup. Document the intended retention period and make the action visible to the owner/admin.
+
+Remaining race: the status PATCH currently matches only ID and prior status, not the title, description, or `image_urls` snapshot used for demo protection and cleanup. A concurrent edit can invalidate those checks. Close this with an atomic database operation or snapshot predicates covering all fields that determine protected-demo classification and image cleanup. Do not blindly delete a path after a stale read.
+
+### Delete paths
+
+The candidate `admin-delete-post`, `delete-my-post`, and `expire-posts` all remove the database row before deleting Storage objects. This avoids leaving a visible listing with missing images, but it creates a recoverability gap: if the Storage call fails or times out, the listing is already gone and there is no durable retry record. Email alerts and response flags are best-effort, not a cleanup queue. The user-delete path can report cleanup pending, but that does not guarantee an administrator ticket or eventual retry.
+
+The required production design remains the transaction/outbox contract above: atomically enqueue exact object keys with the source-row deletion, then let a bounded worker retry Storage deletion. Never use a generic prefix deletion or client-provided path. Until that exists, do not describe cleanup as guaranteed.
+
+### Required lifecycle regression tests
+
+- Expiry: more than 100 rows, UUID keyset pagination, protected demos mixed into a full page, malformed image paths, scan failure, row-delete failure, and cleanup timeout.
+- Expiry concurrency: mutate `image_urls`, title, description, status, or expiry between SELECT and DELETE; confirm the stale snapshot cannot delete a changed row.
+- Reject/unpublish: pending vs approved state, protected demo by ID and text, concurrent image edit, public image already absent, Storage HEAD 403/429/5xx, DELETE timeout, and decision-specific retention of the private pending original.
+- User delete: owner vs non-owner, protected demo, concurrent edit, row-delete conflict, public and pending objects independently missing/failing.
+- Admin delete: owner-role authorization, demo-only override, rejection of ordinary posts when `delete_test` is set, malformed paths, and partial Storage failure.
+- All delete paths: database timeout with ambiguous commit, Storage timeout after row deletion, duplicate retry, and durable outbox recovery.
+
+### Deployment-sensitive finding
+
+The deployed `expire-posts` v5 source still contains a fixed verifier hash, while the candidate reads `EXPIRE_POSTS_TOKEN_HASH` from the runtime environment. Treat the deployed verifier as exposed. Rotation must include the runtime secret and the scheduled request header together, be coordinated to avoid breaking the daily job, and happen only after separate explicit approval. No rotation or schedule change was performed during this audit.
+
+### Current scope
+
+- Source and deployment snapshots were reviewed read-only.
+- This audit section is documentation only.
+- No production data, Storage objects, migrations, secrets, cron schedules, function deployments, or site publishing were changed.
