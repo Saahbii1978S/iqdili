@@ -7,6 +7,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
 import { buildStorageCleanupJobs, enqueueStorageCleanup, isValidStorageObjectPath } from "../_shared/storage-cleanup-queue.ts";
+import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -16,7 +17,6 @@ const tables:Record<string,{bucket:string,folder:string}>={
  real_estate_posts:{bucket:"listing-images",folder:"realty"},
  market_posts:{bucket:"market-images",folder:"market"}
 };
-const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
 async function sendAdminAlert(subject:string,textContent:string):Promise<void>{
  const apiKey=Deno.env.get("BREVO_API_KEY"),recipient=Deno.env.get("ADMIN_ALERT_EMAIL"),sender=Deno.env.get("BREVO_SENDER_EMAIL");
  if(!apiKey||!recipient||!sender){console.warn("Admin email alerts are not fully configured");return;}
@@ -47,8 +47,7 @@ Deno.serve(async(req:Request)=>{
   const rows=await rowRes.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
   const row=rows[0],expected=status==="rejected"?"pending":"approved";
   if(row.status!==expected)return reply({error:"حالة الإعلان تبدّلت من قبل. حدّث القائمة."},409);
-  const text=(String(row.title||"")+" "+String(row.description||"")).toLowerCase();
-  if((protectedDemoIds[table]||[]).includes(String(id))||/(تجر(?:ي)?ب|اختبار|test|demo|مثال)/i.test(text))return reply({error:"هذا إعلان تجريبي محمي، لا يمكن تغيير حالته."},403);
+  if(isProtectedDemoPost(table,id,row.title,row.description))return reply({error:"هذا إعلان تجريبي محمي، لا يمكن تغيير حالته."},403);
 
   const paths=Array.isArray(row.image_urls)?row.image_urls:[];
   const folder=tables[table].folder;
