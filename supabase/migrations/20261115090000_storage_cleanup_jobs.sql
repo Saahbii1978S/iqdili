@@ -413,6 +413,7 @@ begin
          end,
          attempts = 0,
          lease_until = null,
+         lease_token = null,
          last_error = case
            when public.is_storage_cleanup_object_referenced(q.bucket, q.object_path)
              then 'Image is still referenced by a live listing; deferred until the final reference is removed'
