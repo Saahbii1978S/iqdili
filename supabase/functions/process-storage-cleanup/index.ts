@@ -5,6 +5,7 @@ import {
   failClaimedStorageCleanup,
   encodeStorageObjectPath,
   isStorageCleanupObjectReferenced,
+  deferClaimedStorageCleanup,
 } from "../_shared/storage-cleanup-queue.ts";
 
 const reply = (body: unknown, status = 200) =>
@@ -36,12 +37,19 @@ Deno.serve(async (req: Request) => {
   let completed = 0;
   let retried = 0;
   let deadLettered = 0;
+  let deferred = 0;
 
   for (const job of jobs) {
     try {
       const referenced = await isStorageCleanupObjectReferenced(url, serviceKey, job);
       if (referenced === null) throw new Error("Could not verify whether the image is still referenced");
-      if (referenced) throw new Error("Image is still referenced by another listing; deletion is blocked");
+      if (referenced) {
+        if (!await deferClaimedStorageCleanup(url, serviceKey, job)) {
+          throw new Error("Image is referenced, but its cleanup job could not be safely deferred");
+        }
+        deferred++;
+        continue;
+      }
 
       const objectUrl = url + "/storage/v1/object/info/" + job.bucket + "/" + encodeStorageObjectPath(job.object_path);
       const head = await fetch(objectUrl, {
@@ -87,5 +95,6 @@ Deno.serve(async (req: Request) => {
     completed,
     retried,
     dead_lettered: deadLettered,
+    deferred,
   });
 });
