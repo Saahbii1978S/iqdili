@@ -195,43 +195,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Drain queued cleanup jobs before deleting the Auth user. Any failure leaves durable pending jobs.
-    if (!await activateStorageCleanup(url, serviceKey, cleanupJobs)) {
-      return reply({ error: "تم حذف الإعلانات، لكن تعذّر تفعيل مهام تنظيف الصور. الحساب مازال موجوداً." }, 502);
-    }
-
-
-    for (const job of cleanupJobs) {
-      const encoded = job.object_path.split("/").map(encodeURIComponent).join("/");
-      const head = await fetch(url + "/storage/v1/object/info/" + job.bucket + "/" + encoded, {
-        method: "HEAD",
-        headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
-      });
-      if (head.status === 404) {
-        if (!await completeStorageCleanup(url, serviceKey, job)) {
-          return reply({ error: "بقي تحديث سجل تنظيف الصور معلقاً؛ الحساب مازال موجوداً." }, 502);
-        }
-        continue;
-      }
-      if (!head.ok) {
-        await recordStorageCleanupFailure(url, serviceKey, job, "Storage HEAD returned " + head.status);
-        console.error("Account cleanup HEAD failed", job.bucket, head.status);
-        return reply({ error: "تعذّر تنظيف بعض الصور. مهمة التنظيف محفوظة والحساب مازال موجوداً." }, 502);
-      }
-      const remove = await api(url, serviceKey, "/storage/v1/object/" + job.bucket, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prefixes: [job.object_path] }),
-      });
-      if (!remove.ok) {
-        await recordStorageCleanupFailure(url, serviceKey, job, "Storage DELETE returned " + remove.status);
-        console.error("Account image cleanup failed", job.bucket, remove.status);
-        return reply({ error: "تعذّر تنظيف بعض الصور. مهمة التنظيف محفوظة والحساب مازال موجوداً." }, 502);
-      }
-      if (!await completeStorageCleanup(url, serviceKey, job)) {
-        return reply({ error: "تم تنظيف الصور لكن بقي تحديث سجل التنظيف؛ الحساب مازال موجوداً." }, 502);
-      }
-    }
+    // Image deletion is delegated to the durable background worker after all listing rows are removed.
 
     const deleteUser = await fetch(url + "/auth/v1/admin/users/" + encodeURIComponent(user.id), {
       method: "DELETE",
@@ -243,7 +207,7 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "تم تنظيف الإعلانات، لكن تعذّر إكمال حذف الحساب. عاود المحاولة أو تواصل مع الإدارة." }, 502);
     }
 
-    return reply({ ok: true, message: "تم حذف الحساب والإعلانات والصور المرتبطة به." });
+    return reply({ ok: true, cleanupPending: cleanupJobs.length > 0, message: cleanupJobs.length ? "تم حذف الحساب والإعلانات. تنظيف الصور المرتبطة بها جارٍ في الخلفية." : "تم حذف الحساب والإعلانات." });
   } catch (error) {
     console.error("delete-account error", String(error));
     return reply({ error: "صار خطأ غير متوقع. لم نتمكن من تأكيد اكتمال حذف الحساب." }, 500);
