@@ -61,7 +61,11 @@ Deno.serve(async(req:Request)=>{
      continue;
     }
     const outcome=await deletion.json().catch(()=>null);
-    if(!outcome||outcome.deleted!==true)continue;
+    if(!outcome||outcome.deleted!==true){
+     deleteErrors.push(table+":"+String(row.id));
+     console.warn("expiry snapshot changed before deletion; listing retained",table,String(row.id));
+     continue;
+    }
     count++;
    }
    if(rows.length<100)break;
