@@ -5,6 +5,12 @@ const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
 
+function exactTextFilter(value: unknown): string {
+  if (value === null || value === undefined) return "is.null";
+  const escaped = String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return 'eq."' + escaped + '"';
+}
+
 async function sendAdminAlert(subject: string, textContent: string): Promise<void> {
   const apiKey = Deno.env.get("BREVO_API_KEY");
   const recipient = Deno.env.get("ADMIN_ALERT_EMAIL");
@@ -74,9 +80,9 @@ Deno.serve(async(req:Request)=>{
   }
   const deleteQuery=new URLSearchParams({
    id:"eq."+String(id),
-   title:rows[0].title===null||rows[0].title===undefined?"is.null":"eq."+String(rows[0].title),
-   description:rows[0].description===null||rows[0].description===undefined?"is.null":"eq."+String(rows[0].description),
-   status:rows[0].status===null||rows[0].status===undefined?"is.null":"eq."+String(rows[0].status),
+   title:exactTextFilter(rows[0].title),
+   description:exactTextFilter(rows[0].description),
+   status:exactTextFilter(rows[0].status),
    image_urls:Array.isArray(rows[0].image_urls)?"eq.{"+paths.join(",")+"}":"is.null"
   });
   const del=await fetch(url+"/rest/v1/"+table+"?"+deleteQuery.toString(),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
