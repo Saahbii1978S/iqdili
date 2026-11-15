@@ -55,7 +55,7 @@ Deno.serve(async(req:Request)=>{
   if(!boundedRequest)return reply({error:"حجم الطلب أكبر من المسموح."},413);
   const body=await boundedRequest.json().catch(()=>null),table=body?.table,id=body?.id,deleteTest=body?.delete_test===true;
   if(!body||typeof table!=="string"||!Object.hasOwn(cfg,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
-  const rowRes=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=id,title,description,status,image_urls",{headers:{apikey:key,Authorization:"Bearer "+key}});
+  const rowRes=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=*",{headers:{apikey:key,Authorization:"Bearer "+key}});
   if(!rowRes.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowRes.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
   const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
@@ -78,8 +78,7 @@ Deno.serve(async(req:Request)=>{
    headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
    body:JSON.stringify({
     p_table:table,p_id:String(id),p_expected_user_id:null,p_require_owner:false,
-    p_title:rows[0].title??null,p_description:rows[0].description??null,p_status:rows[0].status??null,
-    p_image_urls:Array.isArray(rows[0].image_urls)?paths:null,p_jobs:cleanupJobs
+    p_expected_row:rows[0],p_jobs:cleanupJobs
    })
   });
   if(!deletion.ok){
