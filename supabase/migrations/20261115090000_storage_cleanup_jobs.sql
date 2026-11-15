@@ -14,6 +14,7 @@ create table if not exists public.storage_cleanup_jobs (
   attempts integer not null default 0 check (attempts >= 0),
   last_error text,
   lease_until timestamptz,
+  lease_token uuid,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   completed_at timestamptz,
@@ -31,7 +32,7 @@ grant usage, select on sequence public.storage_cleanup_jobs_id_seq to service_ro
 
 -- Claim jobs atomically so concurrent workers never process the same object at once.
 create or replace function public.claim_storage_cleanup_jobs(p_limit integer default 20)
-returns table(id bigint, bucket text, object_path text, attempts integer)
+returns table(id bigint, bucket text, object_path text, attempts integer, lease_token uuid)
 language sql
 security invoker
 set search_path = ''
@@ -40,6 +41,7 @@ as $$
     update public.storage_cleanup_jobs j
        set status = 'dead_letter',
            lease_until = null,
+           lease_token = null,
            updated_at = pg_catalog.now(),
            last_error = coalesce(j.last_error, 'Maximum retry count reached')
      where j.attempts >= 8
@@ -60,12 +62,13 @@ as $$
        set status = 'processing',
            attempts = j.attempts + 1,
            lease_until = pg_catalog.now() + interval '5 minutes',
+           lease_token = pg_catalog.gen_random_uuid(),
            updated_at = pg_catalog.now()
       from candidates c
      where j.id = c.id
-    returning j.id, j.bucket, j.object_path, j.attempts
+    returning j.id, j.bucket, j.object_path, j.attempts, j.lease_token
   )
-  select c.id, c.bucket, c.object_path, c.attempts from claimed c;
+  select c.id, c.bucket, c.object_path, c.attempts, c.lease_token from claimed c;
 $$;
 
 revoke all on function public.claim_storage_cleanup_jobs(integer) from public, anon, authenticated;
@@ -95,6 +98,8 @@ begin
 
   update public.storage_cleanup_jobs q
      set status = 'pending',
+         lease_until = null,
+         lease_token = null,
          updated_at = pg_catalog.now()
     from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
    where q.bucket = x.bucket
@@ -236,6 +241,7 @@ begin
          end,
          attempts = 0,
          lease_until = null,
+         lease_token = null,
          last_error = case
            when public.is_storage_cleanup_object_referenced(q.bucket, q.object_path)
              then 'Image is still referenced by a live listing; deferred until the final reference is removed'
