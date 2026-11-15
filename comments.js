@@ -70,6 +70,7 @@ async function refreshUser(){
 async function loadComments(widget){
  const key=keyFor(widget),panel=widget.querySelector("[data-comments-panel]");
  if(!panel||busy.has(key))return;
+ await refreshUser();
  busy.add(key);panel.innerHTML='<p class="post-comment-login">جاري تحميل التعليقات...</p>';
  try{
   const {data,error}=await client.from("post_comments")
@@ -109,7 +110,7 @@ async function submitComment(form,widget){
   if(error)throw error;
   await loadComments(widget);
  }catch(error){
-  errorBox.textContent="ما نجّمش ننشر التعليق. "+(error.message||"عاود المحاولة.");
+  errorBox.textContent="ما نجّمش ننشر التعليق. تثبّت من تسجيل الدخول وعاود المحاولة.";
   button.disabled=false;
  }
 }
