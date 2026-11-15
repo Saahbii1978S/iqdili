@@ -131,6 +131,59 @@ revoke all on function public.approve_post_if_unchanged(text, bigint, jsonb, tex
 grant execute on function public.approve_post_if_unchanged(text, bigint, jsonb, text[], timestamptz)
   to authenticated;
 
+-- Atomically change a reviewed listing status only if the complete row is unchanged.
+create or replace function public.update_post_status_if_unchanged(
+  p_table text,
+  p_id bigint,
+  p_expected_row jsonb,
+  p_new_status text
+)
+returns boolean
+language plpgsql
+security invoker
+set search_path = ''
+as $status$
+declare
+  expected_status text;
+  changed boolean := false;
+begin
+  expected_status := case
+    when p_new_status = 'rejected' then 'pending'
+    when p_new_status = 'unpublished' then 'approved'
+    else null
+  end;
+
+  if p_table not in ('service_requests','job_posts','real_estate_posts','market_posts')
+     or p_id is null
+     or p_expected_row is null
+     or pg_catalog.jsonb_typeof(p_expected_row) <> 'object'
+     or expected_status is null
+     or p_expected_row->>'status' is distinct from expected_status
+     or auth.uid() is null
+     or not public.is_admin() then
+    raise exception 'Status change is not authorized or request is invalid';
+  end if;
+
+  execute pg_catalog.format(
+    'update public.%I as listing
+        set status = $1
+      where listing.id = $2
+        and pg_catalog.to_jsonb(listing) = $3
+      returning true',
+    p_table
+  )
+  into changed
+  using p_new_status, p_id, p_expected_row;
+
+  return coalesce(changed, false);
+end;
+$status$;
+
+revoke all on function public.update_post_status_if_unchanged(text, bigint, jsonb, text)
+  from public, anon;
+grant execute on function public.update_post_status_if_unchanged(text, bigint, jsonb, text)
+  to authenticated;
+
 -- Activate only the exact paths whose listing-row deletion succeeded.
 create or replace function public.activate_storage_cleanup_jobs(p_jobs jsonb)
 returns integer
