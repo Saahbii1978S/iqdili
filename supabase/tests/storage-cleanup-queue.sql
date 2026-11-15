@@ -472,4 +472,20 @@ begin
     '[{"bucket":"listing-images","object_path":"jobs/activation.jpg"}]'::jsonb
   );
   if n <> 1 then raise exception 'Activation RPC returned unexpected count: %', n; end if;
-end $$;
+
+  -- An incomplete activation batch must roll back every status update.
+  insert into public.storage_cleanup_jobs(bucket,object_path,status)
+  values ('listing-images','jobs/activation-rollback.jpg','staged');
+  begin
+    perform public.activate_storage_cleanup_jobs(
+      '[{"bucket":"listing-images","object_path":"jobs/activation-rollback.jpg"},{"bucket":"listing-images","object_path":"jobs/missing-activation.jpg"}]'::jsonb
+    );
+    raise exception 'Expected incomplete cleanup activation to abort';
+  exception when others then
+    if sqlerrm not like '%Cleanup activation batch is incomplete%' then raise; end if;
+  end;
+  if (select status from public.storage_cleanup_jobs
+       where bucket='listing-images' and object_path='jobs/activation-rollback.jpg') <> 'staged' then
+    raise exception 'Incomplete cleanup activation committed a partial status update';
+  end if;
+end $;
