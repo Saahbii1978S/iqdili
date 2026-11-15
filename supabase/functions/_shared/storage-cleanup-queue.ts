@@ -187,3 +187,22 @@ export async function failClaimedStorageCleanup(
   const rows = await response.json().catch(() => null);
   return Array.isArray(rows) && rows.length === 1;
 }
+
+export async function isStorageCleanupObjectReferenced(
+  url: string,
+  serviceKey: string,
+  job: StorageCleanupJob,
+): Promise<boolean | null> {
+  const response = await fetch(url + "/rest/v1/rpc/is_storage_cleanup_object_referenced", {
+    method: "POST",
+    headers: {
+      apikey: serviceKey,
+      Authorization: "Bearer " + serviceKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ p_bucket: job.bucket, p_object_path: job.object_path }),
+  });
+  if (!response.ok) return null;
+  const result = await response.json().catch(() => null);
+  return typeof result === "boolean" ? result : null;
+}
