@@ -1,12 +1,5 @@
 (function(){
 "use strict";
-const TABLE_BY_LIST={
- "market-list":"market","market-live":"market",
- "sl":"services","public-services-list":"services",
- "jl":"jobs","public-jobs-list":"jobs",
- "rl":"realty","public-realty-list":"realty"
-};
-const TABLE_LABEL={market:"السوق",services:"الخدمات",jobs:"فرص العمل",realty:"العقارات"};
 let client=null;
 let currentUser=null;
 const loaded=new Set();
@@ -48,6 +41,12 @@ function makeForm(parentId){
 function loginPrompt(){
  return '<p class="post-comment-login">باش تشارك بتعليق، سجّل الدخول أو أنشئ حسابك. <button type="button" data-comment-login>الدخول للحساب</button></p>';
 }
+function makeEditForm(commentId,body){
+ return '<form class="post-comment-form" data-edit-comment-form data-comment-id="'+Number(commentId)+'">'+
+  '<textarea maxlength="1000" required aria-label="تعديل التعليق">'+escapeHtml(body)+'</textarea>'+
+  '<div><button class="post-comment-send" type="submit">حفظ التعديل</button> <button class="post-comment-action" type="button" data-cancel-edit>إلغاء</button></div>'+
+  '<div class="post-comment-error" aria-live="polite"></div></form>';
+}
 function renderComment(comment,all){
  const mine=currentUser&&currentUser.id===comment.user_id;
  const replies=all.filter(item=>item.parent_id===comment.id);
@@ -55,10 +54,10 @@ function renderComment(comment,all){
   '<div class="post-comment-meta"><strong>'+(mine?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(comment.created_at).toLocaleString("ar-TN"))+'</span></div>'+
   '<p class="post-comment-body">'+escapeHtml(comment.body)+'</p>'+
   (currentUser?'<button type="button" class="post-comment-action" data-reply="'+comment.id+'">ردّ</button>':"")+
-  (mine?'<button type="button" class="post-comment-action" data-delete-comment="'+comment.id+'">حذف</button>':"")+
+  (mine?'<button type="button" class="post-comment-action" data-edit-comment="'+comment.id+'">تعديل</button><button type="button" class="post-comment-action" data-delete-comment="'+comment.id+'">حذف</button>':"")+
   '<div data-reply-slot="'+comment.id+'"></div>';
  if(replies.length){
-  html+='<div class="post-comment-replies">'+replies.map(reply=>'<article class="post-comment"><div class="post-comment-meta"><strong>'+(currentUser&&currentUser.id===reply.user_id?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(reply.created_at).toLocaleString("ar-TN"))+'</span></div><p class="post-comment-body">'+escapeHtml(reply.body)+'</p>'+(currentUser&&currentUser.id===reply.user_id?'<button type="button" class="post-comment-action" data-delete-comment="'+reply.id+'">حذف</button>':"")+'</article>').join("")+'</div>';
+  html+='<div class="post-comment-replies">'+replies.map(reply=>'<article class="post-comment" data-comment-id="'+reply.id+'"><div class="post-comment-meta"><strong>'+(currentUser&&currentUser.id===reply.user_id?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(reply.created_at).toLocaleString("ar-TN"))+'</span></div><p class="post-comment-body">'+escapeHtml(reply.body)+'</p>'+(currentUser&&currentUser.id===reply.user_id?'<button type="button" class="post-comment-action" data-edit-comment="'+reply.id+'">تعديل</button><button type="button" class="post-comment-action" data-delete-comment="'+reply.id+'">حذف</button>':"")+'</article>').join("")+'</div>';
  }
  return html+'</article>';
 }
@@ -71,15 +70,16 @@ async function refreshUser(){
 async function loadComments(widget){
  const key=keyFor(widget),panel=widget.querySelector("[data-comments-panel]");
  if(!panel||busy.has(key))return;
- await refreshUser();
  busy.add(key);panel.innerHTML='<p class="post-comment-login">جاري تحميل التعليقات...</p>';
  try{
+  await refreshUser();
   const {data,error}=await client.from("post_comments")
    .select("id,post_id,parent_id,user_id,body,created_at")
    .eq("post_table",widget.dataset.postTable)
    .eq("post_id",Number(widget.dataset.postId))
    .eq("status","published")
-   .order("created_at",{ascending:true});
+   .order("created_at",{ascending:true})
+   .limit(200);
   if(error)throw error;
   const rows=data||[];
   const top=rows.filter(row=>!row.parent_id);
@@ -136,6 +136,26 @@ function onClick(event){
   if(slot){slot.innerHTML=slot.innerHTML? "":makeForm(reply.dataset.reply);const area=slot.querySelector("textarea");if(area)area.focus();}
   return;
  }
+ const edit=event.target.closest("[data-edit-comment]");
+ if(edit){
+  const widget=edit.closest("[data-post-comments]");
+  const article=edit.closest("[data-comment-id]");
+  const body=article?.querySelector(".post-comment-body");
+  if(widget&&article&&body&&!article.querySelector("[data-edit-comment-form]")){
+   body.hidden=true;
+   body.insertAdjacentHTML("afterend",makeEditForm(edit.dataset.editComment,body.textContent||""));
+   article.querySelector("[data-edit-comment-form] textarea")?.focus();
+  }
+  return;
+ }
+ const cancel=event.target.closest("[data-cancel-edit]");
+ if(cancel){
+  const form=cancel.closest("[data-edit-comment-form]");
+  const article=form?.closest("[data-comment-id]");
+  if(article){const body=article.querySelector(".post-comment-body");if(body)body.hidden=false;}
+  form?.remove();
+  return;
+ }
  const remove=event.target.closest("[data-delete-comment]");
  if(remove){
   if(!currentUser||!window.confirm("تحب تحذف التعليق هذا؟"))return;
@@ -145,7 +165,36 @@ function onClick(event){
    .catch(error=>alert("تعذّر حذف التعليق: "+(error.message||"عاود المحاولة.")));
  }
 }
+async function submitEdit(form,widget){
+ const textarea=form.querySelector("textarea"),button=form.querySelector("button[type=submit]");
+ const errorBox=form.querySelector(".post-comment-error");
+ const body=textarea.value.trim();
+ if(!body){errorBox.textContent="اكتب التعليق قبل حفظ التعديل.";return;}
+ if(body.length>1000){errorBox.textContent="التعليق طويل برشة. الحدّ الأقصى 1000 حرف.";return;}
+ await refreshUser();
+ if(!currentUser){errorBox.textContent="يلزمك تسجّل الدخول قبل التعديل.";return;}
+ button.disabled=true;errorBox.textContent="";
+ try{
+  const {error}=await client.from("post_comments")
+   .update({body,updated_at:new Date().toISOString()})
+   .eq("id",Number(form.dataset.commentId))
+   .eq("user_id",currentUser.id);
+  if(error)throw error;
+  loaded.delete(keyFor(widget));
+  await loadComments(widget);
+ }catch(error){
+  errorBox.textContent="ما نجّمش نحفظ التعديل. تثبّت من تسجيل الدخول وعاود.";
+  button.disabled=false;
+ }
+}
 function onSubmit(event){
+ const editForm=event.target.closest("[data-edit-comment-form]");
+ if(editForm){
+  event.preventDefault();
+  const widget=editForm.closest("[data-post-comments]");
+  if(widget)submitEdit(editForm,widget);
+  return;
+ }
  const form=event.target.closest("[data-comment-form]");
  if(!form)return;
  event.preventDefault();
