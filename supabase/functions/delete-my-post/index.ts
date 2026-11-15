@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -22,7 +23,9 @@ Deno.serve(async(req:Request)=>{
   if(!userRes.ok)return reply({error:"جلسة الحساب انتهت. عاود تسجيل الدخول."},401);
   const user=await userRes.json().catch(()=>({}));
   if(typeof user.id!=="string")return reply({error:"تعذّر التثبت من الحساب."},401);
-  const body=await req.json().catch(()=>null);
+  const boundedRequest=await readLimitedRequest(req,4096);
+  if(!boundedRequest)return reply({error:"حجم الطلب أكبر من المسموح."},413);
+  const body=await boundedRequest.json().catch(()=>null);
   const table=body?.table,id=body?.id;
   if(typeof table!=="string"||!Object.hasOwn(cfg,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
   if((protectedIds[table]||[]).includes(String(id)))return reply({error:"هذا الإعلان التجريبي محمي ولا يمكن حذفه من حساب المستخدم."},403);
