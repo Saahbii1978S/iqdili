@@ -38,7 +38,7 @@ This is not a live Supabase integration test and does not establish real multi-s
 3. **No dedicated account-deletion endpoint failure-injection suite exists.** Add tests for Auth deletion failure and retry, the 9,999/10,000/10,001 pagination boundaries, concurrent insert/update during deletion, and failure/timeout at every external step.
 4. **No real concurrent-session test has been run** for the object attachment, deletion, and worker-claim interleavings. The advisory-lock and trigger design needs staging tests using separate database sessions.
 5. **No endpoint-specific rate limit was found** for `delete-account`. Keep the bounded body and recent-authentication check, and add a user-scoped rate limit before production.
-6. **The account-erasure inventory remains scoped to four current listing tables.** Do not describe the endpoint as complete erasure of every possible user-linked record until legacy tables, Auth metadata, audit/event retention, and all foreign keys are reconciled.
+6. **Account-erasure scope and retention policy still need a final owner decision.** The schema-wide FK inventory is now reconciled in `USER-DATA-RELATIONSHIP-INVENTORY-2026-11-15.md`; the endpoint explicitly removes the four listing categories, protects admin/staff accounts, and leaves audit/event retention to policy. Do not describe this as complete erasure of every possible user-linked record until notification-event retention, Auth metadata, and legacy unowned records are addressed.
 7. **Five existing private `pending-images` objects remain untouched.** They are not part of this change and must not be bulk-deleted.
 8. **Backup and restore readiness is unverified.** A healthy project status and migration manifest are not a backup or a tested restore.
 
@@ -50,3 +50,16 @@ This is not a live Supabase integration test and does not establish real multi-s
 - No listing, user, Storage object, role, or production setting was changed.
 - All existing test/demo listings and the five private pending objects remain untouched.
 - Do not merge or deploy this candidate until staging acceptance tests pass and the owner explicitly approves the production release.
+
+
+## Reconciliation addendum — live foreign-key metadata
+
+A fresh read-only query against the live project's PostgreSQL catalog (`pg_constraint` joined to the referenced `auth.users` relation) confirms the following. This catalog query is authoritative for the current FK definitions and resolves the earlier conflicting summary; the prior information_schema query returned an empty result and was not reliable for this inventory.
+
+- `service_requests.user_id`, `job_posts.user_id`, `real_estate_posts.user_id`, and `market_posts.user_id` reference `auth.users(id) ON DELETE SET NULL`. The candidate explicitly deletes these rows before deleting the Auth user.
+- `admins.user_id` and `staff_roles.user_id` use `ON DELETE CASCADE`; the candidate checks both role tables and refuses self-deletion when a matching role exists.
+- `admin_role_events.actor_id`, `admin_role_events.target_user_id`, `admin_status_audit.actor_id`, and `staff_roles.granted_by` use `ON DELETE SET NULL`. These audit/grant records remain, with the user reference nulled.
+- The inspected `admin_notification_events.user_id` column has no FK to `auth.users`; its retention or deletion must be decided separately.
+- Legacy tables `jobs`, `services`, `market`, `realty`, and `properties` have no inspected account-ownership FK. Do not infer ownership or delete their rows automatically.
+
+This is metadata-only verification: no row contents, account identities, or event payloads were read, and no live data or schema was changed. The remaining blocker is a documented retention/minimization decision for notification events and any Auth metadata, not an unresolved FK inventory.
