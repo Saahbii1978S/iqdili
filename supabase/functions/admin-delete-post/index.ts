@@ -5,11 +5,6 @@ const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
 
-function exactTextFilter(value: unknown): string {
-  if (value === null || value === undefined) return "is.null";
-  const escaped = String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-  return 'eq."' + escaped + '"';
-}
 
 async function sendAdminAlert(subject: string, textContent: string): Promise<void> {
   const apiKey = Deno.env.get("BREVO_API_KEY");
