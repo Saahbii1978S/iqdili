@@ -30,3 +30,5 @@ This worker is part of the review branch only. It is not deployed and the candid
 - Never run the worker against production until the migration, function, and scheduler are all deployed and verified together.
 - Do not manually delete queue rows to clear errors. Review the exact bucket, object key, and last error first.
 - Uploads currently use random UUID object names with upsert disabled. Keep that invariant: never reuse an existing object key for a new upload.
+- Account deletion creates a persistent row in `account_deletion_locks` inside the same transaction that removes the account's listings. Database triggers serialize and reject later listing inserts/updates for that user, including the gap before the separate Auth user deletion call completes.
+- If the Auth deletion call fails after listings were removed, keep the account lock in place and retry the authenticated account-deletion request. Do not manually remove the lock or re-enable posting until the Auth account state has been verified; escalate persistent failures for an administrator to reconcile.
