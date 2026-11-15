@@ -195,7 +195,8 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Drain queued cleanup jobs before deleting the Auth user. Any failure leaves durable pending jobs.    if (!await activateStorageCleanup(url, serviceKey, cleanupJobs)) {
+    // Drain queued cleanup jobs before deleting the Auth user. Any failure leaves durable pending jobs.
+    if (!await activateStorageCleanup(url, serviceKey, cleanupJobs)) {
       return reply({ error: "تم حذف الإعلانات، لكن تعذّر تفعيل مهام تنظيف الصور. الحساب مازال موجوداً." }, 502);
     }
 
