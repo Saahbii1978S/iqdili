@@ -507,7 +507,7 @@ begin
       from pg_catalog.jsonb_array_elements_text(p_expected_row->'image_urls') as p(path)
     union
     select 'pending-images'::text, p.path
-      from pg_catalog.unnest(coalesce(p_image_urls, array[]::text[])) as p(path)
+      from pg_catalog.jsonb_array_elements_text(p_expected_row->'image_urls') as p(path)
   ),
   requested as (
     select distinct x.bucket, x.object_path
