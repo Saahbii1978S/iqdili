@@ -4,6 +4,12 @@ import { buildStorageCleanupJobs, enqueueStorageCleanup, activateStorageCleanup 
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
+function exactTextFilter(value: unknown): string {
+  if (value === null || value === undefined) return "is.null";
+  const escaped = String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return 'eq."' + escaped + '"';
+}
+
 const cfg:Record<string,{bucket:string,folder:string}>={
  service_requests:{bucket:"listing-images",folder:"services"},
  job_posts:{bucket:"listing-images",folder:"jobs"},
@@ -46,7 +52,7 @@ Deno.serve(async(req:Request)=>{
    console.error("Could not enqueue user post image cleanup",table,id);
    return reply({error:"تعذّر تجهيز تنظيف الصور بأمان. لم يقع حذف الإعلان."},503);
   }
-  const deleteQuery=new URLSearchParams({id:"eq."+String(id),user_id:"eq."+user.id,title:"eq."+String(row.title??""),description:"eq."+String(row.description??""),status:"eq."+String(row.status??"")});
+  const deleteQuery=new URLSearchParams({id:"eq."+String(id),user_id:"eq."+user.id,title:exactTextFilter(row.title),description:exactTextFilter(row.description),status:exactTextFilter(row.status)});
   deleteQuery.set("image_urls",Array.isArray(row.image_urls)?"eq.{"+paths.join(",")+"}":"is.null");
   const del=await fetch(url+"/rest/v1/"+table+"?"+deleteQuery.toString(),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
   if(!del.ok)return reply({error:"تعذّر حذف الإعلان من قاعدة البيانات. تواصل مع الإدارة."},502);
