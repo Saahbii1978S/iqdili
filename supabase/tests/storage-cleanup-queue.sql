@@ -106,15 +106,15 @@ begin
     raise exception 'Stale snapshot rejection did not preserve the changed row';
   end if;
 
+  update public.storage_cleanup_jobs set status='completed'
+   where object_path='services/a.jpg';
+
   -- Claiming is exclusive; an expired lease can be reclaimed and increments attempts.
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values ('market-images','market/a.webp','pending');
   select * into claimed from public.claim_storage_cleanup_jobs(1)
    where object_path='market/a.webp';
-  if claimed.id is null or claimed.status is not null then
-    -- The function returns only id/bucket/path/attempts; status is checked in the table below.
-    if claimed.id is null then raise exception 'Worker failed to claim pending job'; end if;
-  end if;
+  if claimed.id is null then raise exception 'Worker failed to claim pending job'; end if;
   if (select status from public.storage_cleanup_jobs where id=claimed.id) <> 'processing'
      or claimed.attempts <> 1 then
     raise exception 'Claim did not set processing lease and attempt count';
