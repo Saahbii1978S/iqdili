@@ -9,7 +9,7 @@ export function isValidStorageObjectPath(path: unknown): path is string {
     path.length > 220 ||
     path.startsWith("/") ||
     path.includes("//") ||
-    !/^[a-zA-Z0-9_./-]+\\.(jpg|jpeg|png|webp)$/i.test(path)
+    !/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)
   ) return false;
   return path.split("/").every((segment) => segment !== "" && segment !== "." && segment !== "..");
 }
