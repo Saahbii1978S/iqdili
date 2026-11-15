@@ -35,8 +35,8 @@ Deno.serve(async(req:Request)=>{
   if(!rowRes.ok)return reply({error:"تعذّر التثبت من ملكية الإعلان."},502);
   const rows=await rowRes.json();
   if(!Array.isArray(rows)||rows.length!==1||rows[0].user_id!==user.id)return reply({error:"الإعلان غير موجود في حسابك أو لا تملك صلاحية حذفه."},404);
-  const row=rows[0],demoText=(String(row.title||"")+" "+String(row.description||"")).toLowerCase();
-  if(/(تجر(?:ي)?ب|اختبار|test|demo|مثال)/i.test(demoText))return reply({error:"هذا الإعلان مصنّف كتجربة ومحمي من الحذف."},403);
+  const row=rows[0];
+  if(isProtectedDemoPost(table,id,row.title,row.description))return reply({error:"هذا الإعلان مصنّف كتجربة ومحمي من الحذف."},403);
   const paths=Array.isArray(row.image_urls)?row.image_urls:[];
   for(const path of paths){
    if(typeof path!=="string"||!path.startsWith(cfg[table].folder+"/")||!/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)||path.includes("..")||path.includes("//"))return reply({error:"مسار صورة غير صالح؛ لم يقع حذف الإعلان."},409);
