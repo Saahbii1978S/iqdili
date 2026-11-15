@@ -187,7 +187,7 @@ export async function finishClaimedStorageCleanup(
       "Content-Type": "application/json",
       Prefer: "return=representation",
     },
-    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), lease_until: null, last_error: null }),
+    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), updated_at: new Date().toISOString(), lease_until: null, lease_token: null, last_error: null }),
   });
   if (!response.ok) return false;
   const rows = await response.json().catch(() => null);
@@ -213,6 +213,7 @@ export async function failClaimedStorageCleanup(
       status: job.attempts >= 8 ? "dead_letter" : "pending",
       lease_until: null,
       lease_token: null,
+      updated_at: new Date().toISOString(),
       last_error: reason.slice(0, 300),
     }),
   });
