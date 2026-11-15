@@ -57,6 +57,14 @@ $admin_stub$;
 \ir ../migrations/20261115150000_storage_cleanup_detachment_lock.sql
 
 
+-- Minimal Auth users required by the account-deletion lock FK in the local test database.
+insert into auth.users(id) values
+  ('11111111-1111-4111-8111-111111111111'),
+  ('22222222-2222-4222-8222-222222222222'),
+  ('33333333-3333-4333-8333-333333333333'),
+  ('44444444-4444-4444-8444-444444444444'),
+  ('55555555-5555-4555-8555-555555555555');
+
 create or replace function public.test_account_snapshot(p_user_id uuid)
 returns jsonb
 language sql
