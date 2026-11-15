@@ -86,10 +86,10 @@ begin
   values
     (u2,'owner listing','approved',array['services/shared.jpg']),
     (u3,'other listing','approved',array['services/shared.jpg']);
-  insert into public.storage_cleanup_jobs(bucket,object_path,status)
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,attempts,last_error)
   values
-    ('listing-images','services/shared.jpg','staged'),
-    ('pending-images','services/shared.jpg','staged');
+    ('listing-images','services/shared.jpg','dead_letter',8,'previously exhausted'),
+    ('pending-images','services/shared.jpg','dead_letter',8,'previously exhausted');
 
   result := public.delete_account_posts_and_activate_cleanup(
     u2,
