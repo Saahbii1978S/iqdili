@@ -67,9 +67,18 @@ export async function enqueueStorageCleanup(
       apikey: serviceKey,
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
-      Prefer: "resolution=ignore-duplicates,return=minimal",
+      Prefer: "resolution=merge-duplicates,return=minimal",
     },
-    body: JSON.stringify(jobs.map((job) => ({ ...job, status: "staged", attempts: 0, last_error: null, completed_at: null }))),
+    body: JSON.stringify(jobs.map((job) => ({
+      ...job,
+      status: "staged",
+      attempts: 0,
+      last_error: null,
+      lease_until: null,
+      lease_token: null,
+      completed_at: null,
+      updated_at: new Date().toISOString(),
+    }))),
   });
   return response.ok;
 }
