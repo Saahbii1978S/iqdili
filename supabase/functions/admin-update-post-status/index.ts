@@ -6,6 +6,7 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, isValidStorageObjectPath } from "../_shared/storage-cleanup-queue.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -16,25 +17,6 @@ const tables:Record<string,{bucket:string,folder:string}>={
  market_posts:{bucket:"market-images",folder:"market"}
 };
 const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
-function safeImagePath(path:unknown,folder:string):path is string{
- return typeof path==="string"&&path.startsWith(folder+"/")&&/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)&&!path.includes("..")&&!path.includes("//");
-}
-async function cleanupPublicImages(url:string,key:string,table:string,paths:string[]):Promise<boolean>{
- if(!paths.length)return true;
- const config=tables[table],existing:string[]=[];
- for(const path of paths){
-  if(!safeImagePath(path,config.folder))return false;
-  const encoded=path.split("/").map(encodeURIComponent).join("/");
-  const check=await fetch(url+"/storage/v1/object/info/"+config.bucket+"/"+encoded,{method:"HEAD",headers:{apikey:key,Authorization:"Bearer "+key}});
-  if(check.status===404)continue;
-  if(!check.ok){console.error("Public image cleanup preflight failed",table,check.status);return false;}
-  existing.push(path);
- }
- if(!existing.length)return true;
- const remove=await fetch(url+"/storage/v1/object/"+config.bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:existing})});
- if(!remove.ok){console.error("Public image cleanup failed",table,remove.status);return false;}
- return true;
-}
 async function sendAdminAlert(subject:string,textContent:string):Promise<void>{
  const apiKey=Deno.env.get("BREVO_API_KEY"),recipient=Deno.env.get("ADMIN_ALERT_EMAIL"),sender=Deno.env.get("BREVO_SENDER_EMAIL");
  if(!apiKey||!recipient||!sender){console.warn("Admin email alerts are not fully configured");return;}
@@ -59,23 +41,44 @@ Deno.serve(async(req:Request)=>{
   if(!boundedRequest)return reply({error:"حجم الطلب كبير أكثر من اللازم."},413);
   const body=await boundedRequest.json(),table=body?.table,id=body?.id,status=body?.status;
   if(typeof table!=="string"||!Object.hasOwn(tables,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30||!["rejected","unpublished"].includes(status))return reply({error:"الطلب غير صالح."},400);
-  const rowRes=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=id,title,description,status,image_urls",{headers:{apikey:key,Authorization:"Bearer "+key}});
+
+  const rowRes=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=*",{headers:{apikey:key,Authorization:"Bearer "+key}});
   if(!rowRes.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowRes.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
   const row=rows[0],expected=status==="rejected"?"pending":"approved";
   if(row.status!==expected)return reply({error:"حالة الإعلان تبدّلت من قبل. حدّث القائمة."},409);
   const text=(String(row.title||"")+" "+String(row.description||"")).toLowerCase();
   if((protectedDemoIds[table]||[]).includes(String(id))||/(تجر(?:ي)?ب|اختبار|test|demo|مثال)/i.test(text))return reply({error:"هذا إعلان تجريبي محمي، لا يمكن تغيير حالته."},403);
-  const update=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&status=eq."+expected,{method:"PATCH",headers:{apikey:key,Authorization:auth,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({status})});
-  if(!update.ok)return reply({error:"تعذّر حفظ قرار المراجعة."},502);
-  const changed=await update.json();if(!Array.isArray(changed)||!changed.length)return reply({error:"الإعلان تبدّلت حالته من قبل. حدّث القائمة."},409);
+
   const paths=Array.isArray(row.image_urls)?row.image_urls:[];
-  const cleaned=await cleanupPublicImages(url,key,table,paths);
-  if(!cleaned){
-   console.error("Status updated but public image cleanup remains pending",table,String(id));
-   await sendAdminAlert("تنبيه تنظيف صورة إعلان في أحلى توانسة","تم تحديث حالة الإعلان، لكن تعذّر تنظيف نسخة الصورة العامة.\nالقسم: "+table+"\nرقم الإعلان: "+String(id));
-   return reply({ok:true,cleanupPending:true,message:"تبدّلت حالة الإعلان، لكن تنظيف الصورة العامة ما كملش. تم تنبيه الإدارة."});
+  const folder=tables[table].folder;
+  if(paths.length>20||paths.some((path:unknown)=>typeof path!=="string"||!path.startsWith(folder+"/")||!isValidStorageObjectPath(path))){
+   return reply({error:"مسار إحدى الصور غير صالح. ما تبدّلتش حالة الإعلان."},400);
   }
-  return reply({ok:true,message:status==="rejected"?"تم رفض الإعلان.":"تم إلغاء نشر الإعلان."});
+  const cleanupJobs=buildStorageCleanupJobs([tables[table].bucket,"pending-images"],paths);
+  if(cleanupJobs.length&&!await enqueueStorageCleanup(url,key,cleanupJobs)){
+   console.error("Could not stage status-change image cleanup",table,String(id));
+   return reply({error:"تعذّر تسجيل تنظيف الصور. ما تبدّلتش حالة الإعلان."},502);
+  }
+
+  const update=await fetch(url+"/rest/v1/rpc/update_post_status_if_unchanged",{
+   method:"POST",
+   headers:{apikey:key,Authorization:auth,"Content-Type":"application/json"},
+   body:JSON.stringify({p_table:table,p_id:Number(id),p_expected_row:row,p_new_status:status}),
+   signal:AbortSignal.timeout(10000)
+  });
+  if(!update.ok){
+   console.error("atomic status transition failed",update.status,await update.text().catch(()=> ""));
+   await sendAdminAlert("تعذّر إكمال مراجعة إعلان في أحلى توانسة","تعذّر تحديث حالة الإعلان بعد تسجيل تنظيف الصور.\nالقسم: "+table+"\nرقم الإعلان: "+String(id));
+   return reply({error:"ما تأكدش تغيير الحالة لأن بيانات الإعلان تبدّلت أو صار خطأ. الصور ما تمسّتش."},409);
+  }
+  const changed=await update.json().catch(()=>null);
+  if(changed!==true)return reply({error:"الإعلان تبدّل بعد المراجعة. ما تبدّلتش حالته."},409);
+
+  return reply({
+   ok:true,
+   cleanupQueued:cleanupJobs.length>0,
+   message:status==="rejected"?"تم رفض الإعلان وتسجيل صوره للتنظيف الآمن.":"تم إلغاء نشر الإعلان وتسجيل صوره للتنظيف الآمن."
+  });
  }catch(error){console.error("admin-update-post-status",String(error));return reply({error:"صار خطأ أثناء تحديث حالة الإعلان."},500);}
 });
