@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -40,25 +41,40 @@ Deno.serve(async(req:Request)=>{
   for(const path of paths){
    if(typeof path!=="string"||!path.startsWith(cfg[table].folder+"/")||!/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)||path.includes("..")||path.includes("//"))return reply({error:"مسار صورة غير صالح؛ لم يقع حذف الإعلان."},409);
   }
+  const cleanupJobs=buildStorageCleanupJobs([cfg[table].bucket,"pending-images"],paths);
+  if(!await enqueueStorageCleanup(url,key,cleanupJobs)){
+   console.error("Could not enqueue user post image cleanup",table,id);
+   return reply({error:"تعذّر تجهيز تنظيف الصور بأمان. لم يقع حذف الإعلان."},503);
+  }
   const deleteQuery=new URLSearchParams({id:"eq."+String(id),user_id:"eq."+user.id,title:"eq."+String(row.title??""),description:"eq."+String(row.description??""),status:"eq."+String(row.status??"")});
   deleteQuery.set("image_urls",Array.isArray(row.image_urls)?"eq.{"+paths.join(",")+"}":"is.null");
   const del=await fetch(url+"/rest/v1/"+table+"?"+deleteQuery.toString(),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
   if(!del.ok)return reply({error:"تعذّر حذف الإعلان من قاعدة البيانات. تواصل مع الإدارة."},502);
   const deleted=await del.json().catch(()=>null);
   if(!Array.isArray(deleted)||deleted.length!==1)return reply({error:"لم يتم حذف الإعلان؛ حدّث القائمة وحاول مجدداً."},409);
-  if(paths.length){
-   // Check both buckets: an unpublished post may still have its former public image copy.
-   for(const bucket of [cfg[table].bucket,"pending-images"]){
-    const existing=[];
-    for(const path of paths){
-     const encoded=path.split("/").map(encodeURIComponent).join("/");
-     const check=await fetch(url+"/storage/v1/object/info/"+bucket+"/"+encoded,{method:"HEAD",headers:{apikey:key,Authorization:"Bearer "+key}});
-     if(check.ok)existing.push(path);
-     else if(check.status!==404){console.error("Post deleted but image preflight failed",bucket,check.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان من قاعدة البيانات، لكن تعذّر التثبت من بعض الصور وتنظيفها. تواصل مع الإدارة لإتمام التنظيف."});}
+  for(const bucket of [cfg[table].bucket,"pending-images"]){
+   const bucketJobs=cleanupJobs.filter(job=>job.bucket===bucket);
+   for(const job of bucketJobs){
+    const encoded=job.object_path.split("/").map(encodeURIComponent).join("/");
+    const check=await fetch(url+"/storage/v1/object/info/"+bucket+"/"+encoded,{method:"HEAD",headers:{apikey:key,Authorization:"Bearer "+key}});
+    if(check.status===404){
+     if(!await completeStorageCleanup(url,key,job))return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن بقي تحديث سجل تنظيف الصور معلقاً."});
+     continue;
     }
-    if(existing.length){
-     const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:existing})});
-     if(!rm.ok){console.error("Post deleted but image cleanup failed",bucket,rm.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تنظيف بعض الصور. يلزم التواصل مع الإدارة لإتمام التنظيف."});}
+    if(!check.ok){
+     await recordStorageCleanupFailure(url,key,job,"Storage HEAD returned "+check.status);
+     console.error("Post deleted but image cleanup preflight failed",bucket,check.status);
+     return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، ومهمة تنظيف الصور محفوظة لإعادة المحاولة."});
+    }
+    const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:[job.object_path]})});
+    if(!rm.ok){
+     await recordStorageCleanupFailure(url,key,job,"Storage DELETE returned "+rm.status);
+     console.error("Post deleted but image cleanup failed",bucket,rm.status);
+     return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، ومهمة تنظيف الصور محفوظة لإعادة المحاولة."});
+    }
+    if(!await completeStorageCleanup(url,key,job)){
+     console.error("Image removed but cleanup queue completion failed",bucket,job.object_path);
+     return reply({ok:true,cleanupPending:true,message:"تم تنظيف الصورة، لكن بقي تحديث سجل التنظيف معلقاً."});
     }
    }
   }
