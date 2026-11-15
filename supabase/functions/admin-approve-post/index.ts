@@ -76,7 +76,7 @@ Deno.serve(async(req:Request)=>{
   const row=rows[0];if(row.status!=="pending")return reply({error:"الإعلان لم يعد في قائمة الانتظار."},409);
   const text=(String(row.title||"")+" "+String(row.description||"")).toLowerCase();
   const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
-  if((protectedDemoIds[table]||[]).includes(String(id)) || /(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(text)){
+  if((protectedDemoIds[table]||[]).includes(String(id)) || /(تجر(?:ي)?ب|اختبار|test|demo|مثال)/i.test(text)){
    return reply({error:"هذا إعلان تجريبي محمي، لا يمكن نشره."},403);
   }
   const path=Array.isArray(row.image_urls)?row.image_urls[0]:null;
