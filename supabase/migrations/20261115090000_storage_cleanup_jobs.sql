@@ -473,10 +473,7 @@ create or replace function public.delete_post_and_activate_storage_cleanup(
   p_id bigint,
   p_expected_user_id uuid,
   p_require_owner boolean,
-  p_title text,
-  p_description text,
-  p_status text,
-  p_image_urls text[],
+  p_expected_row jsonb,
   p_jobs jsonb
 )
 returns jsonb
@@ -496,6 +493,8 @@ begin
      or p_id is null
      or p_require_owner is null
      or (p_require_owner and p_expected_user_id is null)
+     or pg_catalog.jsonb_typeof(p_expected_row) is distinct from 'object'
+     or pg_catalog.jsonb_typeof(p_expected_row->'image_urls') is distinct from 'array'
      or pg_catalog.jsonb_typeof(p_jobs) <> 'array'
      or pg_catalog.jsonb_array_length(p_jobs) > 500 then
     raise exception 'Invalid post cleanup request';
@@ -505,7 +504,7 @@ begin
 
   with expected as (
     select expected_bucket as bucket, p.path as object_path
-      from pg_catalog.unnest(coalesce(p_image_urls, array[]::text[])) as p(path)
+      from pg_catalog.jsonb_array_elements_text(p_expected_row->'image_urls') as p(path)
     union
     select 'pending-images'::text, p.path
       from pg_catalog.unnest(coalesce(p_image_urls, array[]::text[])) as p(path)
@@ -539,10 +538,10 @@ begin
   end if;
 
   execute pg_catalog.format(
-    'delete from public.%I where id = $1 and title is not distinct from $2 and description is not distinct from $3 and status is not distinct from $4 and image_urls is not distinct from $5 and (not $6 or user_id = $7)',
+    'delete from public.%I as listing where id = $1 and pg_catalog.to_jsonb(listing) = $2 and (not $3 or user_id = $4)',
     p_table
   )
-  using p_id, p_title, p_description, p_status, p_image_urls, p_require_owner, p_expected_user_id;
+  using p_id, p_expected_row, p_require_owner, p_expected_user_id;
 
   get diagnostics deleted_count = row_count;
   if deleted_count <> 1 then
@@ -583,5 +582,5 @@ begin
 end;
 $$;
 
-revoke all on function public.delete_post_and_activate_storage_cleanup(text, bigint, uuid, boolean, text, text, text, text[], jsonb) from public, anon, authenticated;
+revoke all on function public.delete_post_and_activate_storage_cleanup(text, bigint, uuid, boolean, jsonb, jsonb) from public, anon, authenticated;
 grant execute on function public.delete_post_and_activate_storage_cleanup(text, bigint, uuid, boolean, text, text, text, text[], jsonb) to service_role;
