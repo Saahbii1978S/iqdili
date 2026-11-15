@@ -1,7 +1,7 @@
 import { hasRecentAuthentication } from "./recent-auth.ts";
 
 function token(payload: Record<string, unknown>): string {
-  const encoded = btoa(JSON.stringify(payload)).replace(/=/g, "").replace(/\\+/g, "-").replace(/\\//g, "_");
+  const encoded = btoa(JSON.stringify(payload)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   return "header." + encoded + ".signature";
 }
 
