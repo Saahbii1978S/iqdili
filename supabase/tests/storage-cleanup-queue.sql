@@ -48,6 +48,7 @@ as $admin_stub$
 $admin_stub$;
 
 \ir ../migrations/20261115090000_storage_cleanup_jobs.sql
+\ir ../migrations/20261115120000_storage_cleanup_attachment_lock.sql
 
 
 create or replace function public.test_account_snapshot(p_user_id uuid)
@@ -258,6 +259,38 @@ begin
      or (result->>'deferred_jobs')::integer <> 0 then
     raise exception 'Final account deletion did not activate deferred image cleanup: %', result;
   end if;
+
+  -- A cleanup reservation prevents an object path from being attached again.
+  insert into public.storage_cleanup_jobs(bucket,object_path,status)
+  values ('market-images','market/retired.webp','processing');
+  begin
+    insert into public.market_posts(user_id,title,status,image_urls)
+    values (u4,'must not reuse retired image','approved',array['market/retired.webp']);
+    raise exception 'Expected cleanup-reserved image attachment to be rejected';
+  exception when others then
+    if sqlerrm not like '%Image is reserved for cleanup%' then raise; end if;
+  end;
+  if exists(select 1 from public.market_posts where title='must not reuse retired image') then
+    raise exception 'Cleanup-reserved image was attached to a listing';
+  end if;
+
+  -- A queued path that already has a live reference is returned to staged,
+  -- not handed to the Storage worker for deletion.
+  insert into public.market_posts(user_id,title,status,image_urls)
+  values (u4,'claim must defer referenced image','approved',array['market/referenced-claim.webp']);
+  insert into public.storage_cleanup_jobs(bucket,object_path,status)
+  values ('market-images','market/referenced-claim.webp','pending');
+  if exists (
+    select 1 from public.claim_storage_cleanup_jobs(5)
+     where object_path='market/referenced-claim.webp'
+  ) then
+    raise exception 'Worker claimed an image while a live listing referenced it';
+  end if;
+  if (select status from public.storage_cleanup_jobs
+       where bucket='market-images' and object_path='market/referenced-claim.webp') <> 'staged' then
+    raise exception 'Referenced cleanup job was not deferred to staged';
+  end if;
+  delete from public.market_posts where title='claim must defer referenced image';
 
   -- The worker must refuse an image still referenced by any live listing.
   insert into public.service_requests(user_id,title,status,image_urls)
