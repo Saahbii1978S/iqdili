@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
-import { buildStorageCleanupJobs, enqueueStorageCleanup, activateStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, activateStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
