@@ -102,13 +102,13 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const rowsByTable: Record<string, Array<{ id: number; image_urls?: string[]; title?: string; description?: string }>> = {};
+    const rowsByTable: Record<string, Array<Record<string, unknown>>> = {};
     for (const table of tables) {
-      const all: Array<{ id: number; image_urls?: string[]; title?: string; description?: string }> = [];
+      const all: Array<Record<string, unknown>> = [];
       let complete = false;
       for (let offset = 0; offset < 10000; offset += 1000) {
         const query = new URLSearchParams({
-          select: "id,image_urls,title,description",
+          select: "*",
           user_id: "eq." + user.id,
           order: "id.asc",
           limit: "1000",
@@ -192,7 +192,16 @@ Deno.serve(async (req: Request) => {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ p_user_id: user.id, p_jobs: cleanupJobs }),
+        body: JSON.stringify({
+          p_user_id: user.id,
+          p_jobs: cleanupJobs,
+          p_expected_rows: {
+            service_requests: rowsByTable.service_requests || [],
+            job_posts: rowsByTable.job_posts || [],
+            real_estate_posts: rowsByTable.real_estate_posts || [],
+            market_posts: rowsByTable.market_posts || [],
+          },
+        }),
       },
     );
     if (!deletion.ok) {
