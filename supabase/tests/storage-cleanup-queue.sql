@@ -266,12 +266,14 @@ begin
     array['services/shared-atomic.jpg'],
     '[{"bucket":"listing-images","object_path":"services/shared-atomic.jpg"},{"bucket":"pending-images","object_path":"services/shared-atomic.jpg"}]'::jsonb
   );
-  if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 0
-     or (result->>'deferred_jobs')::integer <> 2 then
-    raise exception 'Shared image was not safely deferred: %', result;
+  -- Approved rows reference the public object only; the private copy is independent.
+  if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 1
+     or (result->>'deferred_jobs')::integer <> 1 then
+    raise exception 'Shared public image was not safely deferred: %', result;
   end if;
-  if (select count(*) from public.storage_cleanup_jobs where object_path='services/shared-atomic.jpg' and status='staged') <> 2 then
-    raise exception 'Shared image cleanup jobs should remain staged';
+  if (select count(*) from public.storage_cleanup_jobs where object_path='services/shared-atomic.jpg' and status='staged') <> 1
+     or (select count(*) from public.storage_cleanup_jobs where object_path='services/shared-atomic.jpg' and status='pending') <> 1 then
+    raise exception 'Public shared image should stay staged while its private copy is independently cleanable';
   end if;
   select id into n from public.service_requests where user_id=u3 and title='shared two';
   result := public.delete_post_and_activate_storage_cleanup(
