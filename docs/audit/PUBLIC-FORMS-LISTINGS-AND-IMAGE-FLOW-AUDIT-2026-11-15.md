@@ -33,7 +33,9 @@ Action: define one documented limit per field and align UI counters, HTML maxlen
 
 The handler uploads a file into `pending-images` before inserting the listing row. It attempts to delete that object if the database insert fails, but a process termination or network failure between successful upload and insert/compensation can leave an unreferenced object. The existing storage cleanup/outbox audit already identifies this general orphan-object problem.
 
-Action: use a durable cleanup/outbox design with reconciliation for unreferenced pending objects; do not run broad bucket cleanup or delete existing objects as part of this audit.
+Candidate-branch remediation: both `upload-pending-image` and the multipart image path in `submit-public-post` now create a `staged` cleanup-queue record before uploading the object. The worker only considers staged jobs after 10 minutes, checks whether the object is referenced by a listing, checks again immediately before deletion, and defers referenced objects. The SQL regression suite already covers aged staged-job recovery and deferred jobs. This reduces orphaned uploads caused by abandoned forms, failed inserts, or interrupted requests.
+
+Release limitation: this remains candidate code and a candidate migration. The cleanup worker has no scheduler configured, so staged uploads will not be cleaned automatically until a trusted server-side scheduler is configured and tested. Do not run broad bucket cleanup or delete existing objects as part of this audit.
 
 ### IMG2 — Admin image preview assumes image objects are in the private pending bucket (medium; compatibility check)
 
