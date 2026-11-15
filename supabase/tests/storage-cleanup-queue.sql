@@ -488,4 +488,4 @@ begin
        where bucket='listing-images' and object_path='jobs/activation-rollback.jpg') <> 'staged' then
     raise exception 'Incomplete cleanup activation committed a partial status update';
   end if;
-end $;
+end $$;
