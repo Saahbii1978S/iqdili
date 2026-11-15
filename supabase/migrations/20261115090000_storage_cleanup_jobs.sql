@@ -132,7 +132,7 @@ as $$
 declare
   requested_count integer;
   mismatch_count integer;
-  shared_count integer;
+  queue_count integer;
   deleted_count integer := 0;
   affected integer;
   active_count integer;
@@ -201,6 +201,18 @@ begin
     raise exception 'Account listings changed during deletion; retry with a fresh snapshot';
   end if;
 
+  select count(*) into queue_count
+    from public.storage_cleanup_jobs q
+    join (
+      select distinct x.bucket, x.object_path
+        from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
+    ) requested using (bucket, object_path)
+   where q.status in ('staged','pending','processing','completed','dead_letter');
+
+  if queue_count <> requested_count then
+    raise exception 'Account cleanup queue is incomplete; account deletion aborted';
+  end if;
+
   delete from public.service_requests where user_id = p_user_id;
   get diagnostics affected = row_count;
   deleted_count := deleted_count + affected;
@@ -217,49 +229,14 @@ begin
   get diagnostics affected = row_count;
   deleted_count := deleted_count + affected;
 
-  with requested as (
-    select distinct x.bucket, x.object_path
-      from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
-  ),
-  remaining as (
-    select 'listing-images'::text as bucket, u.path as object_path
-      from public.service_requests r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
-    union
-    select 'listing-images'::text, u.path
-      from public.job_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
-    union
-    select 'listing-images'::text, u.path
-      from public.real_estate_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
-    union
-    select 'market-images'::text, u.path
-      from public.market_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
-    union
-    select 'pending-images'::text, u.path
-      from public.service_requests r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
-    union
-    select 'pending-images'::text, u.path
-      from public.job_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
-    union
-    select 'pending-images'::text, u.path
-      from public.real_estate_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
-    union
-    select 'pending-images'::text, u.path
-      from public.market_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
-  )
-  select count(*) into shared_count
-    from requested q join remaining r using (bucket, object_path);
-
-  if shared_count <> 0 then
-    raise exception 'An image is still referenced by another listing; deletion aborted';
-  end if;
-
   update public.storage_cleanup_jobs q
      set status = 'pending',
          updated_at = pg_catalog.now()
     from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
    where q.bucket = x.bucket
      and q.object_path = x.object_path
-     and q.status = 'staged';
+     and q.status = 'staged'
+     and not public.is_storage_cleanup_object_referenced(q.bucket, q.object_path);
 
   with requested as (
     select distinct x.bucket, x.object_path
@@ -270,13 +247,10 @@ begin
     join requested x using (bucket, object_path)
    where q.status in ('pending','processing','completed','dead_letter');
 
-  if active_count <> requested_count then
-    raise exception 'Could not activate every account image cleanup job';
-  end if;
-
   return pg_catalog.jsonb_build_object(
     'deleted_rows', deleted_count,
-    'cleanup_jobs', active_count
+    'cleanup_jobs', active_count,
+    'deferred_jobs', requested_count - active_count
   );
 end;
 $$;
