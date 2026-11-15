@@ -44,7 +44,7 @@ export function isAllowedCleanupTarget(bucket: string, path: string): boolean {
 }
 
 export function retryDelayMs(attempt: number): number {
-  const safeAttempt = Math.max(1, Math.min(10, Math.floor(attempt)));
+  const safeAttempt = Math.max(1, Math.min(20, Math.floor(attempt)));
   return Math.min(60 * 60 * 1000, 1000 * 2 ** (safeAttempt - 1));
 }
 
