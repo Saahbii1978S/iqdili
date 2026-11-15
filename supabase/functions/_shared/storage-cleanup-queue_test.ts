@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "jsr:@std/assert";
-import { buildStorageCleanupJobs, encodeStorageObjectPath, isValidStorageObjectPath } from "./storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, buildStorageObjectUrl, encodeStorageObjectPath, isValidStorageObjectPath } from "./storage-cleanup-queue.ts";
 
 Deno.test("builds unique jobs for both public and pending buckets", () => {
   assertEquals(buildStorageCleanupJobs(
@@ -29,4 +29,21 @@ Deno.test("rejects dot segments even when the filename is otherwise valid", () =
 
 Deno.test("encodes object path segments without encoding folder separators", () => {
   assertEquals(encodeStorageObjectPath("services/photo-1.webp"), "services/photo-1.webp");
+});
+
+Deno.test("builds exact object endpoints without changing path separators", () => {
+  assertEquals(
+    buildStorageObjectUrl("https://example.supabase.co/", "listing-images", "services/photo-1.webp", "delete"),
+    "https://example.supabase.co/storage/v1/object/delete/listing-images/services/photo-1.webp",
+  );
+  assertEquals(
+    buildStorageObjectUrl("https://example.supabase.co", "pending-images", "market/a.jpg", "info"),
+    "https://example.supabase.co/storage/v1/object/info/pending-images/market/a.jpg",
+  );
+});
+
+Deno.test("refuses invalid bucket, traversal, and non-HTTPS Storage endpoints", () => {
+  assertThrows(() => buildStorageObjectUrl("https://example.supabase.co", "other", "a.jpg", "delete"));
+  assertThrows(() => buildStorageObjectUrl("https://example.supabase.co", "listing-images", "../a.jpg", "delete"));
+  assertThrows(() => buildStorageObjectUrl("http://example.supabase.co", "listing-images", "a.jpg", "delete"));
 });
