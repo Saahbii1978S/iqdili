@@ -41,7 +41,7 @@ export async function enqueueStorageCleanup(
       apikey: serviceKey,
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
-      Prefer: "resolution=merge-duplicates,return=minimal",
+      Prefer: "resolution=ignore-duplicates,return=minimal",
     },
     body: JSON.stringify(jobs.map((job) => ({ ...job, status: "staged", attempts: 0, last_error: null, completed_at: null }))),
   });
@@ -86,7 +86,7 @@ export async function completeStorageCleanup(
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), last_error: null }),
+    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), lease_until: null, last_error: null }),
   });
   return response.ok;
 }
@@ -105,7 +105,77 @@ export async function recordStorageCleanupFailure(
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ last_error: reason.slice(0, 300), status: "pending", completed_at: null }),
+    body: JSON.stringify({ last_error: reason.slice(0, 300), status: "pending", lease_until: null, completed_at: null }),
+  });
+  return response.ok;
+}
+
+export type ClaimedStorageCleanupJob = StorageCleanupJob & { id: number; attempts: number };
+
+export async function claimStorageCleanupJobs(
+  url: string,
+  serviceKey: string,
+  limit = 5,
+): Promise<ClaimedStorageCleanupJob[] | null> {
+  const response = await fetch(url + "/rest/v1/rpc/claim_storage_cleanup_jobs", {
+    method: "POST",
+    headers: {
+      apikey: serviceKey,
+      Authorization: "Bearer " + serviceKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ p_limit: Math.min(Math.max(limit, 1), 5) }),
+  });
+  if (!response.ok) return null;
+  const rows = await response.json().catch(() => null);
+  if (!Array.isArray(rows)) return null;
+  return rows.filter((row) =>
+    Number.isSafeInteger(row.id) &&
+    Number.isInteger(row.attempts) &&
+    ALLOWED_BUCKETS.has(row.bucket) &&
+    typeof row.object_path === "string"
+  ) as ClaimedStorageCleanupJob[];
+}
+
+export async function finishClaimedStorageCleanup(
+  url: string,
+  serviceKey: string,
+  job: ClaimedStorageCleanupJob,
+): Promise<boolean> {
+  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing" });
+  const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
+    method: "PATCH",
+    headers: {
+      apikey: serviceKey,
+      Authorization: "Bearer " + serviceKey,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), lease_until: null, last_error: null }),
+  });
+  return response.ok;
+}
+
+export async function failClaimedStorageCleanup(
+  url: string,
+  serviceKey: string,
+  job: ClaimedStorageCleanupJob,
+  reason: string,
+): Promise<boolean> {
+  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing" });
+  const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
+    method: "PATCH",
+    headers: {
+      apikey: serviceKey,
+      Authorization: "Bearer " + serviceKey,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      status: job.attempts >= 8 ? "dead_letter" : "pending",
+      lease_until: null,
+      last_error: reason.slice(0, 300),
+    }),
   });
   return response.ok;
 }
