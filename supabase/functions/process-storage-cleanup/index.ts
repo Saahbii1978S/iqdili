@@ -60,6 +60,21 @@ Deno.serve(async (req: Request) => {
 
       if (head.status !== 404) {
         if (!head.ok) throw new Error("Storage HEAD returned " + head.status);
+
+        // Re-check immediately before DELETE. A listing may have started
+        // referencing this key while the Storage HEAD request was in flight.
+        const referencedAgain = await isStorageCleanupObjectReferenced(url, serviceKey, job);
+        if (referencedAgain === null) {
+          throw new Error("Could not re-verify image references immediately before deletion");
+        }
+        if (referencedAgain) {
+          if (!await deferClaimedStorageCleanup(url, serviceKey, job)) {
+            throw new Error("Image became referenced during cleanup; could not defer safely");
+          }
+          deferred++;
+          continue;
+        }
+
         const remove = await fetch(
           url + "/storage/v1/object/" + job.bucket + "/" + encodeStorageObjectPath(job.object_path),
           {
