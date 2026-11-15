@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { hasRecentAuthentication } from "../_shared/recent-auth.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
 
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {
@@ -169,6 +170,17 @@ Deno.serve(async (req: Request) => {
       pathsByTable[table.name] = [...new Set(paths)];
     }
 
+    const cleanupJobs = tables.flatMap((table) =>
+      buildStorageCleanupJobs(
+        [table.bucket, "pending-images"],
+        pathsByTable[table.name] || [],
+      )
+    );
+    if (!await enqueueStorageCleanup(url, serviceKey, cleanupJobs)) {
+      console.error("Could not enqueue account image cleanup", user.id);
+      return reply({ error: "تعذّر تجهيز تنظيف الصور بأمان. لم يقع حذف أي إعلان أو الحساب." }, 503);
+    }
+
     // Remove the user's four categories of posts. Retrying is safe if a later step fails.
     for (const table of tables) {
       const removeRows = await api(
@@ -183,23 +195,36 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Storage cleanup starts only after all database row deletions succeeded.
-    // A database failure above therefore cannot leave a live post without its image.
-    for (const table of tables) {
-      const paths = pathsByTable[table.name] || [];
-      for (let i = 0; i < paths.length; i += 100) {
-        const batch = paths.slice(i, i + 100);
-        for (const bucket of [table.bucket, "pending-images"]) {
-          const remove = await api(url, serviceKey, "/storage/v1/object/" + bucket, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prefixes: batch }),
-          });
-          if (!remove.ok) {
-            console.error("Account image cleanup failed after database deletion", bucket, remove.status);
-            return reply({ error: "تم حذف الإعلانات، لكن تعذّر تنظيف بعض الصور. الحساب مازال موجوداً؛ تواصل مع الإدارة لإتمام التنظيف." }, 502);
-          }
+    // Drain queued cleanup jobs before deleting the Auth user. Any failure leaves durable pending jobs.
+    for (const job of cleanupJobs) {
+      const encoded = job.object_path.split("/").map(encodeURIComponent).join("/");
+      const head = await fetch(url + "/storage/v1/object/info/" + job.bucket + "/" + encoded, {
+        method: "HEAD",
+        headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
+      });
+      if (head.status === 404) {
+        if (!await completeStorageCleanup(url, serviceKey, job)) {
+          return reply({ error: "بقي تحديث سجل تنظيف الصور معلقاً؛ الحساب مازال موجوداً." }, 502);
         }
+        continue;
+      }
+      if (!head.ok) {
+        await recordStorageCleanupFailure(url, serviceKey, job, "Storage HEAD returned " + head.status);
+        console.error("Account cleanup HEAD failed", job.bucket, head.status);
+        return reply({ error: "تعذّر تنظيف بعض الصور. مهمة التنظيف محفوظة والحساب مازال موجوداً." }, 502);
+      }
+      const remove = await api(url, serviceKey, "/storage/v1/object/" + job.bucket, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prefixes: [job.object_path] }),
+      });
+      if (!remove.ok) {
+        await recordStorageCleanupFailure(url, serviceKey, job, "Storage DELETE returned " + remove.status);
+        console.error("Account image cleanup failed", job.bucket, remove.status);
+        return reply({ error: "تعذّر تنظيف بعض الصور. مهمة التنظيف محفوظة والحساب مازال موجوداً." }, 502);
+      }
+      if (!await completeStorageCleanup(url, serviceKey, job)) {
+        return reply({ error: "تم تنظيف الصور لكن بقي تحديث سجل التنظيف؛ الحساب مازال موجوداً." }, 502);
       }
     }
 
