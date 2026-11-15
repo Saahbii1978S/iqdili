@@ -113,6 +113,7 @@ begin
   ) then
     raise exception 'Stale approval attempt changed the listing';
   end if;
+  delete from public.service_requests where title in ('approval snapshot','stale approval');
   perform pg_catalog.set_config('request.jwt.claim.sub', '', true);
 
   -- Successful account deletion removes rows and activates the exact two-bucket image jobs.
