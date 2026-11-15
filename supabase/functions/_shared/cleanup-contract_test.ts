@@ -23,7 +23,7 @@ Deno.test("cleanup target allowlist rejects foreign buckets and unsafe paths", (
   assert(isAllowedCleanupTarget("listing-images", "services/photo-1.jpg"), "valid service path");
   assert(isAllowedCleanupTarget("market-images", "market/item_2.webp"), "valid market path");
   assert(!isAllowedCleanupTarget("foreign-bucket", "services/photo.jpg"), "foreign bucket rejected");
-  assert(!isAllowedCleanupTarget("listing-images", "jobs/photo.jpg"), "wrong folder rejected");
+  assert(!isAllowedCleanupTarget("listing-images", "market/photo.jpg"), "wrong folder rejected");
   assert(!isAllowedCleanupTarget("listing-images", "../services/photo.jpg"), "traversal rejected");
   assert(!isAllowedCleanupTarget("listing-images", "services//photo.jpg"), "double slash rejected");
   assert(!isAllowedCleanupTarget("listing-images", "services/photo.jpg?token=x"), "query string rejected");
