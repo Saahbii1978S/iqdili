@@ -78,7 +78,7 @@ Deno.serve(async(req:Request)=>{
  try{
   const auth=await admin(req);if(!auth.ok)return reply({error:"الدخول للإدارة غير مصرح."},401);
   const body=await req.json();const table=body?.table,id=body?.id;
-  if(typeof table!=="string"||!Object.hasOwn(tables,table)||!(typeof id==="string"||typeof id==="number")||!/^\\d{1,18}$/.test(String(id)))return reply({error:"الطلب غير صالح."},400);
+  if(typeof table!=="string"||!Object.hasOwn(tables,table)||!(typeof id==="string"||typeof id==="number")||!/^\d{1,18}$/.test(String(id)))return reply({error:"الطلب غير صالح."},400);
   const rowResponse=await fetch(auth.url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=id,title,description,status,image_urls",{headers:{apikey:auth.key,Authorization:"Bearer "+auth.key}});
   if(!rowResponse.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowResponse.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
