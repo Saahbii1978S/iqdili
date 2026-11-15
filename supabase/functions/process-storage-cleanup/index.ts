@@ -3,6 +3,7 @@ import {
   claimStorageCleanupJobs,
   finishClaimedStorageCleanup,
   failClaimedStorageCleanup,
+  encodeStorageObjectPath,
 } from "../_shared/storage-cleanup-queue.ts";
 
 const reply = (body: unknown, status = 200) =>
@@ -10,10 +11,6 @@ const reply = (body: unknown, status = 200) =>
     status,
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
   });
-
-function encodeObjectPath(path: string): string {
-  return path.split("/").map(encodeURIComponent).join("/");
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return reply({ error: "Method not allowed" }, 405);
@@ -41,7 +38,7 @@ Deno.serve(async (req: Request) => {
 
   for (const job of jobs) {
     try {
-      const objectUrl = url + "/storage/v1/object/info/" + job.bucket + "/" + encodeObjectPath(job.object_path);
+      const objectUrl = url + "/storage/v1/object/info/" + job.bucket + "/" + encodeStorageObjectPath(job.object_path);
       const head = await fetch(objectUrl, {
         method: "HEAD",
         headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
