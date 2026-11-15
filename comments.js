@@ -66,6 +66,7 @@ async function refreshUser(){
  if(!client)return;
  const {data,error}=await client.auth.getUser();
  currentUser=error?null:data?.user||null;
+ if(currentUser?.is_anonymous)currentUser=null;
 }
 async function loadComments(widget){
  const key=keyFor(widget),panel=widget.querySelector("[data-comments-panel]");
