@@ -84,9 +84,7 @@ grant execute on function public.claim_storage_cleanup_jobs(integer) to service_
 create or replace function public.approve_post_if_unchanged(
   p_table text,
   p_id bigint,
-  p_expected_title text,
-  p_expected_description text,
-  p_expected_image_urls text[],
+  p_expected_row jsonb,
   p_new_image_urls text[],
   p_expires_at timestamptz
 )
@@ -100,6 +98,9 @@ declare
 begin
   if p_table not in ('service_requests','job_posts','real_estate_posts','market_posts')
      or p_id is null
+     or p_expected_row is null
+     or pg_catalog.jsonb_typeof(p_expected_row) <> 'object'
+     or p_expected_row->>'status' <> 'pending'
      or p_expires_at is null
      or p_new_image_urls is null
      or pg_catalog.cardinality(p_new_image_urls) > 20
@@ -108,28 +109,26 @@ begin
     raise exception 'Approval is not authorized or request is invalid';
   end if;
 
+  -- Compare the complete row, including price, phone, city, category,
+  -- property/job fields and contact visibility settings.
   execute pg_catalog.format(
-    'update public.%I
+    'update public.%I as listing
         set status = ''approved'', image_urls = $1, expires_at = $2
-      where id = $3
-        and status = ''pending''
-        and title is not distinct from $4
-        and description is not distinct from $5
-        and image_urls is not distinct from $6
+      where listing.id = $3
+        and pg_catalog.to_jsonb(listing) = $4
       returning true',
     p_table
   )
   into changed
-  using p_new_image_urls, p_expires_at, p_id,
-        p_expected_title, p_expected_description, p_expected_image_urls;
+  using p_new_image_urls, p_expires_at, p_id, p_expected_row;
 
   return coalesce(changed, false);
 end;
 $approval$;
 
-revoke all on function public.approve_post_if_unchanged(text, bigint, text, text, text[], text[], timestamptz)
+revoke all on function public.approve_post_if_unchanged(text, bigint, jsonb, text[], timestamptz)
   from public, anon;
-grant execute on function public.approve_post_if_unchanged(text, bigint, text, text, text[], text[], timestamptz)
+grant execute on function public.approve_post_if_unchanged(text, bigint, jsonb, text[], timestamptz)
   to authenticated;
 
 -- Activate only the exact paths whose listing-row deletion succeeded.
