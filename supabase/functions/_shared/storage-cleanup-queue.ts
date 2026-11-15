@@ -2,6 +2,22 @@ export type StorageCleanupJob = { bucket: "listing-images" | "market-images" | "
 
 const ALLOWED_BUCKETS = new Set(["listing-images", "market-images", "pending-images"]);
 
+export function isValidStorageObjectPath(path: unknown): path is string {
+  if (
+    typeof path !== "string" ||
+    path.length < 1 ||
+    path.length > 220 ||
+    path.startsWith("/") ||
+    path.includes("//") ||
+    !/^[a-zA-Z0-9_./-]+\\.(jpg|jpeg|png|webp)$/i.test(path)
+  ) return false;
+  return path.split("/").every((segment) => segment !== "" && segment !== "." && segment !== "..");
+}
+
+export function encodeStorageObjectPath(path: string): string {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
 export function buildStorageCleanupJobs(
   buckets: readonly string[],
   paths: readonly string[],
@@ -11,15 +27,7 @@ export function buildStorageCleanupJobs(
   for (const bucket of buckets) {
     if (!ALLOWED_BUCKETS.has(bucket)) throw new Error("Unsupported storage bucket");
     for (const path of paths) {
-      if (
-        typeof path !== "string" ||
-        path.length < 1 ||
-        path.length > 220 ||
-        path.startsWith("/") ||
-        path.includes("..") ||
-        path.includes("//") ||
-        !/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)
-      ) throw new Error("Invalid storage object path");
+      if (!isValidStorageObjectPath(path)) throw new Error("Invalid storage object path");
       const key = bucket + "\0" + path;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -133,7 +141,7 @@ export async function claimStorageCleanupJobs(
     Number.isSafeInteger(row.id) &&
     Number.isInteger(row.attempts) &&
     ALLOWED_BUCKETS.has(row.bucket) &&
-    typeof row.object_path === "string"
+    isValidStorageObjectPath(row.object_path)
   ) as ClaimedStorageCleanupJob[];
 }
 
