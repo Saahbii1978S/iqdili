@@ -28,10 +28,10 @@ export interface StoragePort {
   remove(bucket: string, path: string): Promise<"removed" | "missing">;
 }
 
-const ALLOWED: Record<string, string> = {
-  "listing-images": "services/",
-  "market-images": "market/",
-  "pending-images": "",
+const ALLOWED: Record<string, string[]> = {
+  "listing-images": ["services/", "jobs/", "realty/"],
+  "market-images": ["market/"],
+  "pending-images": ["services/", "jobs/", "realty/", "market/"],
 };
 
 export function isAllowedCleanupTarget(bucket: string, path: string): boolean {
@@ -40,8 +40,7 @@ export function isAllowedCleanupTarget(bucket: string, path: string): boolean {
       path.includes("..") || path.includes("//") || path.includes("\\") ||
       path.includes("?") || path.includes("#")) return false;
   if (!/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)) return false;
-  const folder = ALLOWED[bucket];
-  return folder === "" || path.startsWith(folder);
+  return ALLOWED[bucket].some((folder) => path.startsWith(folder));
 }
 
 export function retryDelayMs(attempt: number): number {
