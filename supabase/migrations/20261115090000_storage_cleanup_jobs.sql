@@ -290,7 +290,10 @@ begin
    where q.status in ('pending','processing','completed','dead_letter');
 
   if activated_count <> requested_count then
-    return 0;
+    -- Raising is essential: returning 0 would still commit any staged->pending
+    -- updates above, leaving a partially activated batch.
+    raise exception 'Cleanup activation batch is incomplete: expected %, found %',
+      requested_count, activated_count;
   end if;
   return activated_count;
 end;
