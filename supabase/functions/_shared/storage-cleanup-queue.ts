@@ -188,7 +188,7 @@ export async function failClaimedStorageCleanup(
   job: ClaimedStorageCleanupJob,
   reason: string,
 ): Promise<boolean> {
-  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing" });
+  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing", lease_token: "eq." + job.lease_token });
   const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
     method: "PATCH",
     headers: {
@@ -233,7 +233,7 @@ export async function deferClaimedStorageCleanup(
   serviceKey: string,
   job: ClaimedStorageCleanupJob,
 ): Promise<boolean> {
-  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing" });
+  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing", lease_token: "eq." + job.lease_token });
   const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
     method: "PATCH",
     headers: {
