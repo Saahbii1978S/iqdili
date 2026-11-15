@@ -1,9 +1,9 @@
 -- Public comments and one-level replies for approved marketplace posts.
 -- Apply only after reviewing this migration in a non-production Supabase branch.
 
-create schema if not exists private;
-revoke all on schema private from public;
-grant usage on schema private to anon, authenticated;
+create schema if not exists ahla_internal;
+revoke all on schema ahla_internal from public;
+grant usage on schema ahla_internal to anon, authenticated;
 
 create table if not exists public.post_comments (
   id bigint generated always as identity primary key,
@@ -31,7 +31,7 @@ create index if not exists post_comments_user_idx
 
 alter table public.post_comments enable row level security;
 
-create or replace function private.comment_target_is_public(p_post_table text, p_post_id bigint)
+create or replace function ahla_internal.comment_target_is_public(p_post_table text, p_post_id bigint)
 returns boolean
 language plpgsql
 stable
@@ -52,10 +52,10 @@ begin
 end;
 $$;
 
-revoke all on function private.comment_target_is_public(text, bigint) from public;
-grant execute on function private.comment_target_is_public(text, bigint) to anon, authenticated;
+revoke all on function ahla_internal.comment_target_is_public(text, bigint) from public;
+grant execute on function ahla_internal.comment_target_is_public(text, bigint) to anon, authenticated;
 
-create or replace function private.validate_post_comment_parent()
+create or replace function ahla_internal.validate_post_comment_parent()
 returns trigger
 language plpgsql
 set search_path = ''
@@ -89,7 +89,7 @@ drop trigger if exists validate_post_comment_parent on public.post_comments;
 create trigger validate_post_comment_parent
 before insert or update of post_table, post_id, parent_id
 on public.post_comments
-for each row execute function private.validate_post_comment_parent();
+for each row execute function ahla_internal.validate_post_comment_parent();
 
 drop policy if exists "Public can read published post comments" on public.post_comments;
 create policy "Public can read published post comments"
@@ -97,7 +97,7 @@ on public.post_comments for select
 to anon, authenticated
 using (
   status = 'published'
-  and private.comment_target_is_public(post_table, post_id)
+  and ahla_internal.comment_target_is_public(post_table, post_id)
 );
 
 drop policy if exists "Signed-in members can comment on approved posts" on public.post_comments;
@@ -108,7 +108,7 @@ with check (
   user_id = (select auth.uid())
   and status = 'published'
   and char_length(btrim(body)) between 1 and 1000
-  and private.comment_target_is_public(post_table, post_id)
+  and ahla_internal.comment_target_is_public(post_table, post_id)
 );
 
 drop policy if exists "Members can edit their own comments" on public.post_comments;
@@ -119,7 +119,7 @@ using (user_id = (select auth.uid()) and status = 'published')
 with check (
   user_id = (select auth.uid())
   and status = 'published'
-  and private.comment_target_is_public(post_table, post_id)
+  and ahla_internal.comment_target_is_public(post_table, post_id)
   and char_length(btrim(body)) between 1 and 1000
 );
 
