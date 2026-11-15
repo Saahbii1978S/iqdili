@@ -38,9 +38,9 @@ $auth_stub$;
 create or replace function public.is_admin()
 returns boolean
 language sql stable
-as $
+as $admin_stub$
   select auth.uid() is not null;
-$;
+$admin_stub$;
 
 \ir ../migrations/20261115090000_storage_cleanup_jobs.sql
 
