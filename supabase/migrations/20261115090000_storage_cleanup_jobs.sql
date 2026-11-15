@@ -583,4 +583,4 @@ end;
 $$;
 
 revoke all on function public.delete_post_and_activate_storage_cleanup(text, bigint, uuid, boolean, jsonb, jsonb) from public, anon, authenticated;
-grant execute on function public.delete_post_and_activate_storage_cleanup(text, bigint, uuid, boolean, text, text, text, text[], jsonb) to service_role;
+grant execute on function public.delete_post_and_activate_storage_cleanup(text, bigint, uuid, boolean, jsonb, jsonb) to service_role;
