@@ -31,7 +31,7 @@ Deno.serve(async(req:Request)=>{
   const table=body?.table,id=body?.id;
   if(typeof table!=="string"||!Object.hasOwn(cfg,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
   if((protectedIds[table]||[]).includes(String(id)))return reply({error:"هذا الإعلان التجريبي محمي ولا يمكن حذفه من حساب المستخدم."},403);
-  const query=new URLSearchParams({select:"id,user_id,title,description,status,image_urls","id":"eq."+String(id),"user_id":"eq."+user.id,limit:"2"});
+  const query=new URLSearchParams({select:"*","id":"eq."+String(id),"user_id":"eq."+user.id,limit:"2"});
   const rowRes=await fetch(url+"/rest/v1/"+table+"?"+query.toString(),{headers:{apikey:key,Authorization:"Bearer "+key}});
   if(!rowRes.ok)return reply({error:"تعذّر التثبت من ملكية الإعلان."},502);
   const rows=await rowRes.json();
@@ -52,8 +52,7 @@ Deno.serve(async(req:Request)=>{
    headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
    body:JSON.stringify({
     p_table:table,p_id:String(id),p_expected_user_id:user.id,p_require_owner:true,
-    p_title:row.title??null,p_description:row.description??null,p_status:row.status??null,
-    p_image_urls:Array.isArray(row.image_urls)?paths:null,p_jobs:cleanupJobs
+    p_expected_row:row,p_jobs:cleanupJobs
    })
   });
   if(!deletion.ok){
