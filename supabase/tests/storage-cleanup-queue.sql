@@ -82,7 +82,7 @@ begin
     raise exception 'Untrusted roles can read the cleanup queue';
   end if;
   if has_function_privilege('anon', 'public.claim_storage_cleanup_jobs(integer)', 'EXECUTE')
-     or has_function_privilege('authenticated', 'public.delete_account_posts_and_activate_cleanup(uuid,jsonb)', 'EXECUTE') then
+     or has_function_privilege('authenticated', 'public.delete_account_posts_and_activate_cleanup(uuid,jsonb,jsonb)', 'EXECUTE') then
     raise exception 'Untrusted roles can execute privileged cleanup RPCs';
   end if;
   if not has_function_privilege('service_role', 'public.claim_storage_cleanup_jobs(integer)', 'EXECUTE') then
