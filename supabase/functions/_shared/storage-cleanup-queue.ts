@@ -157,11 +157,13 @@ export async function finishClaimedStorageCleanup(
       apikey: serviceKey,
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
-      Prefer: "return=minimal",
+      Prefer: "return=representation",
     },
     body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), lease_until: null, last_error: null }),
   });
-  return response.ok;
+  if (!response.ok) return false;
+  const rows = await response.json().catch(() => null);
+  return Array.isArray(rows) && rows.length === 1;
 }
 
 export async function failClaimedStorageCleanup(
@@ -177,7 +179,7 @@ export async function failClaimedStorageCleanup(
       apikey: serviceKey,
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
-      Prefer: "return=minimal",
+      Prefer: "return=representation",
     },
     body: JSON.stringify({
       status: job.attempts >= 8 ? "dead_letter" : "pending",
@@ -185,5 +187,7 @@ export async function failClaimedStorageCleanup(
       last_error: reason.slice(0, 300),
     }),
   });
-  return response.ok;
+  if (!response.ok) return false;
+  const rows = await response.json().catch(() => null);
+  return Array.isArray(rows) && rows.length === 1;
 }
