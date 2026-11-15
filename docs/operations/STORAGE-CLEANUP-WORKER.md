@@ -4,13 +4,14 @@ This worker is part of the review branch only. It is not deployed and the candid
 
 ## What it does
 
-- Claims at most five pending jobs per invocation using a database lease.
+- Claims at most five pending jobs per invocation using a five-minute database lease and a unique per-claim token; stale workers cannot update a job reclaimed by a newer worker.
 - Processes only the three allow-listed image buckets and validated image object keys.
 - Checks whether the exact key is still referenced by a live listing before Storage access, then checks again immediately before deletion.
 - Uses an exact object-info request; only HTTP 404 is treated as already absent. Other non-success responses are retried.
 - Deletes one exact object key, never a folder or prefix.
 - Completes a job only after Storage confirms deletion or confirms the object is absent.
 - Records errors for retry; after eight attempts the job moves to `dead_letter`.
+- Every completion, retry, or defer update must match both the job ID and its current lease token.
 - Keeps jobs staged while another live listing references the same object.
 
 ## Required rollout order
