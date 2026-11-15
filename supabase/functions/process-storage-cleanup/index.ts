@@ -3,7 +3,7 @@ import {
   claimStorageCleanupJobs,
   finishClaimedStorageCleanup,
   failClaimedStorageCleanup,
-  encodeStorageObjectPath,
+  buildStorageObjectUrl,
   isStorageCleanupObjectReferenced,
   deferClaimedStorageCleanup,
 } from "../_shared/storage-cleanup-queue.ts";
@@ -51,7 +51,7 @@ Deno.serve(async (req: Request) => {
         continue;
       }
 
-      const objectUrl = url + "/storage/v1/object/info/" + job.bucket + "/" + encodeStorageObjectPath(job.object_path);
+      const objectUrl = buildStorageObjectUrl(url, job.bucket, job.object_path, "info");
       const head = await fetch(objectUrl, {
         method: "HEAD",
         headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
@@ -76,7 +76,7 @@ Deno.serve(async (req: Request) => {
         }
 
         const remove = await fetch(
-          url + "/storage/v1/object/" + job.bucket + "/" + encodeStorageObjectPath(job.object_path),
+          buildStorageObjectUrl(url, job.bucket, job.object_path, "delete"),
           {
             method: "DELETE",
             headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
