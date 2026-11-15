@@ -7,6 +7,7 @@ import {
   isStorageCleanupObjectReferenced,
   deferClaimedStorageCleanup,
 } from "../_shared/storage-cleanup-queue.ts";
+import { processStorageCleanupJobs } from "../_shared/storage-cleanup-worker.ts";
 
 const reply = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -34,82 +35,29 @@ Deno.serve(async (req: Request) => {
     return reply({ error: "Could not claim cleanup jobs" }, 502);
   }
 
-  let completed = 0;
-  let retried = 0;
-  let deadLettered = 0;
-  let deferred = 0;
-
-  for (const job of jobs) {
-    try {
-      const referenced = await isStorageCleanupObjectReferenced(url, serviceKey, job);
-      if (referenced === null) throw new Error("Could not verify whether the image is still referenced");
-      if (referenced) {
-        if (!await deferClaimedStorageCleanup(url, serviceKey, job)) {
-          throw new Error("Image is referenced, but its cleanup job could not be safely deferred");
-        }
-        deferred++;
-        continue;
-      }
-
-      const objectUrl = buildStorageObjectUrl(url, job.bucket, job.object_path, "info");
-      const head = await fetch(objectUrl, {
-        method: "HEAD",
-        headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
-        signal: AbortSignal.timeout(7000),
-      });
-
-      if (head.status !== 404) {
-        if (!head.ok) throw new Error("Storage HEAD returned " + head.status);
-
-        // Re-check immediately before DELETE. A listing may have started
-        // referencing this key while the Storage HEAD request was in flight.
-        const referencedAgain = await isStorageCleanupObjectReferenced(url, serviceKey, job);
-        if (referencedAgain === null) {
-          throw new Error("Could not re-verify image references immediately before deletion");
-        }
-        if (referencedAgain) {
-          if (!await deferClaimedStorageCleanup(url, serviceKey, job)) {
-            throw new Error("Image became referenced during cleanup; could not defer safely");
-          }
-          deferred++;
-          continue;
-        }
-
-        const remove = await fetch(
-          buildStorageObjectUrl(url, job.bucket, job.object_path, "delete"),
-          {
-            method: "DELETE",
-            headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
-            signal: AbortSignal.timeout(7000),
-          },
-        );
-        if (!remove.ok) throw new Error("Storage DELETE returned " + remove.status);
-      }
-
-      if (!await finishClaimedStorageCleanup(url, serviceKey, job)) {
-        throw new Error("Could not mark cleanup job completed");
-      }
-      completed++;
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error);
-      const saved = await failClaimedStorageCleanup(url, serviceKey, job, reason);
-      if (!saved) {
-        console.error("Could not persist cleanup failure", job.id, reason);
-      } else if (job.attempts >= 8) {
-        deadLettered++;
-      } else {
-        retried++;
-      }
-      console.error("Storage cleanup job failed", job.id, reason);
-    }
-  }
+  const result = await processStorageCleanupJobs(jobs, {
+    isReferenced: (job) => isStorageCleanupObjectReferenced(url, serviceKey, job),
+    inspect: (job) => fetch(buildStorageObjectUrl(url, job.bucket, job.object_path, "info"), {
+      method: "HEAD",
+      headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
+      signal: AbortSignal.timeout(7000),
+    }),
+    remove: (job) => fetch(buildStorageObjectUrl(url, job.bucket, job.object_path, "delete"), {
+      method: "DELETE",
+      headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
+      signal: AbortSignal.timeout(7000),
+    }),
+    finish: (job) => finishClaimedStorageCleanup(url, serviceKey, job),
+    fail: (job, reason) => failClaimedStorageCleanup(url, serviceKey, job, reason),
+    defer: (job) => deferClaimedStorageCleanup(url, serviceKey, job),
+  });
 
   return reply({
     ok: true,
     claimed: jobs.length,
-    completed,
-    retried,
-    dead_lettered: deadLettered,
-    deferred,
+    completed: result.completed,
+    retried: result.retried,
+    dead_lettered: result.deadLettered,
+    deferred: result.deferred,
   });
 });
