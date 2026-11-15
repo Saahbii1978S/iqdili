@@ -50,7 +50,7 @@ Deno.serve(async(req:Request)=>{
   if(!check.ok||(await check.json().catch(()=>false))!==true)return reply({error:"صلاحية الإدارة غير متوفرة."},403);
   const body=await req.json(),table=body?.table,id=body?.id,deleteTest=body?.delete_test===true;
   if(typeof table!=="string"||!Object.hasOwn(cfg,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
-  const rowRes=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=id,title,description,image_urls",{headers:{apikey:key,Authorization:"Bearer "+key}});
+  const rowRes=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=id,title,description,status,image_urls",{headers:{apikey:key,Authorization:"Bearer "+key}});
   if(!rowRes.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowRes.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
   const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
@@ -60,14 +60,23 @@ Deno.serve(async(req:Request)=>{
   if(deleteTest&&!isKnownDemo)return reply({error:"رفض الحذف: الإعلان غير مصنّف كتجربة."},403);
   const paths=Array.isArray(rows[0].image_urls)?rows[0].image_urls:[];
   for(const path of paths){if(typeof path!=="string"||!path.startsWith(cfg[table].folder+"/")||!/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)||path.includes("..")||path.includes("//"))return reply({error:"مسار صورة غير صالح؛ لم يقع حذف الإعلان."},409);}
-  const del=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id)),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
+  // Compare the complete reviewed snapshot at delete time. If the post changed
+  // after the read (including status or image paths), do not delete the newer version.
+  const deleteQuery=new URLSearchParams({
+   id:"eq."+String(id),
+   title:rows[0].title===null||rows[0].title===undefined?"is.null":"eq."+String(rows[0].title),
+   description:rows[0].description===null||rows[0].description===undefined?"is.null":"eq."+String(rows[0].description),
+   status:rows[0].status===null||rows[0].status===undefined?"is.null":"eq."+String(rows[0].status),
+   image_urls:Array.isArray(rows[0].image_urls)?"eq.{"+paths.join(",")+"}":"is.null"
+  });
+  const del=await fetch(url+"/rest/v1/"+table+"?"+deleteQuery.toString(),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
   if(!del.ok){
    const detail=await del.text().catch(()=>"");
    console.error("admin-delete-post database DELETE failed",JSON.stringify({table,id,status:del.status,detail:detail.slice(0,1200)}));
-   return reply({error:"تعذّر حذف سجل الإعلان من قاعدة البيانات. الصور قد تكون حُذفت؛ راجع الإدارة أو أعد المحاولة بعد الإصلاح."},502);
+   return reply({error:"تعذّر حذف سجل الإعلان من قاعدة البيانات. لم يقع تنظيف الصور."},502);
   }
   const deleted=await del.json().catch(()=>null);
-  if(!Array.isArray(deleted)||!deleted.length)return reply({error:"الإعلان لم يعد موجوداً في قاعدة البيانات."},409);
+  if(!Array.isArray(deleted)||deleted.length!==1)return reply({error:"تغيّرت بيانات الإعلان أثناء العملية؛ لم يقع حذف النسخة المحدّثة. حدّث الصفحة وحاول مجدداً."},409);
   // Remove images only after the database row is gone, so a storage failure cannot leave a live post without its images.
   for(const bucket of [cfg[table].bucket,"pending-images"]){
    if(!paths.length)continue;
