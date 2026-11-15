@@ -113,8 +113,11 @@ begin
       from public.storage_cleanup_jobs j
      where (
        (j.status = 'pending'
-         and j.updated_at < pg_catalog.now() - pg_catalog.make_interval(
-           mins => least(60, pg_catalog.power(2, least(j.attempts, 6))::integer)
+         and (
+           j.attempts = 0
+           or j.updated_at < pg_catalog.now() - pg_catalog.make_interval(
+             mins => least(60, pg_catalog.power(2, least(j.attempts, 6))::integer)
+           )
          ))
        or (j.status = 'processing' and j.lease_until < pg_catalog.now())
        or (j.status = 'staged' and j.updated_at < pg_catalog.now() - interval '10 minutes')
