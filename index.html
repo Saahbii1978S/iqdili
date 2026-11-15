@@ -3009,6 +3009,7 @@ el("admin-login-button").addEventListener("click",async()=>{
     });
     const result=await response.json().catch(()=>({}));
     if(!response.ok||!result.ok){alert(result.error||"ما نجّمش نبدّل حالة الإعلان. حدّث القائمة وعاود.");return;}
+    if(result.cleanupPending)alert(result.message||"تبدّلت الحالة، لكن تنظيف الصورة ما كملش. تواصل مع الإدارة.");
    }
    await renderAdmin();
   }catch(error){
