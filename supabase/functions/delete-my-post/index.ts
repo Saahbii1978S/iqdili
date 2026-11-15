@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
-import { buildStorageCleanupJobs, enqueueStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, activateStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -52,6 +52,7 @@ Deno.serve(async(req:Request)=>{
   if(!del.ok)return reply({error:"تعذّر حذف الإعلان من قاعدة البيانات. تواصل مع الإدارة."},502);
   const deleted=await del.json().catch(()=>null);
   if(!Array.isArray(deleted)||deleted.length!==1)return reply({error:"لم يتم حذف الإعلان؛ حدّث القائمة وحاول مجدداً."},409);
+  if(!await activateStorageCleanup(url,key,cleanupJobs))return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تفعيل مهمة تنظيف الصور. يلزم تدخل الإدارة."});
   for(const bucket of [cfg[table].bucket,"pending-images"]){
    const bucketJobs=cleanupJobs.filter(job=>job.bucket===bucket);
    for(const job of bucketJobs){
