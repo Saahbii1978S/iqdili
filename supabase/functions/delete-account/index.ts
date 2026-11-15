@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { hasRecentAuthentication } from "../_shared/recent-auth.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
-import { buildStorageCleanupJobs, enqueueStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, activateStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
 
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {
@@ -195,7 +195,11 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Drain queued cleanup jobs before deleting the Auth user. Any failure leaves durable pending jobs.
+    // Drain queued cleanup jobs before deleting the Auth user. Any failure leaves durable pending jobs.    if (!await activateStorageCleanup(url, serviceKey, cleanupJobs)) {
+      return reply({ error: "تم حذف الإعلانات، لكن تعذّر تفعيل مهام تنظيف الصور. الحساب مازال موجوداً." }, 502);
+    }
+
+
     for (const job of cleanupJobs) {
       const encoded = job.object_path.split("/").map(encodeURIComponent).join("/");
       const head = await fetch(url + "/storage/v1/object/info/" + job.bucket + "/" + encoded, {
