@@ -49,6 +49,7 @@ $admin_stub$;
 
 \ir ../migrations/20261115090000_storage_cleanup_jobs.sql
 \ir ../migrations/20261115120000_storage_cleanup_attachment_lock.sql
+\ir ../migrations/20261115150000_storage_cleanup_detachment_lock.sql
 
 
 create or replace function public.test_account_snapshot(p_user_id uuid)
