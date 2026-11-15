@@ -6,6 +6,7 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { classifyStorageHeadStatus } from "../_shared/storage-head.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, isValidStorageObjectPath } from "../_shared/storage-cleanup-queue.ts";
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -55,14 +56,21 @@ async function admin(req:Request){
  if(!check.ok || await check.json().catch(()=>false)!==true) return {ok:false as const,url,key};
  return {ok:true as const,url,key,userId:userData.id as string,authorization:auth};
 }
-function safePath(path:unknown,table:string){
- const folder=table==="service_requests"?"services":table==="job_posts"?"jobs":table==="real_estate_posts"?"realty":"market";
- return typeof path==="string" && path.startsWith(folder+"/") && /^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path) && !path.includes("..") && !path.includes("//");
+function folderFor(table:string){
+ return table==="service_requests"?"services":table==="job_posts"?"jobs":table==="real_estate_posts"?"realty":"market";
+}
+function safePath(path:unknown,table:string):path is string{
+ return typeof path==="string" && path.startsWith(folderFor(table)+"/") && isValidStorageObjectPath(path);
 }
 function objectInfoUrl(url:string,bucket:string,path:string){
  return url+"/storage/v1/object/info/"+bucket+"/"+path.split("/").map(encodeURIComponent).join("/");
 }
 function storageHeaders(key:string){return {apikey:key,Authorization:"Bearer "+key};}
+function makePublicPath(sourcePath:string,table:string){
+ const folder=folderFor(table);
+ const extension=sourcePath.slice(sourcePath.lastIndexOf(".")+1).toLowerCase();
+ return folder+"/approved-"+crypto.randomUUID()+"."+extension;
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST")return reply({error:"طريقة الطلب غير مدعومة."},405);
@@ -70,7 +78,7 @@ Deno.serve(async(req:Request)=>{
  try{
   const auth=await admin(req);if(!auth.ok)return reply({error:"الدخول للإدارة غير مصرح."},401);
   const body=await req.json();const table=body?.table,id=body?.id;
-  if(typeof table!=="string"||!Object.hasOwn(tables,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
+  if(typeof table!=="string"||!Object.hasOwn(tables,table)||!(typeof id==="string"||typeof id==="number")||!/^\\d{1,18}$/.test(String(id)))return reply({error:"الطلب غير صالح."},400);
   const rowResponse=await fetch(auth.url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=id,title,description,status,image_urls",{headers:{apikey:auth.key,Authorization:"Bearer "+auth.key}});
   if(!rowResponse.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowResponse.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
@@ -80,42 +88,76 @@ Deno.serve(async(req:Request)=>{
   if((protectedDemoIds[table]||[]).includes(String(id)) || /(تجر(?:ي)?ب|اختبار|test|demo|مثال)/i.test(text)){
    return reply({error:"هذا إعلان تجريبي محمي، لا يمكن نشره."},403);
   }
-  const path=Array.isArray(row.image_urls)?row.image_urls[0]:null;
-  if(path){
-   if(!safePath(path,table))return reply({error:"مسار الصورة غير صالح."},400);
-   const destinationBucket=tables[table];
-   const headers=storageHeaders(auth.key);
-   // Idempotency: a previous attempt may have completed the copy before its response was lost.
-   const destinationHead=await fetch(objectInfoUrl(auth.url,destinationBucket,path),{method:"HEAD",headers});
-   const destinationState=classifyStorageHeadStatus(destinationHead.status);
-   if(destinationState==="error"){
-    console.error("destination image preflight failed",destinationHead.status);
-    return reply({error:"تعذّر التثبت من الصورة في المخزن المنشور. ما تمش نشر الإعلان."},502);
+
+  const sourcePaths=Array.isArray(row.image_urls)?row.image_urls:[];
+  if(sourcePaths.length>20 || sourcePaths.some((path:unknown)=>!safePath(path,table))){
+   return reply({error:"قائمة الصور غير صالحة. ما تمش نشر الإعلان."},400);
+  }
+  const uniqueSources=[...new Set(sourcePaths as string[])];
+  const publicPaths=uniqueSources.map(path=>makePublicPath(path,table));
+  const cleanupJobs=[
+   ...buildStorageCleanupJobs([tables[table]],publicPaths),
+   ...buildStorageCleanupJobs(["pending-images"],uniqueSources)
+  ];
+  if(cleanupJobs.length && !await enqueueStorageCleanup(auth.url,auth.key,cleanupJobs)){
+   console.error("Could not stage approval image recovery jobs",table,String(id));
+   return reply({error:"تعذّر تجهيز حماية الصور. ما تمش نشر الإعلان."},502);
+  }
+
+  const headers=storageHeaders(auth.key);
+  for(let i=0;i<uniqueSources.length;i++){
+   const sourcePath=uniqueSources[i],destinationPath=publicPaths[i];
+   const sourceHead=await fetch(objectInfoUrl(auth.url,"pending-images",sourcePath),{method:"HEAD",headers,signal:AbortSignal.timeout(7000)});
+   const sourceState=classifyStorageHeadStatus(sourceHead.status);
+   if(sourceState==="error"){
+    console.error("approval source image preflight failed",sourceHead.status);
+    return reply({error:"تعذّر التثبت من صورة الإعلان. ما تمش نشره."},502);
    }
-   if(destinationState==="missing"){
-    const sourceHead=await fetch(objectInfoUrl(auth.url,"pending-images",path),{method:"HEAD",headers});
-    const sourceState=classifyStorageHeadStatus(sourceHead.status);
-    if(sourceState==="error"){
-     console.error("source image preflight failed",sourceHead.status);
-     return reply({error:"تعذّر التثبت من الصورة في المخزن الخاص. ما تمش نشر الإعلان."},502);
-    }
-    if(sourceState==="missing")return reply({error:"الصورة غير موجودة في المخزن الخاص؛ ما تمش نشر الإعلان."},409);
-    const copy=await fetch(auth.url+"/storage/v1/object/copy",{method:"POST",headers:{...headers,"Content-Type":"application/json"},body:JSON.stringify({bucketId:"pending-images",sourceKey:path,destinationBucket,destinationKey:path})});
-    if(!copy.ok){
-     const detail=await copy.text().catch(()=> "");
-     // Confirm whether Storage committed the copy despite returning an error.
-     const verify=await fetch(objectInfoUrl(auth.url,destinationBucket,path),{method:"HEAD",headers});
-     if(classifyStorageHeadStatus(verify.status)!=="exists"){
-      console.error("approved image copy failed",copy.status,"verification status",verify.status,detail.slice(0,300));
-      return reply({error:"ما نجّمش نثبت نقل الصورة للمخزن المنشور. الإعلان ما تنشرش."},502);
-     }
-    }
+   if(sourceState==="missing")return reply({error:"إحدى صور الإعلان غير موجودة. ما تمش نشره."},409);
+
+   const copy=await fetch(auth.url+"/storage/v1/object/copy",{
+    method:"POST",
+    headers:{...headers,"Content-Type":"application/json"},
+    body:JSON.stringify({bucketId:"pending-images",sourceKey:sourcePath,destinationBucket:tables[table],destinationKey:destinationPath}),
+    signal:AbortSignal.timeout(12000)
+   });
+   if(!copy.ok){
+    const detail=await copy.text().catch(()=> "");
+    console.error("approval image copy failed",copy.status,detail.slice(0,250));
+    return reply({error:"تعذّر نقل إحدى الصور بأمان. الإعلان ما تنشرش."},502);
    }
   }
-  const update=await fetch(auth.url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&status=eq.pending",{method:"PATCH",headers:{apikey:auth.key,Authorization:auth.authorization,"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({status:"approved",expires_at:addCalendarMonths(new Date(),3).toISOString()})});
-  if(!update.ok){console.error("approval status update failed",update.status,await update.text().catch(()=> ""));return reply({error:"تم تجهيز الصورة لكن لم تتأكد عملية النشر. حدّث القائمة قبل أي محاولة أخرى."},502);}
-  const updated=await update.json();if(!Array.isArray(updated)||!updated.length)return reply({error:"الإعلان تبدّلت حالته من قبل. حدّث القائمة."},409);
-  await sendAdminAlert("تم نشر إعلان في أحلى توانسة", `تمت الموافقة على إعلان ونشره.\nالقسم: ${table}\nرقم الإعلان: ${id}\nالعنوان: ${String(row.title || "").slice(0, 120)}`);
+
+  const expectedImages=Array.isArray(row.image_urls)?row.image_urls:[];
+  const replacementImages=sourcePaths.map((path:string)=>{
+   const index=uniqueSources.indexOf(path);
+   return index>=0?publicPaths[index]:path;
+  });
+  const expiresAt=addCalendarMonths(new Date(),3).toISOString();
+  const update=await fetch(auth.url+"/rest/v1/rpc/approve_post_if_unchanged",{
+   method:"POST",
+   headers:{apikey:auth.key,Authorization:auth.authorization,"Content-Type":"application/json"},
+   body:JSON.stringify({
+    p_table:table,
+    p_id:Number(id),
+    p_expected_title:row.title??null,
+    p_expected_description:row.description??null,
+    p_expected_image_urls:expectedImages,
+    p_new_image_urls:replacementImages,
+    p_expires_at:expiresAt
+   }),
+   signal:AbortSignal.timeout(10000)
+  });
+  if(!update.ok){
+   console.error("atomic approval RPC failed",update.status,await update.text().catch(()=> ""));
+   return reply({error:"ما تأكدش النشر لأن بيانات الإعلان تبدّلت أو صار خطأ. الصور الزايدة باش تتراجع آلياً."},409);
+  }
+  const changed=await update.json().catch(()=>null);
+  if(changed!==true){
+   return reply({error:"الإعلان تبدّل بعد المراجعة. ما تمش نشره، والصور الزايدة باش تتراجع آلياً."},409);
+  }
+
+  await sendAdminAlert("تم نشر إعلان في أحلى توانسة", `تمت الموافقة على إعلان ونشره.\\nالقسم: ${table}\\nرقم الإعلان: ${id}\\nالعنوان: ${String(row.title || "").slice(0, 120)}`);
   return reply({ok:true,message:"تمت الموافقة على الإعلان ونشره."});
  }catch(e){await sendAdminAlert("خطأ تقني في الموافقة على إعلان","تعذّر إكمال عملية الموافقة. راجع سجلات Supabase لمعرفة التفاصيل.");console.error("admin-approve-post error",String(e));return reply({error:"صار خطأ أثناء الموافقة."},500);}
 });
