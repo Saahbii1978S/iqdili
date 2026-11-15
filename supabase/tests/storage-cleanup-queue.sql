@@ -76,6 +76,8 @@ declare
   u1 uuid := '11111111-1111-4111-8111-111111111111';
   u2 uuid := '22222222-2222-4222-8222-222222222222';
   u3 uuid := '33333333-3333-4333-8333-333333333333';
+  u4 uuid := '44444444-4444-4444-8444-444444444444';
+  u5 uuid := '55555555-5555-4555-8555-555555555555';
 begin
   if has_table_privilege('anon', 'public.storage_cleanup_jobs', 'SELECT')
      or has_table_privilege('authenticated', 'public.storage_cleanup_jobs', 'SELECT') then
@@ -259,7 +261,7 @@ begin
 
   -- The worker must refuse an image still referenced by any live listing.
   insert into public.service_requests(user_id,title,status,image_urls)
-  values (u2,'shared reference','approved',array['services/retained.jpg']);
+  values (u4,'shared reference','approved',array['services/retained.jpg']);
   if not public.is_storage_cleanup_object_referenced('listing-images','services/retained.jpg') then
     raise exception 'Worker reference check missed a live listing image';
   end if;
@@ -267,7 +269,7 @@ begin
     raise exception 'Approved listing should not retain a private pending-bucket copy';
   end if;
   insert into public.service_requests(user_id,title,status,image_urls)
-  values (u3,'pending private image','pending',array['services/pending-only.jpg']);
+  values (u5,'pending private image','pending',array['services/pending-only.jpg']);
   if not public.is_storage_cleanup_object_referenced('pending-images','services/pending-only.jpg') then
     raise exception 'Worker reference check missed a pending listing private image';
   end if;
@@ -279,22 +281,22 @@ begin
     raise exception 'Worker reference check crossed bucket boundaries';
   end if;
   insert into public.market_posts(user_id,title,status,image_urls)
-  values (u2,'market image reference','approved',array['market/retained.webp']);
+  values (u4,'market image reference','approved',array['market/retained.webp']);
   if not public.is_storage_cleanup_object_referenced('market-images','market/retained.webp') then
     raise exception 'Worker reference check missed a market image';
   end if;
 
   -- A full-row snapshot rejects edits even when image paths stay identical.
   insert into public.service_requests(user_id,title,description,status,image_urls)
-  values (u3,'changed listing','before edit','approved',array['services/new.jpg']);
+  values (u5,'changed listing','before edit','approved',array['services/new.jpg']);
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values ('listing-images','services/new.jpg','staged'),('pending-images','services/new.jpg','staged');
-  expected_account_rows := public.test_account_snapshot(u3);
+  expected_account_rows := public.test_account_snapshot(u5);
   update public.service_requests set description='edited after review'
-   where user_id=u3 and title='changed listing';
+   where user_id=u5 and title='changed listing';
   begin
     perform public.delete_account_posts_and_activate_cleanup(
-      u3,
+      u5,
       '[{"bucket":"listing-images","object_path":"services/new.jpg"},{"bucket":"pending-images","object_path":"services/new.jpg"}]'::jsonb,
       expected_account_rows
     );
@@ -302,23 +304,23 @@ begin
   exception when others then
     if sqlerrm not like '%changed during deletion%' then raise; end if;
   end;
-  if not exists(select 1 from public.service_requests where user_id=u3 and title='changed listing' and description='edited after review') then
+  if not exists(select 1 from public.service_requests where user_id=u5 and title='changed listing' and description='edited after review') then
     raise exception 'Full-row snapshot rejection did not preserve the edited listing';
   end if;
 
   -- A newly-added row with no images must also invalidate the account snapshot.
-  expected_account_rows := public.test_account_snapshot(u3);
+  expected_account_rows := public.test_account_snapshot(u5);
   insert into public.service_requests(user_id,title,status,image_urls)
-  values (u3,'new row without images','pending',array[]::text[]);
+  values (u5,'new row without images','pending',array[]::text[]);
   begin
     perform public.delete_account_posts_and_activate_cleanup(
-      u3, '[]'::jsonb, expected_account_rows
+      u5, '[]'::jsonb, expected_account_rows
     );
     raise exception 'Expected newly-added empty-image listing to be rejected';
   exception when others then
     if sqlerrm not like '%changed during deletion%' then raise; end if;
   end;
-  if not exists(select 1 from public.service_requests where user_id=u3 and title='new row without images') then
+  if not exists(select 1 from public.service_requests where user_id=u5 and title='new row without images') then
     raise exception 'Snapshot rejection deleted a newly-added empty-image listing';
   end if;
 
@@ -327,15 +329,15 @@ begin
 
   -- Single-post deletion and queue activation happen in one transaction.
   insert into public.service_requests(user_id,title,description,status,image_urls)
-  values (u2,'atomic post','snapshot','pending',array['services/atomic.jpg']);
+  values (u4,'atomic post','snapshot','pending',array['services/atomic.jpg']);
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values
     ('listing-images','services/atomic.jpg','staged'),
     ('pending-images','services/atomic.jpg','staged');
-  select id into n from public.service_requests where user_id=u2 and title='atomic post';
+  select id into n from public.service_requests where user_id=u4 and title='atomic post';
   select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   result := public.delete_post_and_activate_storage_cleanup(
-    'service_requests',n,u2,true,expected_row,
+    'service_requests',n,u4,true,expected_row,
     '[{"bucket":"listing-images","object_path":"services/atomic.jpg"},{"bucket":"pending-images","object_path":"services/atomic.jpg"}]'::jsonb
   );
   if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 2 then
@@ -351,16 +353,16 @@ begin
   -- A shared image is deferred, not deleted, until its final listing is removed.
   insert into public.service_requests(user_id,title,description,status,image_urls)
   values
-    (u2,'shared one','snapshot','approved',array['services/shared-atomic.jpg']),
-    (u3,'shared two','snapshot','approved',array['services/shared-atomic.jpg']);
+    (u4,'shared one','snapshot','approved',array['services/shared-atomic.jpg']),
+    (u5,'shared two','snapshot','approved',array['services/shared-atomic.jpg']);
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values
     ('listing-images','services/shared-atomic.jpg','staged'),
     ('pending-images','services/shared-atomic.jpg','staged');
-  select id into n from public.service_requests where user_id=u2 and title='shared one';
+  select id into n from public.service_requests where user_id=u4 and title='shared one';
   select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   result := public.delete_post_and_activate_storage_cleanup(
-    'service_requests',n,u2,true,expected_row,
+    'service_requests',n,u4,true,expected_row,
     '[{"bucket":"listing-images","object_path":"services/shared-atomic.jpg"},{"bucket":"pending-images","object_path":"services/shared-atomic.jpg"}]'::jsonb
   );
   -- Approved rows reference the public object only; the private copy is independent.
@@ -372,10 +374,10 @@ begin
      or (select count(*) from public.storage_cleanup_jobs where object_path='services/shared-atomic.jpg' and status='pending') <> 1 then
     raise exception 'Public shared image should stay staged while its private copy is independently cleanable';
   end if;
-  select id into n from public.service_requests where user_id=u3 and title='shared two';
+  select id into n from public.service_requests where user_id=u5 and title='shared two';
   select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   result := public.delete_post_and_activate_storage_cleanup(
-    'service_requests',n,u3,true,expected_row,
+    'service_requests',n,u5,true,expected_row,
     '[{"bucket":"listing-images","object_path":"services/shared-atomic.jpg"},{"bucket":"pending-images","object_path":"services/shared-atomic.jpg"}]'::jsonb
   );
   if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 2 then
@@ -384,20 +386,20 @@ begin
 
   -- A stale listing snapshot cannot delete a changed row.
   insert into public.service_requests(user_id,title,description,status,image_urls)
-  values (u2,'stale atomic','old','pending',array['services/newer.jpg']);
+  values (u4,'stale atomic','old','pending',array['services/newer.jpg']);
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values ('listing-images','services/newer.jpg','staged'),('pending-images','services/newer.jpg','staged');
-  select id into n from public.service_requests where user_id=u2 and title='stale atomic';
+  select id into n from public.service_requests where user_id=u4 and title='stale atomic';
   select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   update public.service_requests set phone='29999999' where id=n;
   result := public.delete_post_and_activate_storage_cleanup(
-    'service_requests',n,u2,true,expected_row,
+    'service_requests',n,u4,true,expected_row,
     '[{"bucket":"listing-images","object_path":"services/newer.jpg"},{"bucket":"pending-images","object_path":"services/newer.jpg"}]'::jsonb
   );
   if result->>'deleted' <> 'false' then
     raise exception 'Stale listing snapshot unexpectedly deleted a row: %', result;
   end if;
-  if not exists(select 1 from public.service_requests where user_id=u2 and title='stale atomic' and image_urls=array['services/newer.jpg'] and phone='29999999') then
+  if not exists(select 1 from public.service_requests where user_id=u4 and title='stale atomic' and image_urls=array['services/newer.jpg'] and phone='29999999') then
     raise exception 'Stale listing snapshot did not preserve the changed row';
   end if;
 
