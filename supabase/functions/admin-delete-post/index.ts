@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -65,6 +66,12 @@ Deno.serve(async(req:Request)=>{
   for(const path of paths){if(typeof path!=="string"||!path.startsWith(cfg[table].folder+"/")||!/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)||path.includes("..")||path.includes("//"))return reply({error:"مسار صورة غير صالح؛ لم يقع حذف الإعلان."},409);}
   // Compare the complete reviewed snapshot at delete time. If the post changed
   // after the read (including status or image paths), do not delete the newer version.
+  // Persist cleanup intent before deleting the row. If queue persistence fails, keep the post intact.
+  const cleanupJobs=buildStorageCleanupJobs([cfg[table].bucket,"pending-images"],paths);
+  if(!await enqueueStorageCleanup(url,key,cleanupJobs)){
+   console.error("Could not enqueue admin post image cleanup",table,id);
+   return reply({error:"تعذّر تجهيز تنظيف الصور بأمان. لم يقع حذف الإعلان."},503);
+  }
   const deleteQuery=new URLSearchParams({
    id:"eq."+String(id),
    title:rows[0].title===null||rows[0].title===undefined?"is.null":"eq."+String(rows[0].title),
@@ -82,12 +89,21 @@ Deno.serve(async(req:Request)=>{
   if(!Array.isArray(deleted)||deleted.length!==1)return reply({error:"تغيّرت بيانات الإعلان أثناء العملية؛ لم يقع حذف النسخة المحدّثة. حدّث الصفحة وحاول مجدداً."},409);
   // Remove images only after the database row is gone, so a storage failure cannot leave a live post without its images.
   for(const bucket of [cfg[table].bucket,"pending-images"]){
-   if(!paths.length)continue;
-   const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:paths})});
+   const bucketJobs=cleanupJobs.filter(job=>job.bucket===bucket);
+   if(!bucketJobs.length)continue;
+   const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:bucketJobs.map(job=>job.object_path)})});
    if(!rm.ok){
     console.error("Admin post deleted but image cleanup is pending",bucket,rm.status);
-    await sendAdminAlert("تنبيه تنظيف صور إعلان محذوف","تم حذف سجل الإعلان من قاعدة البيانات، لكن بقيت صور تحتاج تنظيفاً.\nالقسم: "+table+"\nرقم الإعلان: "+id+"\nالمخزن: "+bucket);
-    return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن بقيت صور تحتاج تنظيفاً. تم إعلام الإدارة."});
+    for(const job of bucketJobs)await recordStorageCleanupFailure(url,key,job,"Storage DELETE returned "+rm.status);
+    await sendAdminAlert("تنبيه تنظيف صور إعلان محذوف","تم حذف سجل الإعلان من قاعدة البيانات، لكن بقيت صور تحتاج تنظيفاً.\\nالقسم: "+table+"\\nرقم الإعلان: "+id+"\\nالمخزن: "+bucket);
+    return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، وبقيت مهمة تنظيف الصور محفوظة لإعادة المحاولة."});
+   }
+   for(const job of bucketJobs){
+    if(!await completeStorageCleanup(url,key,job)){
+     console.error("Storage cleanup succeeded but queue completion update failed",bucket,job.object_path);
+     await sendAdminAlert("تنبيه تحديث سجل تنظيف الصور","تم تنظيف صورة إعلان، لكن تعذّر تحديث سجل المهمة.\\nالقسم: "+table+"\\nرقم الإعلان: "+id+"\\nالمخزن: "+bucket);
+     return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان وتنظيف الصور، لكن بقي تحديث سجل التنظيف معلقاً."});
+    }
    }
   }
   await sendAdminAlert("تم حذف إعلان من إدارة أحلى توانسة", `تم حذف إعلان من لوحة الإدارة.\nالقسم: ${table}\nرقم الإعلان: ${id}`);
