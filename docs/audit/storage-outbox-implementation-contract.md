@@ -196,3 +196,12 @@ The deployed `expire-posts` v5 source still contains a fixed verifier hash, whil
 - Source and deployment snapshots were reviewed read-only.
 - This audit section is documentation only.
 - No production data, Storage objects, migrations, secrets, cron schedules, function deployments, or site publishing were changed.
+
+
+## Approval image-copy recovery (candidate revision)
+- Approval stages cleanup records for every unique destination image path and every private source path before any Storage copy.
+- Each public destination path is unique to the approval attempt, preventing an unrelated/pre-existing public object from being mistaken for this attempt's copy.
+- All images are copied, not only the first image.
+- The final database transition uses `approve_post_if_unchanged`, an administrator-authorized atomic compare-and-set over status, title, description, and the complete original image path array. It updates status, expiry, and public image paths in one statement.
+- Staged cleanup jobs older than ten minutes are eligible for worker reconciliation. The worker checks references twice before deletion; a public destination still referenced by an approved listing is deferred, while an orphan from a failed/ambiguous approval is removed. The original private source is removed only after no listing references it.
+- This is candidate source only. The migration must be applied and the worker safely scheduled before this path can operate in production. No live function or database was changed by this commit.
