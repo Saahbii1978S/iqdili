@@ -66,3 +66,46 @@ $$;
 
 revoke all on function public.claim_storage_cleanup_jobs(integer) from public, anon, authenticated;
 grant execute on function public.claim_storage_cleanup_jobs(integer) to service_role;
+
+-- Activate only the exact paths whose listing-row deletion succeeded.
+create or replace function public.activate_storage_cleanup_jobs(p_jobs jsonb)
+returns integer
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  activated_count integer;
+  requested_count integer;
+begin
+  if pg_catalog.jsonb_typeof(p_jobs) <> 'array'
+     or pg_catalog.jsonb_array_length(p_jobs) > 500 then
+    raise exception 'Invalid cleanup job batch';
+  end if;
+
+  select count(*) into requested_count
+    from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text);
+
+  update public.storage_cleanup_jobs q
+     set status = 'pending',
+         updated_at = pg_catalog.now()
+    from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
+   where q.bucket = x.bucket
+     and q.object_path = x.object_path
+     and q.status = 'staged';
+
+  select count(*) into activated_count
+    from public.storage_cleanup_jobs q
+    join pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
+      on q.bucket = x.bucket and q.object_path = x.object_path
+   where q.status in ('pending','processing','completed','dead_letter');
+
+  if activated_count <> requested_count then
+    return 0;
+  end if;
+  return activated_count;
+end;
+$$;
+
+revoke all on function public.activate_storage_cleanup_jobs(jsonb) from public, anon, authenticated;
+grant execute on function public.activate_storage_cleanup_jobs(jsonb) to service_role;
