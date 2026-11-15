@@ -134,3 +134,16 @@ Before any live migration:
 - No Edge Function has been deployed.
 - No production row, Storage object, secret, schedule, or setting has been changed.
 - The existing PR must remain draft and unmerged until integration tests and review are complete.
+
+
+## Submission-upload compensation contract
+
+The public submission flow uploads a pending image before inserting the listing row. If the database insert fails, the current candidate makes a best-effort Storage DELETE and ignores a failed cleanup response. A timeout or Storage failure can therefore leave an unreferenced private object without a durable retry record.
+
+Before production rollout, choose and test one of these safe designs:
+
+1. Prefer a database-first reservation: create a pending submission/reservation record with a server-generated identifier, then upload to a path bound to that reservation, and transition the reservation only after upload validation; or
+2. If upload-before-insert must remain, add a durable compensation record before returning from any failed insert path. The record must identify only the exact server-generated `pending-images` key, be inaccessible to public roles, and be retryable by the same bounded worker/lease mechanism.
+
+Do not enqueue arbitrary client-supplied paths. Do not delete an object if the listing insert may have committed despite a lost/ambiguous response; reconcile by the server-generated submission identity first. Tests must cover DB rejection, DB timeout after commit, Storage DELETE timeout, worker retry, and preservation of unrelated pending objects. This compensation path is distinct from post-deletion cleanup but may share a carefully scoped worker implementation.
+
