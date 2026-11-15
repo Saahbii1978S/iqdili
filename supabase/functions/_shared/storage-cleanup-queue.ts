@@ -32,7 +32,8 @@ export function buildStorageObjectUrl(
   if (base.protocol !== "https:" && base.hostname !== "localhost" && base.hostname !== "127.0.0.1") {
     throw new Error("Storage endpoint must use HTTPS");
   }
-  return base.origin + "/storage/v1/object/" + operation + "/" + bucket + "/" +
+  const operationPath = operation === "info" ? "/info/" : "/";
+  return base.origin + "/storage/v1/object" + operationPath + bucket + "/" +
     encodeStorageObjectPath(path);
 }
 
