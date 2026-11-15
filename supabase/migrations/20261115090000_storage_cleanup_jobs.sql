@@ -22,8 +22,8 @@ create table if not exists public.storage_cleanup_jobs (
 );
 
 create index if not exists storage_cleanup_jobs_pending_idx
-  on public.storage_cleanup_jobs (created_at, id)
-  where status in ('pending','processing');
+  on public.storage_cleanup_jobs (updated_at, id)
+  where status in ('staged','pending','processing');
 
 alter table public.storage_cleanup_jobs enable row level security;
 revoke all on table public.storage_cleanup_jobs from anon, authenticated;
@@ -52,8 +52,12 @@ as $$
     select j.id
       from public.storage_cleanup_jobs j
      where j.attempts < 8
-       and (j.status = 'pending' or (j.status = 'processing' and j.lease_until < pg_catalog.now()))
-     order by j.created_at, j.id
+       and (
+         j.status = 'pending'
+         or (j.status = 'processing' and j.lease_until < pg_catalog.now())
+         or (j.status = 'staged' and j.updated_at < pg_catalog.now() - interval '10 minutes')
+       )
+     order by j.updated_at, j.id
      for update skip locked
      limit least(greatest(coalesce(p_limit, 20), 1), 25)
   ),
@@ -73,6 +77,60 @@ $$;
 
 revoke all on function public.claim_storage_cleanup_jobs(integer) from public, anon, authenticated;
 grant execute on function public.claim_storage_cleanup_jobs(integer) to service_role;
+
+
+-- Atomically approve only the exact pending snapshot reviewed by the administrator.
+-- Image paths are replaced with per-attempt unique public paths in the same update.
+create or replace function public.approve_post_if_unchanged(
+  p_table text,
+  p_id bigint,
+  p_expected_title text,
+  p_expected_description text,
+  p_expected_image_urls text[],
+  p_new_image_urls text[],
+  p_expires_at timestamptz
+)
+returns boolean
+language plpgsql
+security invoker
+set search_path = ''
+as $
+declare
+  changed boolean := false;
+begin
+  if p_table not in ('service_requests','job_posts','real_estate_posts','market_posts')
+     or p_id is null
+     or p_expires_at is null
+     or p_new_image_urls is null
+     or pg_catalog.cardinality(p_new_image_urls) > 20
+     or auth.uid() is null
+     or not public.is_admin() then
+    raise exception 'Approval is not authorized or request is invalid';
+  end if;
+
+  execute pg_catalog.format(
+    'update public.%I
+        set status = ''approved'', image_urls = $1, expires_at = $2
+      where id = $3
+        and status = ''pending''
+        and title is not distinct from $4
+        and description is not distinct from $5
+        and image_urls is not distinct from $6
+      returning true',
+    p_table
+  )
+  into changed
+  using p_new_image_urls, p_expires_at, p_id,
+        p_expected_title, p_expected_description, p_expected_image_urls;
+
+  return coalesce(changed, false);
+end;
+$;
+
+revoke all on function public.approve_post_if_unchanged(text, bigint, text, text, text[], text[], timestamptz)
+  from public, anon;
+grant execute on function public.approve_post_if_unchanged(text, bigint, text, text, text[], text[], timestamptz)
+  to authenticated;
 
 -- Activate only the exact paths whose listing-row deletion succeeded.
 create or replace function public.activate_storage_cleanup_jobs(p_jobs jsonb)
