@@ -23,7 +23,11 @@ create table public.service_requests (
   description text,
   status text not null,
   image_urls text[] not null default '{}',
-  expires_at timestamptz
+  expires_at timestamptz,
+  price numeric,
+  phone text,
+  city text,
+  contact_public boolean not null default false
 );
 create table public.job_posts (like public.service_requests including all);
 create table public.real_estate_posts (like public.service_requests including all);
@@ -97,11 +101,11 @@ begin
     raise exception 'Approval did not atomically replace image paths and status';
   end if;
 
-  insert into public.service_requests(user_id,title,description,status,image_urls)
-  values (u1,'stale approval','before','pending',array['services/original.jpg']);
+  insert into public.service_requests(user_id,title,description,status,image_urls,price,phone,city,contact_public)
+  values (u1,'stale approval','before','pending',array['services/original.jpg'],150,'20000000','Sfax',true);
   select id into n from public.service_requests where user_id=u1 and title='stale approval';
   select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
-  update public.service_requests set description='changed after review' where id=n;
+  update public.service_requests set price=200, phone='21111111' where id=n;
   if public.approve_post_if_unchanged(
     'service_requests',n,expected_row,
     array['services/should-not-publish.jpg'],now()+interval '3 months'
@@ -111,7 +115,9 @@ begin
   if not exists (
     select 1 from public.service_requests
      where id=n and status='pending'
-       and description='changed after review'
+       and description='before'
+       and price=200
+       and phone='21111111'
        and image_urls=array['services/original.jpg']
   ) then
     raise exception 'Stale approval attempt changed the listing';
