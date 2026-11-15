@@ -4,7 +4,7 @@ export function hasRecentAuthentication(
   nowMs = Date.now(),
   maxAgeSeconds = 10 * 60,
 ): boolean {
-  const match = /^Bearer\\s+([^\\s]+)$/i.exec(authorization);
+  const match = /^Bearer\s+([^\s]+)$/i.exec(authorization);
   if (!match) return false;
   const parts = match[1].split(".");
   if (parts.length !== 3) return false;
