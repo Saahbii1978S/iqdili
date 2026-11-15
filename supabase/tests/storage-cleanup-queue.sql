@@ -146,6 +146,79 @@ begin
   update public.storage_cleanup_jobs set status='completed'
    where object_path='services/a.jpg';
 
+  -- Single-post deletion and queue activation happen in one transaction.
+  insert into public.service_requests(user_id,title,description,status,image_urls)
+  values (u2,'atomic post','snapshot','pending',array['services/atomic.jpg']);
+  insert into public.storage_cleanup_jobs(bucket,object_path,status)
+  values
+    ('listing-images','services/atomic.jpg','staged'),
+    ('pending-images','services/atomic.jpg','staged');
+  select id into n from public.service_requests where user_id=u2 and title='atomic post';
+  result := public.delete_post_and_activate_storage_cleanup(
+    'service_requests',n,u2,true,'atomic post','snapshot','pending',
+    array['services/atomic.jpg'],
+    '[{"bucket":"listing-images","object_path":"services/atomic.jpg"},{"bucket":"pending-images","object_path":"services/atomic.jpg"}]'::jsonb
+  );
+  if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 2 then
+    raise exception 'Atomic single-post delete did not activate both image jobs: %', result;
+  end if;
+  if exists(select 1 from public.service_requests where title='atomic post') then
+    raise exception 'Atomic single-post delete left the listing row';
+  end if;
+  if (select count(*) from public.storage_cleanup_jobs where object_path='services/atomic.jpg' and status='pending') <> 2 then
+    raise exception 'Atomic single-post delete left cleanup jobs staged';
+  end if;
+
+  -- A shared image is deferred, not deleted, until its final listing is removed.
+  insert into public.service_requests(user_id,title,description,status,image_urls)
+  values
+    (u2,'shared one','snapshot','approved',array['services/shared-atomic.jpg']),
+    (u3,'shared two','snapshot','approved',array['services/shared-atomic.jpg']);
+  insert into public.storage_cleanup_jobs(bucket,object_path,status)
+  values
+    ('listing-images','services/shared-atomic.jpg','staged'),
+    ('pending-images','services/shared-atomic.jpg','staged');
+  select id into n from public.service_requests where user_id=u2 and title='shared one';
+  result := public.delete_post_and_activate_storage_cleanup(
+    'service_requests',n,u2,true,'shared one','snapshot','approved',
+    array['services/shared-atomic.jpg'],
+    '[{"bucket":"listing-images","object_path":"services/shared-atomic.jpg"},{"bucket":"pending-images","object_path":"services/shared-atomic.jpg"}]'::jsonb
+  );
+  if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 0
+     or (result->>'deferred_jobs')::integer <> 2 then
+    raise exception 'Shared image was not safely deferred: %', result;
+  end if;
+  if (select count(*) from public.storage_cleanup_jobs where object_path='services/shared-atomic.jpg' and status='staged') <> 2 then
+    raise exception 'Shared image cleanup jobs should remain staged';
+  end if;
+  select id into n from public.service_requests where user_id=u3 and title='shared two';
+  result := public.delete_post_and_activate_storage_cleanup(
+    'service_requests',n,u3,true,'shared two','snapshot','approved',
+    array['services/shared-atomic.jpg'],
+    '[{"bucket":"listing-images","object_path":"services/shared-atomic.jpg"},{"bucket":"pending-images","object_path":"services/shared-atomic.jpg"}]'::jsonb
+  );
+  if result->>'deleted' <> 'true' or (result->>'activated_jobs')::integer <> 2 then
+    raise exception 'Final shared-image deletion did not activate deferred jobs: %', result;
+  end if;
+
+  -- A stale listing snapshot cannot delete a changed row.
+  insert into public.service_requests(user_id,title,description,status,image_urls)
+  values (u2,'stale atomic','old','pending',array['services/newer.jpg']);
+  insert into public.storage_cleanup_jobs(bucket,object_path,status)
+  values ('listing-images','services/older.jpg','staged'),('pending-images','services/older.jpg','staged');
+  select id into n from public.service_requests where user_id=u2 and title='stale atomic';
+  result := public.delete_post_and_activate_storage_cleanup(
+    'service_requests',n,u2,true,'stale atomic','old','pending',
+    array['services/older.jpg'],
+    '[{"bucket":"listing-images","object_path":"services/older.jpg"},{"bucket":"pending-images","object_path":"services/older.jpg"}]'::jsonb
+  );
+  if result->>'deleted' <> 'false' then
+    raise exception 'Stale listing snapshot unexpectedly deleted a row: %', result;
+  end if;
+  if not exists(select 1 from public.service_requests where user_id=u2 and title='stale atomic' and image_urls=array['services/newer.jpg']) then
+    raise exception 'Stale listing snapshot did not preserve the changed row';
+  end if;
+
   -- Claiming is exclusive; an expired lease can be reclaimed and increments attempts.
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values ('market-images','market/a.webp','pending');
