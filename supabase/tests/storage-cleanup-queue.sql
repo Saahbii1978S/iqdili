@@ -82,8 +82,9 @@ begin
   values (u1,'approval snapshot','description','pending',array['services/source.jpg']);
   select id into n from public.service_requests where user_id=u1 and title='approval snapshot';
   if not public.approve_post_if_unchanged(
-    'service_requests',n,'approval snapshot','description',
-    array['services/source.jpg'],array['services/approved-unique.jpg'],now()+interval '3 months'
+    'service_requests',n,
+    (select pg_catalog.to_jsonb(r) from public.service_requests r where r.id=n),
+    array['services/approved-unique.jpg'],now()+interval '3 months'
   ) then
     raise exception 'Exact approval snapshot was not approved';
   end if;
@@ -100,8 +101,9 @@ begin
   select id into n from public.service_requests where user_id=u1 and title='stale approval';
   update public.service_requests set description='changed after review' where id=n;
   if public.approve_post_if_unchanged(
-    'service_requests',n,'stale approval','before',
-    array['services/original.jpg'],array['services/should-not-publish.jpg'],now()+interval '3 months'
+    'service_requests',n,
+    (select pg_catalog.to_jsonb(r) from public.service_requests r where r.id=n and r.description='before'),
+    array['services/should-not-publish.jpg'],now()+interval '3 months'
   ) then
     raise exception 'Stale approval snapshot was incorrectly published';
   end if;
