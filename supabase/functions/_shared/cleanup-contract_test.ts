@@ -13,6 +13,11 @@ function assertThrows(fn: () => void, message: string) {
   try { fn(); } catch { thrown = true; }
   assert(thrown, message);
 }
+async function assertRejects(fn: () => Promise<unknown>, message: string) {
+  let rejected = false;
+  try { await fn(); } catch { rejected = true; }
+  assert(rejected, message);
+}
 
 Deno.test("cleanup target allowlist rejects foreign buckets and unsafe paths", () => {
   assert(isAllowedCleanupTarget("listing-images", "services/photo-1.jpg"), "valid service path");
@@ -90,8 +95,8 @@ Deno.test("stale lease token cannot complete task", async () => {
   const id = [...h.tasks.keys()][0];
   h.claim(id, 0, 1000, "valid-token");
   const storage: StoragePort = { remove: async () => "removed" };
-  assertThrows(
-    () => { void h.process(id, "stale-token", 1, storage); },
+  await assertRejects(
+    () => h.process(id, "stale-token", 1, storage),
     "stale token must be rejected",
   );
 });
