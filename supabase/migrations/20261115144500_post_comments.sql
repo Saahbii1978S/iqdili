@@ -106,7 +106,7 @@ on public.post_comments for insert
 to authenticated
 with check (
   user_id = (select auth.uid())
-  and coalesce(((select auth.jwt()) ->> 'is_anonymous')::boolean, false) = false
+  and coalesce(((select auth.jwt()) ->> 'is_anonymous')::boolean, true) = false
   and status = 'published'
   and char_length(btrim(body)) between 1 and 1000
   and ahla_internal.comment_target_is_public(post_table, post_id)
