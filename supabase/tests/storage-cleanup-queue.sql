@@ -203,6 +203,19 @@ begin
     raise exception 'Account cleanup jobs were not activated';
   end if;
 
+  -- The persistent deletion lock must reject new listings after the DB transaction,
+  -- including the gap where the separate Auth deletion API may need a retry.
+  begin
+    insert into public.service_requests(user_id,title,status,image_urls)
+    values (u1,'late listing after account deletion','pending',array[]::text[]);
+    raise exception 'Expected account deletion lock to reject a new listing';
+  exception when others then
+    if sqlerrm not like '%Account deletion is in progress%' then raise; end if;
+  end;
+  if exists(select 1 from public.service_requests where user_id=u1) then
+    raise exception 'A listing was inserted after account deletion began';
+  end if;
+
   -- Account deletion proceeds, but shared image jobs stay staged until the final reference is removed.
   insert into public.service_requests(user_id,title,status,image_urls)
   values
