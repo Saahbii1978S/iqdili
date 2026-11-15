@@ -6,6 +6,7 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 
 const ALLOWED_ORIGIN = "https://saahbii1978s.github.io";
 const corsHeaders = {
@@ -88,6 +89,13 @@ Deno.serve(async (req: Request) => {
 
     const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
     const path = folders[category] + "/" + crypto.randomUUID() + "." + extension;
+    // Stage a delayed cleanup before upload. The worker waits 10 minutes and
+    // checks every listing reference twice before deleting an unclaimed image.
+    const stagedCleanup = buildStorageCleanupJobs(["pending-images"], [path]);
+    if (!await enqueueStorageCleanup(supabaseUrl, serviceRoleKey, stagedCleanup)) {
+      console.error("Could not stage pending image cleanup before upload");
+      return reply({ error: "خدمة حفظ الصور غير متوفرة حالياً. عاود بعد شوية." }, 503);
+    }
     const uploadResponse = await fetch(supabaseUrl + "/storage/v1/object/pending-images/" + path.split("/").map(encodeURIComponent).join("/"), {
       method: "POST",
       headers: { "apikey": serviceRoleKey, "Authorization": "Bearer " + serviceRoleKey, "Content-Type": file.type, "Cache-Control": "3600", "x-upsert": "false" },
