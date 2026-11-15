@@ -37,7 +37,9 @@ Deno.serve(async(req:Request)=>{
   for(const path of paths){
    if(typeof path!=="string"||!path.startsWith(cfg[table].folder+"/")||!/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)||path.includes("..")||path.includes("//"))return reply({error:"مسار صورة غير صالح؛ لم يقع حذف الإعلان."},409);
   }
-  const del=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&user_id=eq."+encodeURIComponent(user.id),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
+  const deleteQuery=new URLSearchParams({id:"eq."+String(id),user_id:"eq."+user.id,title:"eq."+String(row.title??""),description:"eq."+String(row.description??""),status:"eq."+String(row.status??"")});
+  deleteQuery.set("image_urls",Array.isArray(row.image_urls)?"eq.{"+paths.join(",")+"}":"is.null");
+  const del=await fetch(url+"/rest/v1/"+table+"?"+deleteQuery.toString(),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
   if(!del.ok)return reply({error:"تعذّر حذف الإعلان من قاعدة البيانات. تواصل مع الإدارة."},502);
   const deleted=await del.json().catch(()=>null);
   if(!Array.isArray(deleted)||deleted.length!==1)return reply({error:"لم يتم حذف الإعلان؛ حدّث القائمة وحاول مجدداً."},409);
