@@ -191,6 +191,7 @@ begin
   if public.is_storage_cleanup_object_referenced('listing-images','services/pending-only.jpg') then
     raise exception 'Pending listing should not retain a public-bucket copy';
   end if;
+  delete from public.service_requests where title='pending private image';
   if public.is_storage_cleanup_object_referenced('market-images','services/retained.jpg') then
     raise exception 'Worker reference check crossed bucket boundaries';
   end if;
