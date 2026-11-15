@@ -48,6 +48,7 @@ $admin_stub$;
 do $$
 declare
   result jsonb;
+  expected_row jsonb;
   job record;
   claimed record;
   stale_lease_token uuid;
@@ -99,10 +100,10 @@ begin
   insert into public.service_requests(user_id,title,description,status,image_urls)
   values (u1,'stale approval','before','pending',array['services/original.jpg']);
   select id into n from public.service_requests where user_id=u1 and title='stale approval';
+  select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   update public.service_requests set description='changed after review' where id=n;
   if public.approve_post_if_unchanged(
-    'service_requests',n,
-    (select pg_catalog.to_jsonb(r) from public.service_requests r where r.id=n and r.description='before'),
+    'service_requests',n,expected_row,
     array['services/should-not-publish.jpg'],now()+interval '3 months'
   ) then
     raise exception 'Stale approval snapshot was incorrectly published';
