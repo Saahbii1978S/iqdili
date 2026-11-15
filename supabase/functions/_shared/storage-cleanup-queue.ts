@@ -43,9 +43,26 @@ export async function enqueueStorageCleanup(
       "Content-Type": "application/json",
       Prefer: "resolution=merge-duplicates,return=minimal",
     },
-    body: JSON.stringify(jobs.map((job) => ({ ...job, status: "pending", attempts: 0, last_error: null, completed_at: null }))),
+    body: JSON.stringify(jobs.map((job) => ({ ...job, status: "staged", attempts: 0, last_error: null, completed_at: null }))),
   });
   return response.ok;
+}
+
+export async function activateStorageCleanup(
+  url: string,
+  serviceKey: string,
+  jobs: readonly StorageCleanupJob[],
+): Promise<boolean> {
+  for (const job of jobs) {
+    const query = new URLSearchParams({ bucket: "eq." + job.bucket, object_path: "eq." + job.object_path, status: "eq.staged" });
+    const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
+      method: "PATCH",
+      headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "pending" }),
+    });
+    if (!response.ok) return false;
+  }
+  return true;
 }
 
 export async function completeStorageCleanup(
