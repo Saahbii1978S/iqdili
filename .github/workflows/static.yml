@@ -28,6 +28,8 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
+      - name: Check expiry function types
+        run: deno check supabase/functions/expire-posts/index.ts
       - name: Run protection tests
         run: deno test supabase/functions/_shared/protected-demo_test.ts
       - name: Setup Pages
