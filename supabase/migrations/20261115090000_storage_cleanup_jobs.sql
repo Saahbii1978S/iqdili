@@ -84,7 +84,10 @@ begin
   end if;
 
   select count(*) into requested_count
-    from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text);
+    from (
+      select distinct x.bucket, x.object_path
+        from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
+    ) requested;
 
   update public.storage_cleanup_jobs q
      set status = 'pending',
@@ -220,6 +223,18 @@ begin
       from public.real_estate_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
     union
     select 'market-images'::text, u.path
+      from public.market_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
+    union
+    select 'pending-images'::text, u.path
+      from public.service_requests r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
+    union
+    select 'pending-images'::text, u.path
+      from public.job_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
+    union
+    select 'pending-images'::text, u.path
+      from public.real_estate_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
+    union
+    select 'pending-images'::text, u.path
       from public.market_posts r cross join lateral pg_catalog.unnest(r.image_urls) as u(path)
   )
   select count(*) into shared_count
