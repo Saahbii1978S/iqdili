@@ -1,4 +1,69 @@
 -- Durable Storage cleanup queue for post/account deletion workflows.
+-- Keep accounts in a deletion-pending state if the Auth deletion API fails.
+-- This prevents new listings or edits from appearing after the listing transaction.
+create table if not exists public.account_deletion_locks (
+  user_id uuid primary key,
+  created_at timestamptz not null default pg_catalog.now()
+);
+alter table public.account_deletion_locks enable row level security;
+revoke all on table public.account_deletion_locks from public, anon, authenticated;
+grant all on table public.account_deletion_locks to service_role;
+
+create or replace function public.block_writes_during_account_deletion()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  lock_key bigint;
+begin
+  for lock_key in
+    select distinct pg_catalog.hashtextextended(v.user_id::text, 0)
+      from (values
+        (case when tg_op = 'UPDATE' then old.user_id else null end),
+        (new.user_id)
+      ) as v(user_id)
+     where v.user_id is not null
+     order by 1
+  loop
+    perform pg_catalog.pg_advisory_xact_lock(lock_key);
+  end loop;
+
+  if exists (
+    select 1 from public.account_deletion_locks l
+     where l.user_id = new.user_id
+        or (tg_op = 'UPDATE' and l.user_id = old.user_id)
+  ) then
+    raise exception 'Account deletion is in progress; listing writes are blocked';
+  end if;
+
+  return new;
+end;
+$;
+
+revoke all on function public.block_writes_during_account_deletion() from public, anon, authenticated;
+
+drop trigger if exists block_service_requests_during_account_deletion on public.service_requests;
+create trigger block_service_requests_during_account_deletion
+before insert or update on public.service_requests
+for each row execute function public.block_writes_during_account_deletion();
+
+drop trigger if exists block_job_posts_during_account_deletion on public.job_posts;
+create trigger block_job_posts_during_account_deletion
+before insert or update on public.job_posts
+for each row execute function public.block_writes_during_account_deletion();
+
+drop trigger if exists block_real_estate_posts_during_account_deletion on public.real_estate_posts;
+create trigger block_real_estate_posts_during_account_deletion
+before insert or update on public.real_estate_posts
+for each row execute function public.block_writes_during_account_deletion();
+
+drop trigger if exists block_market_posts_during_account_deletion on public.market_posts;
+create trigger block_market_posts_during_account_deletion
+before insert or update on public.market_posts
+for each row execute function public.block_writes_during_account_deletion();
+
 -- Candidate migration only: do not apply to production without owner approval.
 create table if not exists public.storage_cleanup_jobs (
   id bigint generated always as identity primary key,
@@ -263,6 +328,14 @@ begin
      or pg_catalog.jsonb_typeof(p_expected_rows->'market_posts') is distinct from 'array' then
     raise exception 'Invalid account cleanup request';
   end if;
+
+  -- Serialize listing writes for this account and persist a deletion lock.
+  -- The lock remains if the separate Auth deletion call fails, so retries are safe
+  -- and no new listing can be created in the gap after this transaction commits.
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended(p_user_id::text, 0));
+  insert into public.account_deletion_locks(user_id)
+  values (p_user_id)
+  on conflict (user_id) do nothing;
 
   -- Lock every currently-owned listing row before comparing snapshots so edits
   -- and deletes cannot race the account deletion transaction.
