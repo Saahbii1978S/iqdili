@@ -14,7 +14,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $block$
 declare
   lock_key bigint;
 begin
@@ -40,7 +40,7 @@ begin
 
   return new;
 end;
-$;
+$block$;
 
 revoke all on function public.block_writes_during_account_deletion() from public, anon, authenticated;
 
