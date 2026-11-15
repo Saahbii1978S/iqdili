@@ -264,6 +264,13 @@ begin
     raise exception 'Invalid account cleanup request';
   end if;
 
+  -- Lock every currently-owned listing row before comparing snapshots so edits
+  -- and deletes cannot race the account deletion transaction.
+  perform 1 from public.service_requests r where r.user_id = p_user_id order by r.id for update;
+  perform 1 from public.job_posts r where r.user_id = p_user_id order by r.id for update;
+  perform 1 from public.real_estate_posts r where r.user_id = p_user_id order by r.id for update;
+  perform 1 from public.market_posts r where r.user_id = p_user_id order by r.id for update;
+
   -- Compare every column and every row, not only image paths. This also detects
   -- newly-added rows without images and edits to protected/demo content.
   if (select coalesce(pg_catalog.jsonb_agg(pg_catalog.to_jsonb(r) order by r.id), '[]'::jsonb)
