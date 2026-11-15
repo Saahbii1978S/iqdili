@@ -108,7 +108,7 @@ export async function completeStorageCleanup(
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), lease_until: null, last_error: null }),
+    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), lease_until: null, lease_token: null, last_error: null }),
   });
   return response.ok;
 }
@@ -132,7 +132,7 @@ export async function recordStorageCleanupFailure(
   return response.ok;
 }
 
-export type ClaimedStorageCleanupJob = StorageCleanupJob & { id: number; attempts: number };
+export type ClaimedStorageCleanupJob = StorageCleanupJob & { id: number; attempts: number; lease_token: string };
 
 export async function claimStorageCleanupJobs(
   url: string,
@@ -154,6 +154,8 @@ export async function claimStorageCleanupJobs(
   return rows.filter((row) =>
     Number.isSafeInteger(row.id) &&
     Number.isInteger(row.attempts) &&
+    typeof row.lease_token === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(row.lease_token) &&
     ALLOWED_BUCKETS.has(row.bucket) &&
     isValidStorageObjectPath(row.object_path)
   ) as ClaimedStorageCleanupJob[];
@@ -164,7 +166,7 @@ export async function finishClaimedStorageCleanup(
   serviceKey: string,
   job: ClaimedStorageCleanupJob,
 ): Promise<boolean> {
-  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing" });
+  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing", lease_token: "eq." + job.lease_token });
   const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
     method: "PATCH",
     headers: {
@@ -198,6 +200,7 @@ export async function failClaimedStorageCleanup(
     body: JSON.stringify({
       status: job.attempts >= 8 ? "dead_letter" : "pending",
       lease_until: null,
+      lease_token: null,
       last_error: reason.slice(0, 300),
     }),
   });
@@ -243,6 +246,7 @@ export async function deferClaimedStorageCleanup(
       status: "staged",
       attempts: 0,
       lease_until: null,
+      lease_token: null,
       last_error: "Image is still referenced by a live listing; deferred until the final reference is removed",
     }),
   });
