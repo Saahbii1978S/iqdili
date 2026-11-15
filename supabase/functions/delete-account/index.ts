@@ -1,4 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { hasRecentAuthentication } from "../_shared/recent-auth.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
 
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {
@@ -67,8 +69,14 @@ Deno.serve(async (req: Request) => {
     if (typeof user.id !== "string" || !/^[0-9a-f-]{36}$/i.test(user.id)) {
       return reply({ error: "تعذّر التثبت من الحساب." }, 401);
     }
+    // The Auth endpoint validates the JWT signature; now require its auth_time claim to be fresh.
+    if (!hasRecentAuthentication(authorization, user.id)) {
+      return reply({ error: "لحماية حسابك، عاود تسجيل الدخول بكلمة المرور قبل طلب حذف الحساب." }, 401);
+    }
 
-    const body = await req.json().catch(() => null);
+    const boundedRequest = await readLimitedRequest(req, 1024);
+    if (!boundedRequest) return reply({ error: "حجم الطلب أكبر من المسموح." }, 413);
+    const body = await boundedRequest.json().catch(() => null);
     if (!body || body.confirm !== "DELETE") {
       return reply({ error: "تأكيد الحذف غير صحيح." }, 400);
     }
