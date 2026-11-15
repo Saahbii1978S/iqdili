@@ -94,7 +94,7 @@ returns boolean
 language plpgsql
 security invoker
 set search_path = ''
-as $
+as $approval$
 declare
   changed boolean := false;
 begin
@@ -125,7 +125,7 @@ begin
 
   return coalesce(changed, false);
 end;
-$;
+$approval$;
 
 revoke all on function public.approve_post_if_unchanged(text, bigint, text, text, text[], text[], timestamptz)
   from public, anon;
