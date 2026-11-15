@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { hasRecentAuthentication } from "../_shared/recent-auth.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
-import { buildStorageCleanupJobs, enqueueStorageCleanup, activateStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {
@@ -176,26 +176,30 @@ Deno.serve(async (req: Request) => {
         pathsByTable[table.name] || [],
       )
     );
+    if (cleanupJobs.length > 500) {
+      return reply({ error: "عدد الصور المرتبطة بالحساب كبير. يلزم مراجعة الإدارة قبل الحذف الآمن." }, 413);
+    }
     if (!await enqueueStorageCleanup(url, serviceKey, cleanupJobs)) {
       console.error("Could not enqueue account image cleanup", user.id);
       return reply({ error: "تعذّر تجهيز تنظيف الصور بأمان. لم يقع حذف أي إعلان أو الحساب." }, 503);
     }
 
-    // Remove the user's four categories of posts. Retrying is safe if a later step fails.
-    for (const table of tables) {
-      const removeRows = await api(
-        url,
-        serviceKey,
-        "/rest/v1/" + table.name + "?user_id=eq." + encodeURIComponent(user.id),
-        { method: "DELETE", headers: { "Prefer": "return=minimal" } },
-      );
-      if (!removeRows.ok) {
-        console.error("Account post cleanup failed", table.name, removeRows.status);
-        return reply({ error: "تعذّر حذف كل الإعلانات المرتبطة بالحساب. الحساب مازال موجوداً؛ عاود المحاولة." }, 502);
-      }
+    // Delete all four listing categories and activate their exact image jobs in one database transaction.
+    const deletion = await api(
+      url,
+      serviceKey,
+      "/rest/v1/rpc/delete_account_posts_and_activate_cleanup",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ p_user_id: user.id, p_jobs: cleanupJobs }),
+      },
+    );
+    if (!deletion.ok) {
+      const detail = await deletion.text().catch(() => "");
+      console.error("Atomic account post cleanup failed", deletion.status, detail.slice(0, 500));
+      return reply({ error: "تغيّرت إعلانات الحساب أثناء العملية أو تعذّر تجهيز تنظيف الصور. لم يقع حذف الحساب؛ عاود المحاولة." }, 409);
     }
-
-    // Image deletion is delegated to the durable background worker after all listing rows are removed.
 
     const deleteUser = await fetch(url + "/auth/v1/admin/users/" + encodeURIComponent(user.id), {
       method: "DELETE",
