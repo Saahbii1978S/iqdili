@@ -125,6 +125,46 @@ begin
   delete from public.service_requests where title in ('approval snapshot','stale approval');
   perform pg_catalog.set_config('request.jwt.claim.sub', '', true);
 
+  -- Status changes accept only the intended transition and the exact full reviewed row.
+  perform pg_catalog.set_config('request.jwt.claim.sub', u1::text, true);
+  insert into public.service_requests(user_id,title,description,status,image_urls,price,phone)
+  values (u1,'reject transition','pending content','pending',array['services/reject.jpg'],90,'22222222');
+  select id into n from public.service_requests where user_id=u1 and title='reject transition';
+  select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
+  if not public.update_post_status_if_unchanged('service_requests',n,expected_row,'rejected') then
+    raise exception 'Valid pending-to-rejected transition was rejected';
+  end if;
+  if not exists(select 1 from public.service_requests where id=n and status='rejected') then
+    raise exception 'Rejected transition did not update status';
+  end if;
+
+  insert into public.market_posts(user_id,title,description,status,image_urls,price,phone)
+  values (u1,'unpublish transition','approved content','approved',array['market/unpublish.jpg'],50,'23333333');
+  select id into n from public.market_posts where user_id=u1 and title='unpublish transition';
+  select pg_catalog.to_jsonb(r) into expected_row from public.market_posts r where r.id=n;
+  if not public.update_post_status_if_unchanged('market_posts',n,expected_row,'unpublished') then
+    raise exception 'Valid approved-to-unpublished transition was rejected';
+  end if;
+  if not exists(select 1 from public.market_posts where id=n and status='unpublished') then
+    raise exception 'Unpublished transition did not update status';
+  end if;
+
+  insert into public.real_estate_posts(user_id,title,description,status,image_urls,price,phone)
+  values (u1,'stale status transition','before edit','approved',array['realty/stale.jpg'],100,'24444444');
+  select id into n from public.real_estate_posts where user_id=u1 and title='stale status transition';
+  select pg_catalog.to_jsonb(r) into expected_row from public.real_estate_posts r where r.id=n;
+  update public.real_estate_posts set price=200 where id=n;
+  if public.update_post_status_if_unchanged('real_estate_posts',n,expected_row,'unpublished') then
+    raise exception 'Stale status transition changed a modified listing';
+  end if;
+  if not exists(select 1 from public.real_estate_posts where id=n and status='approved' and price=200) then
+    raise exception 'Stale status transition did not preserve the edited listing';
+  end if;
+  delete from public.service_requests where title='reject transition';
+  delete from public.market_posts where title='unpublish transition';
+  delete from public.real_estate_posts where title='stale status transition';
+  perform pg_catalog.set_config('request.jwt.claim.sub', '', true);
+
   -- Successful account deletion removes rows and activates the exact two-bucket image jobs.
   insert into public.service_requests(user_id,title,status,image_urls)
   values (u1,'test listing','approved',array['services/a.jpg']);
