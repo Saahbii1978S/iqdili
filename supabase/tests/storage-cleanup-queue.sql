@@ -40,6 +40,25 @@ declare
   u2 uuid := '22222222-2222-4222-8222-222222222222';
   u3 uuid := '33333333-3333-4333-8333-333333333333';
 begin
+  if has_table_privilege('anon', 'public.storage_cleanup_jobs', 'SELECT')
+     or has_table_privilege('authenticated', 'public.storage_cleanup_jobs', 'SELECT') then
+    raise exception 'Untrusted roles can read the cleanup queue';
+  end if;
+  if has_function_privilege('anon', 'public.claim_storage_cleanup_jobs(integer)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.delete_account_posts_and_activate_cleanup(uuid,jsonb)', 'EXECUTE') then
+    raise exception 'Untrusted roles can execute privileged cleanup RPCs';
+  end if;
+  if not has_function_privilege('service_role', 'public.claim_storage_cleanup_jobs(integer)', 'EXECUTE') then
+    raise exception 'service_role cannot claim cleanup jobs';
+  end if;
+
+  begin
+    insert into public.storage_cleanup_jobs(bucket,object_path)
+    values ('listing-images','services/../escape.jpg');
+    raise exception 'Expected unsafe path constraint to reject traversal';
+  exception when check_violation then null;
+  end;
+
   -- Successful account deletion removes rows and activates the exact two-bucket image jobs.
   insert into public.service_requests(user_id,title,status,image_urls)
   values (u1,'test listing','approved',array['services/a.jpg']);
