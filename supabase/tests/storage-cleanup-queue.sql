@@ -34,6 +34,11 @@ create table public.real_estate_posts (like public.service_requests including al
 create table public.market_posts (like public.service_requests including all);
 
 create schema if not exists auth;
+-- Minimal Auth catalog stub for the local PostgreSQL regression harness.
+-- Production Supabase provides this table; the test container does not.
+create table if not exists auth.users (
+  id uuid primary key
+);
 create or replace function auth.uid()
 returns uuid
 language sql stable
