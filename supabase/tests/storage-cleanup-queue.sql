@@ -28,6 +28,20 @@ create table public.job_posts (like public.service_requests including all);
 create table public.real_estate_posts (like public.service_requests including all);
 create table public.market_posts (like public.service_requests including all);
 
+create schema if not exists auth;
+create or replace function auth.uid()
+returns uuid
+language sql stable
+as $
+  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
+$;
+create or replace function public.is_admin()
+returns boolean
+language sql stable
+as $
+  select auth.uid() is not null;
+$;
+
 \ir ../migrations/20261115090000_storage_cleanup_jobs.sql
 
 do $$
@@ -60,6 +74,45 @@ begin
     raise exception 'Expected unsafe path constraint to reject traversal';
   exception when check_violation then null;
   end;
+
+  -- Approval is an atomic compare-and-set: only the exact reviewed pending snapshot can publish.
+  perform pg_catalog.set_config('request.jwt.claim.sub', u1::text, true);
+  insert into public.service_requests(user_id,title,description,status,image_urls)
+  values (u1,'approval snapshot','description','pending',array['services/source.jpg']);
+  select id into n from public.service_requests where user_id=u1 and title='approval snapshot';
+  if not public.approve_post_if_unchanged(
+    'service_requests',n,'approval snapshot','description',
+    array['services/source.jpg'],array['services/approved-unique.jpg'],now()+interval '3 months'
+  ) then
+    raise exception 'Exact approval snapshot was not approved';
+  end if;
+  if not exists (
+    select 1 from public.service_requests
+     where id=n and status='approved'
+       and image_urls=array['services/approved-unique.jpg']
+  ) then
+    raise exception 'Approval did not atomically replace image paths and status';
+  end if;
+
+  insert into public.service_requests(user_id,title,description,status,image_urls)
+  values (u1,'stale approval','before','pending',array['services/original.jpg']);
+  select id into n from public.service_requests where user_id=u1 and title='stale approval';
+  update public.service_requests set description='changed after review' where id=n;
+  if public.approve_post_if_unchanged(
+    'service_requests',n,'stale approval','before',
+    array['services/original.jpg'],array['services/should-not-publish.jpg'],now()+interval '3 months'
+  ) then
+    raise exception 'Stale approval snapshot was incorrectly published';
+  end if;
+  if not exists (
+    select 1 from public.service_requests
+     where id=n and status='pending'
+       and description='changed after review'
+       and image_urls=array['services/original.jpg']
+  ) then
+    raise exception 'Stale approval attempt changed the listing';
+  end if;
+  perform pg_catalog.set_config('request.jwt.claim.sub', '', true);
 
   -- Successful account deletion removes rows and activates the exact two-bucket image jobs.
   insert into public.service_requests(user_id,title,status,image_urls)
