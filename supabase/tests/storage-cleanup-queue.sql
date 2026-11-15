@@ -81,7 +81,7 @@ begin
     raise exception 'Account cleanup jobs were not activated';
   end if;
 
-  -- Shared paths are not deleted when another account still references the same image.
+  -- Account deletion proceeds, but shared image jobs stay staged until the final reference is removed.
   insert into public.service_requests(user_id,title,status,image_urls)
   values
     (u2,'owner listing','approved',array['services/shared.jpg']),
@@ -91,20 +91,30 @@ begin
     ('listing-images','services/shared.jpg','staged'),
     ('pending-images','services/shared.jpg','staged');
 
-  begin
-    perform public.delete_account_posts_and_activate_cleanup(
-      u2,
-      '[{"bucket":"listing-images","object_path":"services/shared.jpg"},{"bucket":"pending-images","object_path":"services/shared.jpg"}]'::jsonb
-    );
-    raise exception 'Expected shared-image deletion to be rejected';
-  exception when others then
-    if sqlerrm not like '%still referenced by another listing%' then raise; end if;
-  end;
-  if (select count(*) from public.service_requests where user_id=u2) <> 1 then
-    raise exception 'Shared-image rejection did not roll back listing deletion';
+  result := public.delete_account_posts_and_activate_cleanup(
+    u2,
+    '[{"bucket":"listing-images","object_path":"services/shared.jpg"},{"bucket":"pending-images","object_path":"services/shared.jpg"}]'::jsonb
+  );
+  if (result->>'deleted_rows')::integer <> 1
+     or (result->>'cleanup_jobs')::integer <> 0
+     or (result->>'deferred_jobs')::integer <> 2 then
+    raise exception 'Shared-image account deletion did not defer cleanup: %', result;
+  end if;
+  if (select count(*) from public.service_requests where user_id=u2) <> 0 then
+    raise exception 'Account deletion did not remove its listing row';
   end if;
   if (select count(*) from public.storage_cleanup_jobs where object_path='services/shared.jpg' and status='staged') <> 2 then
-    raise exception 'Shared-image rejection changed queue state';
+    raise exception 'Shared-image jobs should remain staged until final reference is removed';
+  end if;
+
+  result := public.delete_account_posts_and_activate_cleanup(
+    u3,
+    '[{"bucket":"listing-images","object_path":"services/shared.jpg"},{"bucket":"pending-images","object_path":"services/shared.jpg"}]'::jsonb
+  );
+  if (result->>'deleted_rows')::integer <> 1
+     or (result->>'cleanup_jobs')::integer <> 2
+     or (result->>'deferred_jobs')::integer <> 0 then
+    raise exception 'Final account deletion did not activate deferred image cleanup: %', result;
   end if;
 
   -- The worker must refuse an image still referenced by any live listing.
