@@ -5,6 +5,7 @@
 // Runtime secrets remain environment variables and are not included in this snapshot.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
 
 const ALLOWED_ORIGIN = "https://saahbii1978s.github.io";
 const corsHeaders = {
@@ -93,18 +94,16 @@ Deno.serve(async (req: Request) => {
 
   try {
     const contentType = req.headers.get("content-type") || "";
-    const contentLength = Number(req.headers.get("content-length") || "0");
     const isMultipart = contentType.toLowerCase().includes("multipart/form-data");
-    if (Number.isFinite(contentLength) && contentLength > (isMultipart ? 4000000 : 20000)) {
-      return reply({ error: "حجم الطلب كبير أكثر من اللازم." }, 413);
-    }
+    const boundedRequest = await readLimitedRequest(req, isMultipart ? 4000000 : 20000);
+    if (!boundedRequest) return reply({ error: "حجم الطلب كبير أكثر من اللازم." }, 413);
 
     let table: unknown;
     let data: unknown;
     let token = "";
     let file: File | null = null;
     if (isMultipart) {
-      const form = await req.formData();
+      const form = await boundedRequest.formData();
       table = form.get("table");
       token = typeof form.get("turnstileToken") === "string" ? String(form.get("turnstileToken")) : "";
       const rawData = form.get("data");
@@ -116,7 +115,7 @@ Deno.serve(async (req: Request) => {
         file = uploaded;
       }
     } else {
-      const body = await req.json();
+      const body = await boundedRequest.json();
       if (!isRecord(body)) return reply({ error: "المعلومات المرسلة غير صحيحة." }, 400);
       table = body.table;
       data = body.data;
