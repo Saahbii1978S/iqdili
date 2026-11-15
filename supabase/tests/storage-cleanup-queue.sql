@@ -152,16 +152,19 @@ begin
     u2,
     '[{"bucket":"listing-images","object_path":"services/shared.jpg"},{"bucket":"pending-images","object_path":"services/shared.jpg"}]'::jsonb
   );
+  -- The approved listing references only the public bucket; its private source copy
+  -- is not retained by the approved row and can be cleaned independently.
   if (result->>'deleted_rows')::integer <> 1
-     or (result->>'cleanup_jobs')::integer <> 0
-     or (result->>'deferred_jobs')::integer <> 2 then
-    raise exception 'Shared-image account deletion did not defer cleanup: %', result;
+     or (result->>'cleanup_jobs')::integer <> 1
+     or (result->>'deferred_jobs')::integer <> 1 then
+    raise exception 'Shared-image account deletion did not defer the public copy: %', result;
   end if;
   if (select count(*) from public.service_requests where user_id=u2) <> 0 then
     raise exception 'Account deletion did not remove its listing row';
   end if;
-  if (select count(*) from public.storage_cleanup_jobs where object_path='services/shared.jpg' and status='staged') <> 2 then
-    raise exception 'Shared-image jobs should remain staged until final reference is removed';
+  if (select count(*) from public.storage_cleanup_jobs where object_path='services/shared.jpg' and status='staged') <> 1
+     or (select count(*) from public.storage_cleanup_jobs where object_path='services/shared.jpg' and status='pending') <> 1 then
+    raise exception 'Public shared image should stay staged while its private copy is independently cleanable';
   end if;
 
   result := public.delete_account_posts_and_activate_cleanup(
