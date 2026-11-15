@@ -120,7 +120,7 @@ export async function completeStorageCleanup(
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), lease_until: null, lease_token: null, last_error: null }),
+    body: JSON.stringify({ status: "completed", completed_at: new Date().toISOString(), updated_at: new Date().toISOString(), lease_until: null, lease_token: null, last_error: null }),
   });
   return response.ok;
 }
@@ -139,7 +139,7 @@ export async function recordStorageCleanupFailure(
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ last_error: reason.slice(0, 300), status: "pending", lease_until: null, completed_at: null }),
+    body: JSON.stringify({ last_error: reason.slice(0, 300), status: "pending", updated_at: new Date().toISOString(), lease_until: null, completed_at: null }),
   });
   return response.ok;
 }
