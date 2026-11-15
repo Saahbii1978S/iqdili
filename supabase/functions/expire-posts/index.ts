@@ -33,7 +33,8 @@ Deno.serve(async(req:Request)=>{
     if(isProtectedDemoPost(table,row.id,row.title,row.description)){protectedCount++;continue;}
     const paths=Array.isArray(row.image_urls)?row.image_urls:[];
     if(paths.some((p:unknown)=>!validPath(p,c.folder))){invalidPathSkips.push(table+":"+String(row.id));console.error("expiry skipped unexpected image path",table,String(row.id));continue;}
-    const deleteFilters=["id=eq."+encodeURIComponent(String(row.id)),"status=eq.approved","expires_at=lte."+encodeURIComponent(now),sameTextFilter("title",row.title),sameTextFilter("description",row.description)];
+    const imageArrayFilter="image_urls=eq."+encodeURIComponent("{"+paths.join(",")+"}");
+    const deleteFilters=["id=eq."+encodeURIComponent(String(row.id)),"status=eq.approved","expires_at=lte."+encodeURIComponent(now),sameTextFilter("title",row.title),sameTextFilter("description",row.description),imageArrayFilter];
     const d=await fetch(url+"/rest/v1/"+table+"?"+deleteFilters.join("&"),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
     if(!d.ok){deleteErrors.push(table+":"+String(row.id));console.error("expiry delete failed",table,String(row.id),d.status);continue;}
     const deleted=await d.json().catch(()=>null);
