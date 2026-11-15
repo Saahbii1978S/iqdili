@@ -24,7 +24,8 @@ function deps(overrides: Partial<StorageCleanupWorkerDependencies> = {}) {
 }
 
 Deno.test("defers an object already referenced without checking or deleting Storage", async () => {
-  const d = deps({ isReferenced: async () => { d.calls.push("reference"); return true; } });
+  const d = deps();
+  d.value.isReferenced = async () => { d.calls.push("reference"); return true; };
   const result = await processStorageCleanupJobs([job(1)], d.value);
   assertEquals(result, { completed: 0, retried: 0, deadLettered: 0, deferred: 1 });
   assertEquals(d.calls, ["reference", "defer"]);
@@ -32,35 +33,35 @@ Deno.test("defers an object already referenced without checking or deleting Stor
 
 Deno.test("rechecks references after HEAD and never deletes a newly referenced object", async () => {
   let checks = 0;
-  const d = deps({
-    isReferenced: async () => { d.calls.push("reference"); checks++; return checks === 2; },
-  });
+  const d = deps();
+  d.value.isReferenced = async () => { d.calls.push("reference"); checks++; return checks === 2; };
   const result = await processStorageCleanupJobs([job(2)], d.value);
   assertEquals(result, { completed: 0, retried: 0, deadLettered: 0, deferred: 1 });
   assertEquals(d.calls, ["reference", "head", "reference", "defer"]);
 });
 
 Deno.test("treats an already-missing object as completed without issuing DELETE", async () => {
-  const d = deps({ inspect: async () => { d.calls.push("head"); return new Response(null, { status: 404 }); } });
+  const d = deps();
+  d.value.inspect = async () => { d.calls.push("head"); return new Response(null, { status: 404 }); };
   const result = await processStorageCleanupJobs([job(3)], d.value);
   assertEquals(result, { completed: 1, retried: 0, deadLettered: 0, deferred: 0 });
   assertEquals(d.calls, ["reference", "head", "finish"]);
 });
 
 Deno.test("records a retry for a transient Storage error", async () => {
-  const d = deps({ inspect: async () => { d.calls.push("head"); return new Response(null, { status: 503 }); } });
+  const d = deps();
+  d.value.inspect = async () => { d.calls.push("head"); return new Response(null, { status: 503 }); };
   const result = await processStorageCleanupJobs([job(4)], d.value);
   assertEquals(result, { completed: 0, retried: 1, deadLettered: 0, deferred: 0 });
   assertEquals(d.calls, ["reference", "head", "fail"]);
 });
 
 Deno.test("dead-letters an exhausted job and continues processing the rest of the batch", async () => {
-  const d = deps({
-    inspect: async (item) => {
-      d.calls.push("head-" + item.id);
-      return item.id === 5 ? new Response(null, { status: 500 }) : new Response(null, { status: 404 });
-    },
-  });
+  const d = deps();
+  d.value.inspect = async (item) => {
+    d.calls.push("head-" + item.id);
+    return item.id === 5 ? new Response(null, { status: 500 }) : new Response(null, { status: 404 });
+  };
   const result = await processStorageCleanupJobs([job(5, 8), job(6)], d.value);
   assertEquals(result, { completed: 1, retried: 0, deadLettered: 1, deferred: 0 });
   assertEquals(d.calls, ["reference", "head-5", "fail", "reference", "head-6", "finish"]);
