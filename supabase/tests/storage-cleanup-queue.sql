@@ -22,7 +22,8 @@ create table public.service_requests (
   title text not null,
   description text,
   status text not null,
-  image_urls text[] not null default '{}'
+  image_urls text[] not null default '{}',
+  expires_at timestamptz
 );
 create table public.job_posts (like public.service_requests including all);
 create table public.real_estate_posts (like public.service_requests including all);
