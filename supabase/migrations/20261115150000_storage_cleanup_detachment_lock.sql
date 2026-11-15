@@ -44,6 +44,8 @@ for each row execute function public.lock_storage_image_detachment();
 
 drop trigger if exists lock_job_post_image_detachment on public.job_posts;
 create trigger lock_job_post_image_detachment
+before delete on public.job_posts;
+create trigger lock_job_post_image_detachment
 before delete on public.job_posts
 for each row execute function public.lock_storage_image_detachment();
 
@@ -52,7 +54,9 @@ create trigger lock_real_estate_image_detachment
 before delete on public.real_estate_posts
 for each row execute function public.lock_storage_image_detachment();
 
-drop trigger if exists lock_market_post_image_detachment on public.market_posts
+drop trigger if exists lock_market_post_image_detachment on public.market_posts;
+create trigger lock_market_post_image_detachment
+before delete on public.market_posts
 for each row execute function public.lock_storage_image_detachment();
 
 -- The BEFORE DELETE trigger holds the same per-object transaction lock as
