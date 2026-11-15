@@ -229,6 +229,9 @@ begin
     raise exception 'Stale listing snapshot did not preserve the changed row';
   end if;
 
+  -- Isolate the lease test from pending jobs created by the deletion tests above.
+  update public.storage_cleanup_jobs set status='completed', lease_until=null where status in ('pending','processing');
+
   -- Claiming is exclusive; an expired lease can be reclaimed and increments attempts.
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values ('market-images','market/a.webp','pending');
