@@ -8,7 +8,7 @@ create table if not exists public.storage_cleanup_jobs (
     and object_path !~ '(^|/)\.\.(/|$)'
     and object_path !~ '//'
   ),
-  status text not null default 'pending' check (status in ('pending','completed')),
+  status text not null default 'staged' check (status in ('staged','pending','completed')),
   attempts integer not null default 0 check (attempts >= 0),
   last_error text,
   created_at timestamptz not null default now(),
@@ -22,3 +22,4 @@ create index if not exists storage_cleanup_jobs_pending_idx
 alter table public.storage_cleanup_jobs enable row level security;
 revoke all on table public.storage_cleanup_jobs from anon, authenticated;
 grant all on table public.storage_cleanup_jobs to service_role;
+grant usage, select on sequence public.storage_cleanup_jobs_id_seq to service_role;
