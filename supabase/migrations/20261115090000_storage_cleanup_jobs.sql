@@ -230,13 +230,23 @@ begin
   deleted_count := deleted_count + affected;
 
   update public.storage_cleanup_jobs q
-     set status = 'pending',
+     set status = case
+           when public.is_storage_cleanup_object_referenced(q.bucket, q.object_path) then 'staged'
+           else 'pending'
+         end,
+         attempts = 0,
+         lease_until = null,
+         last_error = case
+           when public.is_storage_cleanup_object_referenced(q.bucket, q.object_path)
+             then 'Image is still referenced by a live listing; deferred until the final reference is removed'
+           else null
+         end,
+         completed_at = null,
          updated_at = pg_catalog.now()
     from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
    where q.bucket = x.bucket
      and q.object_path = x.object_path
-     and q.status = 'staged'
-     and not public.is_storage_cleanup_object_referenced(q.bucket, q.object_path);
+     and q.status in ('staged','pending','dead_letter');
 
   with requested as (
     select distinct x.bucket, x.object_path
@@ -391,15 +401,30 @@ begin
   end if;
 
   update public.storage_cleanup_jobs q
-     set status = 'pending',
+     set status = case
+           when public.is_storage_cleanup_object_referenced(q.bucket, q.object_path) then 'staged'
+           else 'pending'
+         end,
+         attempts = 0,
+         lease_until = null,
+         last_error = case
+           when public.is_storage_cleanup_object_referenced(q.bucket, q.object_path)
+             then 'Image is still referenced by a live listing; deferred until the final reference is removed'
+           else null
+         end,
+         completed_at = null,
          updated_at = pg_catalog.now()
     from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
    where q.bucket = x.bucket
      and q.object_path = x.object_path
-     and q.status = 'staged'
-     and not public.is_storage_cleanup_object_referenced(q.bucket, q.object_path);
+     and q.status in ('staged','pending','dead_letter');
 
-  get diagnostics activated_count = row_count;
+  select count(*) into activated_count
+    from public.storage_cleanup_jobs q
+    join pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
+      on q.bucket = x.bucket and q.object_path = x.object_path
+   where q.status in ('pending','processing','completed','dead_letter');
+
   return pg_catalog.jsonb_build_object(
     'deleted', true,
     'activated_jobs', activated_count,
