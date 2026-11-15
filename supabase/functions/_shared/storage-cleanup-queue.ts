@@ -62,38 +62,19 @@ export async function activateStorageCleanup(
   jobs: readonly StorageCleanupJob[],
 ): Promise<boolean> {
   if (!jobs.length) return true;
-  const alternatives = jobs.map((job) =>
-    "and(bucket.eq." + job.bucket + ",object_path.eq." + job.object_path + ")"
-  );
-  const filter = "(" + alternatives.join(",") + ")";
-  const query = new URLSearchParams({ status: "eq.staged", or: filter });
-  const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
-    method: "PATCH",
+  if (jobs.length > 500) return false;
+  const response = await fetch(url + "/rest/v1/rpc/activate_storage_cleanup_jobs", {
+    method: "POST",
     headers: {
       apikey: serviceKey,
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
-      Prefer: "return=representation",
     },
-    body: JSON.stringify({ status: "pending" }),
+    body: JSON.stringify({ p_jobs: jobs }),
   });
   if (!response.ok) return false;
-  const updated = await response.json().catch(() => null);
-  if (Array.isArray(updated) && updated.length === jobs.length) return true;
-
-  // A retry may encounter jobs that are already pending/processing/completed.
-  const verifyQuery = new URLSearchParams({
-    select: "bucket,object_path,status",
-    or: filter,
-  });
-  const verify = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + verifyQuery.toString(), {
-    headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey },
-  });
-  if (!verify.ok) return false;
-  const rows = await verify.json().catch(() => null);
-  if (!Array.isArray(rows) || rows.length !== jobs.length) return false;
-  const active = new Set(["pending", "processing", "completed", "dead_letter"]);
-  return rows.every((row) => active.has(row.status));
+  const count = await response.json().catch(() => null);
+  return count === jobs.length;
 }
 
 export async function completeStorageCleanup(
