@@ -61,6 +61,15 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "التحقق من Cloudflare ما نجحش. عاود المحاولة." }, 403);
     }
 
+    const category = form.get("category");
+    const file = form.get("file");
+    if (typeof category !== "string" || !Object.hasOwn(folders, category)) return reply({ error: "قسم الصورة غير صحيح." }, 400);
+    if (!(file instanceof File)) return reply({ error: "ما وصلتناش صورة صالحة." }, 400);
+    if (file.size < 1 || file.size > 3145728) return reply({ error: "حجم الصورة لازم ما يفوتش 3 ميغابايت." }, 413);
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return reply({ error: "الصورة لازم تكون JPG أو PNG أو WebP." }, 415);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (!validImageSignature(bytes, file.type)) return reply({ error: "محتوى الملف ما يطابقش نوع الصورة المعلن." }, 415);
+
     const clientIp = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "";
     if (!clientIp) return reply({ error: "تعذّر التثبت من الاتصال. عاود المحاولة." }, 503);
     const fingerprint = await sha256(clientIp + ":" + serviceRoleKey);
@@ -76,15 +85,6 @@ Deno.serve(async (req: Request) => {
     if (await limitResponse.json().catch(() => false) !== true) {
       return reply({ error: "وصلت للحدّ المسموح لرفع الصور. عاود بعد ساعة." }, 429);
     }
-
-    const category = form.get("category");
-    const file = form.get("file");
-    if (typeof category !== "string" || !Object.hasOwn(folders, category)) return reply({ error: "قسم الصورة غير صحيح." }, 400);
-    if (!(file instanceof File)) return reply({ error: "ما وصلتناش صورة صالحة." }, 400);
-    if (file.size < 1 || file.size > 3145728) return reply({ error: "حجم الصورة لازم ما يفوتش 3 ميغابايت." }, 413);
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return reply({ error: "الصورة لازم تكون JPG أو PNG أو WebP." }, 415);
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    if (!validImageSignature(bytes, file.type)) return reply({ error: "محتوى الملف ما يطابقش نوع الصورة المعلن." }, 415);
 
     const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
     const path = folders[category] + "/" + crypto.randomUUID() + "." + extension;
