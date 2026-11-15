@@ -483,6 +483,9 @@ begin
     raise exception 'Current worker could not complete its own lease';
   end if;
 
+  -- Keep earlier staged fixtures out of the one-row retry claim below.
+  update public.storage_cleanup_jobs set updated_at=now() where status='staged';
+
   -- Failed jobs record updated_at and observe bounded exponential retry backoff.
   insert into public.storage_cleanup_jobs(bucket,object_path,status,updated_at)
   values ('market-images','market/retry-backoff.webp','pending',now());
