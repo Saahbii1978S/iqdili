@@ -211,3 +211,10 @@ The deployed `expire-posts` v5 source still contains a fixed verifier hash, whil
 - The active database has administrator-only SELECT and UPDATE policies on all four listing tables used by the approval function: `service_requests`, `job_posts`, `real_estate_posts`, and `market_posts`.
 - Each UPDATE policy checks `is_admin()` in both USING and WITH CHECK. The approval RPC therefore remains `SECURITY INVOKER` and uses the administrator JWT, preserving the authenticated actor for the status-audit trigger while respecting existing RLS.
 - The live `admin-approve-post` function remains deployed at version 11. The candidate migration is not present in the live migration history, and no live function, database object, listing, or Storage object was changed during this review.
+
+
+## Rejection and unpublish image cleanup (candidate revision)
+- `admin-update-post-status` now stages cleanup jobs for both the listing's public bucket and `pending-images` before attempting the status change.
+- The status change uses `update_post_status_if_unchanged`, which accepts only pending-to-rejected or approved-to-unpublished and compares the complete reviewed row snapshot.
+- If the transition fails or the request times out, the staged worker jobs remain safe: the worker rechecks live references by bucket and status, deferring any object still used by another pending or approved listing.
+- The function no longer deletes Storage objects synchronously. The queue and worker provide retryable cleanup; a trusted scheduler is still required to run the worker.
