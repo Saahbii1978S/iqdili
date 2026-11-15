@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { hasRecentAuthentication } from "../_shared/recent-auth.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
-import { buildStorageCleanupJobs, enqueueStorageCleanup, activateStorageCleanup, completeStorageCleanup, recordStorageCleanupFailure } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, activateStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {
