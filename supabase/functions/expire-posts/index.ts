@@ -52,5 +52,5 @@ Deno.serve(async(req:Request)=>{
  if(scanErrors.length)await sendAdminAlert("خطأ تقني في الحذف الآلي","تعذّر فحص بعض أقسام الإعلانات: "+[...new Set(scanErrors)].join(", ")+". راجع سجلات Supabase.");
  if(deleteErrors.length)await sendAdminAlert("تعذّر حذف بعض الإعلانات المنتهية","فشلت عملية حذف بعض السجلات: "+deleteErrors.slice(0,100).join("\\n")+(deleteErrors.length>100?"\\nوبقية السجلات في سجلات الوظيفة.":""));
  if(invalidPathSkips.length)await sendAdminAlert("مراجعة مسارات صور إعلانات منتهية","تم إيقاف حذف بعض الإعلانات بسبب مسارات صور غير متوقعة: "+invalidPathSkips.slice(0,100).join("\\n")+(invalidPathSkips.length>100?"\\nوبقية السجلات في سجلات الوظيفة.":""));
- return new Response(JSON.stringify({ok:scanErrors.length===0&&deleteErrors.length===0,deleted:result,protectedSkipped,deleteFailures:deleteErrors.length,invalidImagePathSkips:invalidPathSkips.length,cleanupFailures:cleanupFailures.length}),{headers:{"Content-Type":"application/json"}});
+ return new Response(JSON.stringify({ok:scanErrors.length===0&&deleteErrors.length===0&&invalidPathSkips.length===0&&cleanupFailures.length===0,deleted:result,protectedSkipped,deleteFailures:deleteErrors.length,invalidImagePathSkips:invalidPathSkips.length,cleanupFailures:cleanupFailures.length}),{headers:{"Content-Type":"application/json"}});
 });
