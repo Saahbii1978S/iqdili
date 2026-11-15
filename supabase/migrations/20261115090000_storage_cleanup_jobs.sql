@@ -2,7 +2,9 @@
 -- Keep accounts in a deletion-pending state if the Auth deletion API fails.
 -- This prevents new listings or edits from appearing after the listing transaction.
 create table if not exists public.account_deletion_locks (
-  user_id uuid primary key,
+  -- Keep the lock while Auth deletion is retryable, then remove it automatically
+  -- when the Auth user is finally deleted.
+  user_id uuid primary key references auth.users(id) on delete cascade,
   created_at timestamptz not null default pg_catalog.now()
 );
 alter table public.account_deletion_locks enable row level security;
