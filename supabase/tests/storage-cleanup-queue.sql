@@ -328,6 +328,7 @@ begin
   end if;
 
   -- Aged staged jobs are reclaimed for crash recovery; referenced jobs can be deferred without a hot loop.
+  update public.storage_cleanup_jobs set updated_at=now() where status='staged';
   insert into public.storage_cleanup_jobs(bucket,object_path,status,updated_at)
   values ('listing-images','services/staged-recovery.jpg','staged',now()-interval '11 minutes');
   select * into claimed from public.claim_storage_cleanup_jobs(1)
