@@ -180,8 +180,16 @@ begin
   if not public.is_storage_cleanup_object_referenced('listing-images','services/retained.jpg') then
     raise exception 'Worker reference check missed a live listing image';
   end if;
-  if not public.is_storage_cleanup_object_referenced('pending-images','services/retained.jpg') then
-    raise exception 'Worker reference check missed a pending-bucket image reference';
+  if public.is_storage_cleanup_object_referenced('pending-images','services/retained.jpg') then
+    raise exception 'Approved listing should not retain a private pending-bucket copy';
+  end if;
+  insert into public.service_requests(user_id,title,status,image_urls)
+  values (u3,'pending private image','pending',array['services/pending-only.jpg']);
+  if not public.is_storage_cleanup_object_referenced('pending-images','services/pending-only.jpg') then
+    raise exception 'Worker reference check missed a pending listing private image';
+  end if;
+  if public.is_storage_cleanup_object_referenced('listing-images','services/pending-only.jpg') then
+    raise exception 'Pending listing should not retain a public-bucket copy';
   end if;
   if public.is_storage_cleanup_object_referenced('market-images','services/retained.jpg') then
     raise exception 'Worker reference check crossed bucket boundaries';
