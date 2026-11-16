@@ -55,6 +55,7 @@ $admin_stub$;
 \ir ../migrations/20261115090000_storage_cleanup_jobs.sql
 \ir ../migrations/20261115120000_storage_cleanup_attachment_lock.sql
 \ir ../migrations/20261115150000_storage_cleanup_detachment_lock.sql
+\ir ../migrations/20261116100000_storage_cleanup_atomic_defer.sql
 
 
 -- Minimal Auth users required by the account-deletion lock FK in the local test database.
@@ -87,6 +88,7 @@ declare
   claimed record;
   stale_lease_token uuid;
   affected integer;
+  deferred boolean;
   n integer;
   u1 uuid := '11111111-1111-4111-8111-111111111111';
   u2 uuid := '22222222-2222-4222-8222-222222222222';
@@ -629,4 +631,49 @@ begin
        where bucket='listing-images' and object_path='jobs/activation-rollback.jpg') <> 'staged' then
     raise exception 'Incomplete cleanup activation committed a partial status update';
   end if;
-end $$;
+
+  -- Race ordering A: worker defers while the image is still referenced;
+  -- the later final detachment trigger must reactivate the staged job.
+  insert into public.service_requests(user_id,title,status,image_urls)
+  values (u5,'defer before detach','approved',array['services/defer-before-detach.jpg']);
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,attempts,lease_token)
+  values ('listing-images','services/defer-before-detach.jpg','processing',1,'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
+  select id into n from public.storage_cleanup_jobs
+   where bucket='listing-images' and object_path='services/defer-before-detach.jpg';
+  deferred := public.defer_storage_cleanup_job(
+    n,'listing-images','services/defer-before-detach.jpg','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+  );
+  if not deferred or (select status from public.storage_cleanup_jobs where id=n) <> 'staged' then
+    raise exception 'Atomic defer did not stage an image that remains referenced';
+  end if;
+  delete from public.service_requests where user_id=u5 and title='defer before detach';
+  if (select status from public.storage_cleanup_jobs where id=n) <> 'pending'
+     or (select last_error from public.storage_cleanup_jobs where id=n) is not null then
+    raise exception 'Final detachment did not reactivate a job deferred before deletion';
+  end if;
+
+  -- Race ordering B: final detachment commits after the worker's earlier
+  -- reference check but before its defer request. The RPC must recheck under
+  -- the same object lock and requeue, rather than strand a staged job.
+  insert into public.service_requests(user_id,title,status,image_urls)
+  values (u5,'detach before defer','approved',array['services/detach-before-defer.jpg']);
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,attempts,lease_token)
+  values ('listing-images','services/detach-before-defer.jpg','processing',1,'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+  select id into n from public.storage_cleanup_jobs
+   where bucket='listing-images' and object_path='services/detach-before-defer.jpg';
+  delete from public.service_requests where user_id=u5 and title='detach before defer';
+  deferred := public.defer_storage_cleanup_job(
+    n,'listing-images','services/detach-before-defer.jpg','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
+  );
+  if not deferred
+     or (select status from public.storage_cleanup_jobs where id=n) <> 'pending'
+     or (select last_error from public.storage_cleanup_jobs where id=n) is not null then
+    raise exception 'Atomic defer stranded an image detached immediately before deferral';
+  end if;
+
+  if has_function_privilege('anon', 'public.defer_storage_cleanup_job(bigint,text,text,uuid)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.defer_storage_cleanup_job(bigint,text,text,uuid)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.defer_storage_cleanup_job(bigint,text,text,uuid)', 'EXECUTE') then
+    raise exception 'Atomic defer RPC permissions are not restricted to service_role';
+  end if;
+end $;
