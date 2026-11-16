@@ -1,0 +1,46 @@
+# Local-only Supabase stack for AHLA TOUNSA.
+# This project intentionally has migrations disabled until the original production
+# schema and migration history have been recovered and reviewed.
+project_id = "ahla-tounsa-local"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.migrations]
+enabled = false
+
+[db.seed]
+enabled = false
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = false
+
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://localhost:3000", "http://127.0.0.1:3000"]
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+minimum_password_length = 8
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false

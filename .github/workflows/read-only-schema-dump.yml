@@ -1,0 +1,45 @@
+name: Read-only production schema export
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  schema-only-export:
+    if: github.ref == 'refs/heads/integration/release-candidate-2026-11-15'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Require private database connection secret
+        shell: bash
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::Add SUPABASE_DB_URL as a GitHub Actions repository secret before running this workflow."
+            exit 1
+          fi
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: latest
+
+      - name: Export schema only (no table data, no roles)
+        shell: bash
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set +x
+          supabase db dump --remote="$SUPABASE_DB_URL" -f production-schema.sql
+          test -s production-schema.sql
+
+      - name: Upload private schema artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ahla-tounsa-production-schema-only
+          path: production-schema.sql
+          if-no-files-found: error
+          retention-days: 3

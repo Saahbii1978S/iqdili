@@ -1,0 +1,58 @@
+name: Local Supabase service smoke tests
+
+on:
+  push:
+    branches: ["integration/release-candidate-2026-11-15"]
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "supabase/config.toml"
+      - ".github/workflows/local-supabase-smoke.yml"
+      - "supabase/migrations/**"
+      - "supabase/tests/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Push and pull_request events for the same head branch share one runner slot.
+  group: local-supabase-${{ github.head_ref || github.ref }}
+  # Do not cancel a slow local Supabase startup when another commit is pushed.
+  cancel-in-progress: false
+
+jobs:
+  local-supabase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v3
+
+      - name: Start isolated local Supabase services
+        run: supabase start --exclude studio,mailpit,logflare,vector,supavisor,edge-runtime
+
+      - name: Verify local database and Supabase service endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" \
+            --set ON_ERROR_STOP=1 \
+            --command "select current_database(), current_setting('server_version');"
+
+          for endpoint in \
+            "http://127.0.0.1:54321/auth/v1/health" \
+            "http://127.0.0.1:54321/storage/v1/status"; do
+            echo "Checking $endpoint"
+            curl --fail --silent --show-error --retry 10 --retry-delay 2 "$endpoint"
+            echo
+          done
+
+          echo "Local Supabase database, Auth, and Storage endpoints responded successfully."
+
+      - name: Stop local Supabase services
+        if: always()
+        run: supabase stop --no-backup

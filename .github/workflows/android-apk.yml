@@ -1,11 +1,6 @@
-name: Build and publish Ahla Tounsa Android APK
+name: Build and publish signed Ahla Tounsa Android APK
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'android/**'
-      - '.github/workflows/android-apk.yml'
   workflow_dispatch:
 
 permissions:
@@ -13,10 +8,28 @@ permissions:
 
 jobs:
   build:
+    # Release publishing is permitted only from the protected main branch.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      RELEASE_STORE_PASSWORD: ${{ secrets.RELEASE_STORE_PASSWORD }}
+      RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+      RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Require permanent release-signing credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in ANDROID_KEYSTORE_BASE64 RELEASE_STORE_PASSWORD RELEASE_KEY_ALIAS RELEASE_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub Actions secret: $name"
+              exit 1
+            fi
+          done
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -37,36 +50,43 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Build installable debug APK
-        working-directory: android
-        run: gradle --no-daemon assembleDebug
-
-      - name: Verify APK integrity, signature, and package
+      - name: Prepare private release keystore
         shell: bash
         run: |
           set -euo pipefail
-          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/ahla-tounsa-release.jks"
+          chmod 600 "$RUNNER_TEMP/ahla-tounsa-release.jks"
+          test -s "$RUNNER_TEMP/ahla-tounsa-release.jks"
+          echo "RELEASE_STORE_FILE=$RUNNER_TEMP/ahla-tounsa-release.jks" >> "$GITHUB_ENV"
+          keytool -list -keystore "$RUNNER_TEMP/ahla-tounsa-release.jks" -storepass "$RELEASE_STORE_PASSWORD" -alias "$RELEASE_KEY_ALIAS" >/dev/null
+
+      - name: Build signed release APK
+        working-directory: android
+        run: gradle --no-daemon clean assembleRelease
+
+      - name: Verify signed APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/release/app-release.apk"
           test -s "$APK"
           unzip -t "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -F "package: name='tn.ahlatounsa.app'"
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK"
-          echo "Verified APK size: $(stat -c%s "$APK") bytes"
-
-      - name: Prepare direct-download APK
-        run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk dist/ahla-tounsa.apk
+          cp "$APK" dist/ahla-tounsa.apk
+          echo "Verified signed release APK size: $(stat -c%s dist/ahla-tounsa.apk) bytes"
 
-      - name: Keep workflow artifact backup
+      - name: Keep signed APK artifact backup
         uses: actions/upload-artifact@v4
         with:
-          name: ahla-tounsa-debug-apk
+          name: ahla-tounsa-signed-release-apk
           path: dist/ahla-tounsa.apk
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
 
-      - name: Publish stable direct-download release
+      - name: Publish signed release APK
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

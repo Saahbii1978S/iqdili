@@ -17,6 +17,8 @@ concurrency:
 
 jobs:
   deploy:
+    # Production Pages deployment is permitted only from the protected main branch.
+    if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -24,12 +26,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check all Edge Functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r file; do
+            echo "::group::deno check $file"
+            deno check "$file"
+            echo "::endgroup::"
+          done < <(find supabase/functions -mindepth 2 -maxdepth 2 -type f -name index.ts | sort)
+      - name: Run all Edge Function tests
+        run: deno test supabase/functions
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Prepare public site
         run: |
           mkdir -p _site
-          cp index.html privacy.html terms.html delete-account.html download.html 404.html manifest.webmanifest service-worker.js app-icon.svg home-youthful-palette.css _site/
+          cp index.html privacy.html terms.html delete-account.html download.html 404.html manifest.webmanifest service-worker.js app-icon.svg home-youthful-palette.css comments.js _site/
+      - name: Render Facebook share preview image
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-core librsvg2-bin
+          rsvg-convert -w 1200 -h 630 social-preview.svg > _site/social-preview.png
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
