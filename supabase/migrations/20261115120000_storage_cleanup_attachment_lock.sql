@@ -108,6 +108,10 @@ declare
   candidate record;
   current_job public.storage_cleanup_jobs%rowtype;
 begin
+  -- Do not lock queue rows in the candidate cursor. The global lock order is:
+  -- object advisory lock -> cleanup queue row lock. Listing attachment and
+  -- detachment triggers already take the advisory lock before touching queue
+  -- state; reversing this order here can deadlock a worker against a deletion.
   for candidate in
     select j.id, j.bucket, j.object_path
       from public.storage_cleanup_jobs j
@@ -123,9 +127,9 @@ begin
        or (j.status = 'staged' and j.updated_at < pg_catalog.now() - interval '10 minutes')
      )
      order by j.updated_at, j.id
-     for update skip locked
      limit least(greatest(coalesce(p_limit, 20), 1), 25)
   loop
+    -- Serialize all decisions for this object before locking its queue row.
     perform pg_catalog.pg_advisory_xact_lock(
       pg_catalog.hashtextextended(candidate.bucket || ':' || candidate.object_path, 0)
     );
@@ -136,6 +140,22 @@ begin
      for update;
 
     if not found then
+      continue;
+    end if;
+
+    -- Another worker may have claimed or changed this candidate while we
+    -- waited for its advisory lock. Re-check eligibility after taking both locks.
+    if not (
+      (current_job.status = 'pending'
+        and (
+          current_job.attempts = 0
+          or current_job.updated_at < pg_catalog.now() - pg_catalog.make_interval(
+            mins => least(60, pg_catalog.power(2, least(current_job.attempts, 6))::integer)
+          )
+        ))
+      or (current_job.status = 'processing' and current_job.lease_until < pg_catalog.now())
+      or (current_job.status = 'staged' and current_job.updated_at < pg_catalog.now() - interval '10 minutes')
+    ) then
       continue;
     end if;
 
