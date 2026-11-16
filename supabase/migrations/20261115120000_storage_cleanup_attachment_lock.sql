@@ -124,7 +124,9 @@ begin
            )
          ))
        or (j.status = 'processing' and j.lease_until < pg_catalog.now())
-       or (j.status = 'staged' and j.updated_at < pg_catalog.now() - interval '10 minutes')
+       or (j.status = 'staged'
+         and j.last_error is distinct from 'Image is still referenced by a live listing; deferred until the final reference is removed'
+         and j.updated_at < pg_catalog.now() - interval '10 minutes')
      )
      order by j.updated_at, j.id
      limit least(greatest(coalesce(p_limit, 20), 1), 25)
@@ -154,7 +156,9 @@ begin
           )
         ))
       or (current_job.status = 'processing' and current_job.lease_until < pg_catalog.now())
-      or (current_job.status = 'staged' and current_job.updated_at < pg_catalog.now() - interval '10 minutes')
+      or (current_job.status = 'staged'
+        and current_job.last_error is distinct from 'Image is still referenced by a live listing; deferred until the final reference is removed'
+        and current_job.updated_at < pg_catalog.now() - interval '10 minutes')
     ) then
       continue;
     end if;
