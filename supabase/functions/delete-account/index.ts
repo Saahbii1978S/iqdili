@@ -83,6 +83,25 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "تأكيد الحذف غير صحيح." }, 400);
     }
 
+    // Three attempts per verified account per hour. Existing deletion locks remain retryable.
+    const rateLimit = await api(
+      url,
+      serviceKey,
+      "/rest/v1/rpc/consume_account_deletion_rate_limit",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ p_user_id: user.id }),
+      },
+    );
+    if (!rateLimit.ok) {
+      console.error("Account deletion rate limit check failed", rateLimit.status);
+      return reply({ error: "حماية حذف الحساب غير متوفرة حالياً. عاود بعد شوية." }, 503);
+    }
+    if (await rateLimit.json().catch(() => false) !== true) {
+      return reply({ error: "وصلت للحدّ المسموح لمحاولات حذف الحساب. عاود بعد ساعة." }, 429);
+    }
+
     // Keep administrator accounts intact so the platform cannot lose its only owner.
     for (const roleTable of ["admins", "staff_roles"]) {
       const roleCheck = await api(
@@ -101,6 +120,24 @@ Deno.serve(async (req: Request) => {
           code: "ADMIN_ACCOUNT",
         }, 403);
       }
+    }
+
+    const countCheck = await api(
+      url,
+      serviceKey,
+      "/rest/v1/rpc/account_post_count_within_limit",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ p_user_id: user.id }),
+      },
+    );
+    if (!countCheck.ok) {
+      console.error("Account listing count check failed", countCheck.status);
+      return reply({ error: "تعذّر التثبت من عدد إعلانات الحساب. لم يتم حذف أي بيانات." }, 503);
+    }
+    if (await countCheck.json().catch(() => false) !== true) {
+      return reply({ error: "عدد الإعلانات المرتبطة بالحساب بلغ الحدّ الأقصى (10,000). تواصل مع الإدارة لإتمام الحذف بأمان." }, 413);
     }
 
     const rowsByTable: Record<string, Array<Record<string, unknown>>> = {};
