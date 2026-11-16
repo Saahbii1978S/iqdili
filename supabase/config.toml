@@ -27,8 +27,6 @@ enabled = true
 [studio]
 enabled = false
 
-[inbucket]
-enabled = false
 
 [storage]
 enabled = true
