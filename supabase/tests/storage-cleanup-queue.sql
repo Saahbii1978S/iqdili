@@ -397,8 +397,7 @@ begin
   -- The worker must refuse an image still referenced by any live listing.
   insert into public.service_requests(user_id,title,status,image_urls)
   values (u4,'shared reference','approved',array['services/retained.jpg']);
-  if not public.is_storage_cleanup_object_referenced('listing-images','services/retained.jpg') then
-    raise exception 'Worker reference check missed a live listing image';
+  if not public.is_storage_cleanup_object_referenced('listing-images','services/retained.jpg') then    raise exception 'Worker reference check missed a live listing image';
   end if;
   if public.is_storage_cleanup_object_referenced('pending-images','services/retained.jpg') then
     raise exception 'Approved listing should not retain a private pending-bucket copy';
@@ -797,8 +796,7 @@ begin
   end if;
 
   insert into public.service_requests(user_id,title,status)
-    select u8,'limit-10001-services-'||g,'pending' from generate_series(1,2501) g;
-  insert into public.job_posts(user_id,title,status)
+    select u8,'limit-10001-services-'||g,'pending' from generate_series(1,2501) g;  insert into public.job_posts(user_id,title,status)
     select u8,'limit-10001-jobs-'||g,'pending' from generate_series(1,2500) g;
   insert into public.real_estate_posts(user_id,title,status)
     select u8,'limit-10001-realty-'||g,'pending' from generate_series(1,2500) g;
@@ -952,3 +950,15 @@ update public.service_requests
 reset role;
 
 do $rls_admin_verify$
+begin
+  if not exists (
+    select 1 from public.service_requests
+     where title='rls-admin-modified'
+       and user_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+  ) then
+    raise exception 'Admin UPDATE did not pass the intended RLS policy';
+  end if;
+end;
+$rls_admin_verify$;
+
+delete from public.service_requests where title='rls-admin-modified';
