@@ -49,6 +49,21 @@ Supabase's deployed function metadata includes source SHA-256 values; a future
 recovery check should compare deployed source with repository source and preserve
 the exact deployed versions. Secret values were neither requested nor inspected.
 
+## Storage inventory (read-only aggregate, 2026-11-16)
+A read-only aggregate over `storage.buckets` and `storage.objects` returned:
+
+| Bucket | Visibility | Objects | Total bytes | Max file size | Allowed types |
+| --- | --- | ---: | ---: | ---: | --- |
+| listing-images | Public | 0 | 0 | 3 MiB | JPEG, PNG, WebP |
+| market-images | Public | 0 | 0 | 3 MiB | JPEG, PNG, WebP |
+| pending-images | Private | 5 | 1,587,920 | 3 MiB | JPEG, PNG, WebP |
+
+Only aggregate counts and sizes were queried; object names, paths, and file
+contents were not accessed. Counts can change as the app is used, so this is a
+point-in-time inventory, not a completed file backup. The five private pending
+objects must remain private and untouched; a future export must preserve their
+paths and verify checksums without exposing the inventory publicly.
+
 ## Backup/restore implications
 - Supabase's platform-to-self-hosted guide describes separate role, schema, and
   data exports using `supabase db dump`.
