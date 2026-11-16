@@ -103,3 +103,17 @@
 - Those three roles also lack direct `SELECT`/`INSERT` on `private.ask_rate_limits` and `SELECT` on `private.site_visit_config`; the `postgres` owner has these privileges.
 - Therefore the Supabase table-list advisory about disabled RLS is a warning that must be tracked, but its blanket statement that these tables are directly exposed through the client roles is not supported by the current direct privilege checks. Do not auto-enable RLS: the SECURITY DEFINER functions are designed to access these private tables, and any policy/privilege change requires a separate security design and explicit approval.
 - The full grant inventory also includes Supabase-managed `storage` relations and is not treated as application DDL.
+
+
+## Additional catalog verification (read-only, 2026-11-16)
+- Exact view SQL was captured for the five public views. They are simple filtered/projection views; `approved_market_posts` filters `market_posts` to `status = 'approved'`. The other four expose selected columns from the legacy `services`, `jobs`, `market`, and `realty` tables. No materialized views were found in `public` or `private`.
+- Eleven public sequences were found, all owned by `postgres`: the sequence objects for `admin_role_events`, `admin_status_audit`, `service_requests`, `job_posts`, `real_estate_posts`, `market_posts`, `jobs`, `services`, `properties`, `market`, and `realty`.
+- Storage bucket metadata (no objects queried): `market-images` and `listing-images` are public; `pending-images` is private. Each has a 3 MiB upload limit and permits JPEG, PNG, and WebP.
+- The active scheduled job inventory contains one job: `expire-posts-daily`, scheduled at `17 3 * * *` (03:17 daily, database scheduler timezone not independently established). The command/body was deliberately not read.
+- No publication table memberships were found.
+- Schema ACL inspection confirms `anon`, `authenticated`, and `service_role` have USAGE (but not CREATE) on `public`; the same roles have USAGE (but not CREATE) on `storage`. They have neither USAGE nor CREATE on `private`. This is consistent with the earlier direct private-table privilege checks.
+- Default-privilege catalog entries exist for multiple Supabase-managed schemas and for both `supabase_admin` and `postgres` owners in `public`. The postgres-owned public defaults are restrictive for anon/authenticated/service_role (only destructive/maintenance-style privileges are present in the ACL representation); the Supabase-managed defaults are broader. These mixed owner-specific defaults must be recreated deliberately, not copied wholesale into an app bootstrap.
+- A full column-grant query also returned extensive Supabase-managed Storage metadata. It was not copied into this application reconstruction note; a complete faithful restore still requires an approved schema-only dump or a carefully scoped object-by-object DDL reconstruction.
+
+## Reconstruction decision
+The catalog work has improved the inventory but **does not yet justify generating or applying a supposedly faithful full migration**. In particular, the complete function definitions and EXECUTE grants, all table/column ACLs, trigger and event-trigger definitions, exact sequence ownership/default links, and Supabase-managed Auth/Storage internals still need controlled treatment. Keep the local Supabase smoke-test workflow as infrastructure verification only; do not run synthetic integration tests against an incomplete schema.
