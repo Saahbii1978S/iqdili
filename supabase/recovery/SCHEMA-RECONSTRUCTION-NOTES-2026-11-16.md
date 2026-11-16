@@ -149,3 +149,13 @@ The catalog work has improved the inventory but **does not yet justify generatin
 - Important caveat: `record_site_visit(uuid)` is a SECURITY DEFINER overload that accepts a caller-supplied UUID but is postgres-only according to its function ACL, while the no-argument IP-derived overload is the client-facing one. Preserve this distinction in any reconstruction.
 - The custom `ensure_rls` event trigger is part of application security behavior and must be represented in a faithful local reconstruction. Do not disable it or replace it with blanket RLS changes.
 - These are catalog/body reviews only, not runtime penetration tests. No function was invoked and no data was changed.
+
+
+## View security, exact application policies and sequence dependencies (read-only, 2026-11-16)
+- All five public views are owned by postgres and explicitly set `security_invoker=true`. The four legacy public views (`jobs_public`, `market_public`, `realty_public`, `services_public`) also set `security_barrier=true`. `approved_market_posts` is a filtered projection view and sets security_invoker, without security_barrier.
+- Exact application RLS policies observed:
+  - On each of `job_posts`, `market_posts`, `real_estate_posts`, and `service_requests`: authenticated-only SELECT policy with `is_admin()`, plus authenticated-only UPDATE policy with both USING and WITH CHECK set to `is_admin()`.
+  - On `storage.objects`: public SELECT policies restricted to bucket IDs `market-images` and `listing-images`. No public-read policy was found for `pending-images`.
+- RLS state was checked table-by-table: all 14 public tables have RLS enabled and none is FORCE RLS; all four private tables have RLS disabled and none is FORCE RLS. The direct schema/table ACL checks above remain essential context for the private tables.
+- All 11 public sequences have a dependency on a corresponding table column. Identity sequences use dependency type `i`; legacy `nextval` sequences for `jobs`, `market`, `properties`, and `services` use dependency type `a`. Exact table/column pairs were verified for all sequences.
+- No policies were found in `private`; the only application policies outside public tables are the two Storage object SELECT policies above. These exact policies and view options are required for faithful local reconstruction; do not broaden them.
