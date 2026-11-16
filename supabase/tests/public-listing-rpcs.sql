@@ -45,7 +45,7 @@ insert into public.service_requests values
 (3,'pending','d','Sfax',now(),'20000003',true,'{}','pending');
 insert into public.job_posts values
 (1,'public','d','Sfax',now(),'full-time','onsite','21000001',true,'{}','approved'),
-(2,'private','d','Sfax',now()-interval '1 minute','21000002',false,'{}','approved'),
+(2,'private','d','Sfax',now()-interval '1 minute','full-time','onsite','21000002',false,'{}','approved'),
 (3,'pending','d','Sfax',now(),'full-time','onsite','21000003',true,'{}','pending');
 insert into public.real_estate_posts values
 (1,'public','flat','rent','d','Sfax',now(),500,90,3,'22000001',true,'{}','approved'),
