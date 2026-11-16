@@ -77,3 +77,16 @@ The catalog data is now substantially more complete, but do not call the local d
 
 ## Explicit exclusions
 No production rows, user records, password hashes, secret values, private salt value, storage object names, or storage object contents were queried. No production DDL/DML or settings were changed.
+
+
+## Default privileges and Storage bucket metadata
+A read-only query of `pg_default_acl` found:
+- For objects created by `postgres` in schema `public`, default privileges exist for tables (`r`), sequences (`S`), and functions (`f`). The table default ACL grants broad table privileges to `anon`, `authenticated`, and `service_role`; function EXECUTE defaults are also granted to those roles. This is an important security-sensitive default for future objects. The existing `ensure_rls` event trigger enables RLS on new public tables, but RLS with no policies denies ordinary client access; do not assume default grants alone imply accessible rows. Any change to default ACLs requires a separate reviewed migration and explicit approval.
+- Default ACLs also exist for objects owned by `supabase_admin` in `public`, and for `postgres` in `storage`. These are platform-managed and must not be copied wholesale into application migrations.
+- No default ACL row was returned for schema `private`.
+
+Storage bucket metadata (no objects read):
+- `listing-images`: public; 3 MiB maximum; JPEG, PNG, WebP.
+- `market-images`: public; 3 MiB maximum; JPEG, PNG, WebP.
+- `pending-images`: private; 3 MiB maximum; JPEG, PNG, WebP.
+- The only application Storage policies returned by the catalog query are public SELECT on `storage.objects` for `market-images` and `listing-images`. No public-read policy exists for `pending-images`.
