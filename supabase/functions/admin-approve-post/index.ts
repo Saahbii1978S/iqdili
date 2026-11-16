@@ -5,6 +5,7 @@
 // Runtime secrets remain environment variables and are not included in this snapshot.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
 import { classifyStorageHeadStatus } from "../_shared/storage-head.ts";
 import { buildStorageCleanupJobs, enqueueStorageCleanup, isValidStorageObjectPath } from "../_shared/storage-cleanup-queue.ts";
 const ORIGIN = "https://saahbii1978s.github.io";
@@ -77,7 +78,10 @@ Deno.serve(async(req:Request)=>{
  if(req.headers.get("origin")!==ORIGIN)return reply({error:"مصدر الطلب غير مسموح."},403);
  try{
   const auth=await admin(req);if(!auth.ok)return reply({error:"الدخول للإدارة غير مصرح."},401);
-  const body=await req.json();const table=body?.table,id=body?.id;
+  const boundedRequest=await readLimitedRequest(req,1024);
+  if(!boundedRequest)return reply({error:"حجم الطلب أكبر من المسموح."},413);
+  const body=await boundedRequest.json().catch(()=>null);const table=body?.table,id=body?.id;
+  if(!body||typeof body!=="object")return reply({error:"الطلب غير صالح."},400);
   if(typeof table!=="string"||!Object.hasOwn(tables,table)||!(typeof id==="string"||typeof id==="number")||!/^\d{1,18}$/.test(String(id)))return reply({error:"الطلب غير صالح."},400);
   const rowResponse=await fetch(auth.url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&select=*",{headers:{apikey:auth.key,Authorization:"Bearer "+auth.key}});
   if(!rowResponse.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
