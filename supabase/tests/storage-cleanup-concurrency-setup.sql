@@ -77,6 +77,21 @@ create trigger listing_detachment_reactivate
 after delete or update of bucket, object_path on listings
 for each row execute function reactivate_deferred();
 
+create function enqueue_one(p_bucket text, p_path text) returns text
+language plpgsql as $
+begin
+  perform cleanup_concurrency.object_lock(p_bucket,p_path);
+  if cleanup_concurrency.has_reference(p_bucket,p_path) then
+    insert into cleanup_concurrency.cleanup_jobs(bucket,object_path,status,lease_token)
+    values (p_bucket,p_path,'staged',gen_random_uuid());
+    return 'staged';
+  end if;
+  insert into cleanup_concurrency.cleanup_jobs(bucket,object_path,status,lease_token)
+  values (p_bucket,p_path,'pending',gen_random_uuid());
+  return 'pending';
+end;
+$;
+
 create function claim_one() returns text
 language plpgsql as $$
 declare j cleanup_concurrency.cleanup_jobs%rowtype;
