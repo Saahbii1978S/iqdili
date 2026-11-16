@@ -25,7 +25,7 @@ Deno.test("rejects unsafe, malformed, and unsupported paths", () => {
 });
 
 Deno.test("rejects paths longer than 220 characters", () => {
-  assertEquals(isValidStorageObjectPath("a".repeat(216) + ".jpg"), false);
+  assertEquals(isValidStorageObjectPath("a".repeat(217) + ".jpg"), false);
 });
 
 Deno.test("encodes each path segment without encoding separators", () => {
