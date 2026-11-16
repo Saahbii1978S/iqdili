@@ -1,4 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { hasRecentAuthentication } from "../_shared/recent-auth.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 
 const ORIGIN = "https://saahbii1978s.github.io";
 const cors = {
@@ -67,10 +71,35 @@ Deno.serve(async (req: Request) => {
     if (typeof user.id !== "string" || !/^[0-9a-f-]{36}$/i.test(user.id)) {
       return reply({ error: "تعذّر التثبت من الحساب." }, 401);
     }
+    // The Auth endpoint validates the JWT signature; now require its auth_time claim to be fresh.
+    if (!hasRecentAuthentication(authorization, user.id)) {
+      return reply({ error: "لحماية حسابك، عاود تسجيل الدخول بكلمة المرور قبل طلب حذف الحساب." }, 401);
+    }
 
-    const body = await req.json().catch(() => null);
+    const boundedRequest = await readLimitedRequest(req, 1024);
+    if (!boundedRequest) return reply({ error: "حجم الطلب أكبر من المسموح." }, 413);
+    const body = await boundedRequest.json().catch(() => null);
     if (!body || body.confirm !== "DELETE") {
       return reply({ error: "تأكيد الحذف غير صحيح." }, 400);
+    }
+
+    // Three attempts per verified account per hour. Existing deletion locks remain retryable.
+    const rateLimit = await api(
+      url,
+      serviceKey,
+      "/rest/v1/rpc/consume_account_deletion_rate_limit",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ p_user_id: user.id }),
+      },
+    );
+    if (!rateLimit.ok) {
+      console.error("Account deletion rate limit check failed", rateLimit.status);
+      return reply({ error: "حماية حذف الحساب غير متوفرة حالياً. عاود بعد شوية." }, 503);
+    }
+    if (await rateLimit.json().catch(() => false) !== true) {
+      return reply({ error: "وصلت للحدّ المسموح لمحاولات حذف الحساب. عاود بعد ساعة." }, 429);
     }
 
     // Keep administrator accounts intact so the platform cannot lose its only owner.
@@ -93,13 +122,31 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const rowsByTable: Record<string, Array<{ id: number; image_urls?: string[]; title?: string; description?: string }>> = {};
+    const countCheck = await api(
+      url,
+      serviceKey,
+      "/rest/v1/rpc/account_post_count_within_limit",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ p_user_id: user.id }),
+      },
+    );
+    if (!countCheck.ok) {
+      console.error("Account listing count check failed", countCheck.status);
+      return reply({ error: "تعذّر التثبت من عدد إعلانات الحساب. لم يتم حذف أي بيانات." }, 503);
+    }
+    if (await countCheck.json().catch(() => false) !== true) {
+      return reply({ error: "عدد الإعلانات المرتبطة بالحساب بلغ الحدّ الأقصى (10,000). تواصل مع الإدارة لإتمام الحذف بأمان." }, 413);
+    }
+
+    const rowsByTable: Record<string, Array<Record<string, unknown>>> = {};
     for (const table of tables) {
-      const all: Array<{ id: number; image_urls?: string[]; title?: string; description?: string }> = [];
+      const all: Array<Record<string, unknown>> = [];
       let complete = false;
       for (let offset = 0; offset < 10000; offset += 1000) {
         const query = new URLSearchParams({
-          select: "id,image_urls,title,description",
+          select: "*",
           user_id: "eq." + user.id,
           order: "id.asc",
           limit: "1000",
@@ -124,18 +171,10 @@ Deno.serve(async (req: Request) => {
       rowsByTable[table.name] = all;
     }
 
-    // Protect known demo IDs and any clearly labelled test/demo post before deleting anything.
-    const protectedIds: Record<string, string[]> = {
-      service_requests: ["13"],
-      job_posts: ["7"],
-      market_posts: ["2", "3", "7", "8", "9"],
-      real_estate_posts: ["1", "2", "6"],
-    };
-    const demoPattern = /(تجريب|تجريبي|اختبار|test|demo|مثال)/i;
+    // Use the same protected-demo policy as every post deletion/status endpoint.
     for (const table of tables) {
       for (const row of rowsByTable[table.name] || []) {
-        const demoText = (String(row.title || "") + " " + String(row.description || "")).toLowerCase();
-        if ((protectedIds[table.name] || []).includes(String(row.id)) || demoPattern.test(demoText)) {
+        if (isProtectedDemoPost(table.name, row.id as string | number, row.title, row.description)) {
           return reply({
             error: "الحساب مرتبط بإعلان تجريبي محمي. لم نحذف أي إعلان أو صورة أو الحساب؛ تواصل مع الإدارة لمراجعته.",
             code: "PROTECTED_TEST_POST",
@@ -161,38 +200,44 @@ Deno.serve(async (req: Request) => {
       pathsByTable[table.name] = [...new Set(paths)];
     }
 
-    // Remove the user's four categories of posts. Retrying is safe if a later step fails.
-    for (const table of tables) {
-      const removeRows = await api(
-        url,
-        serviceKey,
-        "/rest/v1/" + table.name + "?user_id=eq." + encodeURIComponent(user.id),
-        { method: "DELETE", headers: { "Prefer": "return=minimal" } },
-      );
-      if (!removeRows.ok) {
-        console.error("Account post cleanup failed", table.name, removeRows.status);
-        return reply({ error: "تعذّر حذف كل الإعلانات المرتبطة بالحساب. الحساب مازال موجوداً؛ عاود المحاولة." }, 502);
-      }
+    const cleanupJobs = tables.flatMap((table) =>
+      buildStorageCleanupJobs(
+        [table.bucket, "pending-images"],
+        pathsByTable[table.name] || [],
+      )
+    );
+    if (cleanupJobs.length > 500) {
+      return reply({ error: "عدد الصور المرتبطة بالحساب كبير. يلزم مراجعة الإدارة قبل الحذف الآمن." }, 413);
+    }
+    if (!await enqueueStorageCleanup(url, serviceKey, cleanupJobs)) {
+      console.error("Could not enqueue account image cleanup", user.id);
+      return reply({ error: "تعذّر تجهيز تنظيف الصور بأمان. لم يقع حذف أي إعلان أو الحساب." }, 503);
     }
 
-    // Storage cleanup starts only after all database row deletions succeeded.
-    // A database failure above therefore cannot leave a live post without its image.
-    for (const table of tables) {
-      const paths = pathsByTable[table.name] || [];
-      for (let i = 0; i < paths.length; i += 100) {
-        const batch = paths.slice(i, i + 100);
-        for (const bucket of [table.bucket, "pending-images"]) {
-          const remove = await api(url, serviceKey, "/storage/v1/object/" + bucket, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prefixes: batch }),
-          });
-          if (!remove.ok) {
-            console.error("Account image cleanup failed after database deletion", bucket, remove.status);
-            return reply({ error: "تم حذف الإعلانات، لكن تعذّر تنظيف بعض الصور. الحساب مازال موجوداً؛ تواصل مع الإدارة لإتمام التنظيف." }, 502);
-          }
-        }
-      }
+    // Delete all four listing categories and activate their exact image jobs in one database transaction.
+    const deletion = await api(
+      url,
+      serviceKey,
+      "/rest/v1/rpc/delete_account_posts_and_activate_cleanup",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          p_user_id: user.id,
+          p_jobs: cleanupJobs,
+          p_expected_rows: {
+            service_requests: rowsByTable.service_requests || [],
+            job_posts: rowsByTable.job_posts || [],
+            real_estate_posts: rowsByTable.real_estate_posts || [],
+            market_posts: rowsByTable.market_posts || [],
+          },
+        }),
+      },
+    );
+    if (!deletion.ok) {
+      const detail = await deletion.text().catch(() => "");
+      console.error("Atomic account post cleanup failed", deletion.status, detail.slice(0, 500));
+      return reply({ error: "تغيّرت إعلانات الحساب أثناء العملية أو تعذّر تجهيز تنظيف الصور. لم يقع حذف الحساب؛ عاود المحاولة." }, 409);
     }
 
     const deleteUser = await fetch(url + "/auth/v1/admin/users/" + encodeURIComponent(user.id), {
@@ -205,7 +250,7 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "تم تنظيف الإعلانات، لكن تعذّر إكمال حذف الحساب. عاود المحاولة أو تواصل مع الإدارة." }, 502);
     }
 
-    return reply({ ok: true, message: "تم حذف الحساب والإعلانات والصور المرتبطة به." });
+    return reply({ ok: true, cleanupPending: cleanupJobs.length > 0, message: cleanupJobs.length ? "تم حذف الحساب والإعلانات. تنظيف الصور المرتبطة بها جارٍ في الخلفية." : "تم حذف الحساب والإعلانات." });
   } catch (error) {
     console.error("delete-account error", String(error));
     return reply({ error: "صار خطأ غير متوقع. لم نتمكن من تأكيد اكتمال حذف الحساب." }, 500);
