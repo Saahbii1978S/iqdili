@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - audit/safe-fixes-2026-11-15
+      - integration/release-candidate-2026-11-15
+    paths:
+      - 'android/**'
+      - '.github/workflows/android-apk-check.yml'
+  pull_request:
+    branches:
+      - main
     paths:
       - 'android/**'
       - '.github/workflows/android-apk-check.yml'
