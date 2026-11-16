@@ -547,6 +547,33 @@ begin
     raise exception 'A deferred staged job was immediately reclaimed again';
   end if;
 
+  -- A referenced image is deferred once, then waits for its final detachment.
+  -- The deletion RPC reactivates it; the worker must not poll it every ten minutes.
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,updated_at,last_error)
+  values (
+    'listing-images','services/deferred-reference.jpg','staged',
+    now()-interval '11 minutes',
+    'Image is still referenced by a live listing; deferred until the final reference is removed'
+  );
+  if exists (
+    select 1 from public.claim_storage_cleanup_jobs(1)
+     where object_path='services/deferred-reference.jpg'
+  ) then
+    raise exception 'A deferred referenced image was repeatedly reclaimed';
+  end if;
+  n := public.activate_storage_cleanup_jobs(
+    '[{"bucket":"listing-images","object_path":"services/deferred-reference.jpg"}]'::jsonb
+  );
+  if n <> 1 then raise exception 'Final detachment did not reactivate the deferred image'; end if;
+  select * into claimed from public.claim_storage_cleanup_jobs(1)
+   where object_path='services/deferred-reference.jpg';
+  if claimed.id is null or claimed.attempts <> 1 then
+    raise exception 'Reactivated deferred image was not claimable after final detachment';
+  end if;
+  update public.storage_cleanup_jobs
+     set status='completed',lease_until=null,lease_token=null,completed_at=now(),updated_at=now()
+   where id=claimed.id and status='processing' and lease_token=claimed.lease_token;
+
   -- Explicit activation RPC confirms every requested job is no longer staged.
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values ('listing-images','jobs/activation.jpg','staged');
