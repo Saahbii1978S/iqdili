@@ -246,25 +246,22 @@ export async function deferClaimedStorageCleanup(
   serviceKey: string,
   job: ClaimedStorageCleanupJob,
 ): Promise<boolean> {
-  const query = new URLSearchParams({ id: "eq." + job.id, status: "eq.processing", lease_token: "eq." + job.lease_token });
-  const response = await fetch(url + "/rest/v1/storage_cleanup_jobs?" + query.toString(), {
-    method: "PATCH",
+  // The database serializes this decision with concurrent final detachment.
+  // It requeues immediately if the last reference disappeared after our earlier check.
+  const response = await fetch(url + "/rest/v1/rpc/defer_storage_cleanup_job", {
+    method: "POST",
     headers: {
       apikey: serviceKey,
       Authorization: "Bearer " + serviceKey,
       "Content-Type": "application/json",
-      Prefer: "return=representation",
     },
     body: JSON.stringify({
-      status: "staged",
-      attempts: 0,
-      lease_until: null,
-      lease_token: null,
-      last_error: "Image is still referenced by a live listing; deferred until the final reference is removed",
-      updated_at: new Date().toISOString(),
+      p_id: job.id,
+      p_bucket: job.bucket,
+      p_object_path: job.object_path,
+      p_lease_token: job.lease_token,
     }),
   });
   if (!response.ok) return false;
-  const rows = await response.json().catch(() => null);
-  return Array.isArray(rows) && rows.length === 1;
+  return await response.json().catch(() => false) === true;
 }
