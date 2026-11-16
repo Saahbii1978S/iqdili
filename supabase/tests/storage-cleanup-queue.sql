@@ -580,6 +580,32 @@ begin
      set status='completed',lease_until=null,lease_token=null,completed_at=now(),updated_at=now()
    where id=claimed.id and status='processing' and lease_token=claimed.lease_token;
 
+  -- Removing the final image reference by editing a listing reactivates a deferred job.
+  insert into public.service_requests(user_id,title,description,status,image_urls)
+  values (u5,'final detach cleanup','snapshot','approved',array['services/final-detach.jpg']);
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,updated_at,last_error)
+  values (
+    'listing-images','services/final-detach.jpg','staged',now()-interval '11 minutes',
+    'Image is still referenced by a live listing; deferred until the final reference is removed'
+  );
+  update public.service_requests
+     set image_urls=array[]::text[]
+   where user_id=u5 and title='final detach cleanup';
+  if (select status from public.storage_cleanup_jobs
+       where bucket='listing-images' and object_path='services/final-detach.jpg') <> 'pending'
+     or (select last_error from public.storage_cleanup_jobs
+          where bucket='listing-images' and object_path='services/final-detach.jpg') is not null then
+    raise exception 'Final image detachment did not reactivate its deferred cleanup job';
+  end if;
+  select * into claimed from public.claim_storage_cleanup_jobs(25)
+   where object_path='services/final-detach.jpg';
+  if claimed.id is null or claimed.attempts <> 1 then
+    raise exception 'Reactivated cleanup job was not claimable after final image detachment';
+  end if;
+  update public.storage_cleanup_jobs
+     set status='completed',lease_until=null,lease_token=null,completed_at=now(),updated_at=now()
+   where id=claimed.id and status='processing' and lease_token=claimed.lease_token;
+
   -- Explicit activation RPC confirms every requested job is no longer staged.
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values ('listing-images','jobs/activation.jpg','staged');
