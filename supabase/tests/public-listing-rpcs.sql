@@ -27,8 +27,8 @@ language sql stable security definer set search_path to ''
 as $f$ select m.id,m.created_at,m.title,m.description,m.category,m.price,m.city,m.listing_type,case when m.contact_public then m.phone else null end,m.image_urls from public.market_posts m where m.status='approved' order by m.created_at desc; $f$;
 
 -- Minimal ACL-only stand-ins for the two observed overloads.
-create function public.record_site_visit() returns void language sql security definer set search_path to '' as $f$ select; $f$;
-create function public.record_site_visit(uuid) returns void language sql security definer set search_path to '' as $f$ select; $f$;
+create function public.record_site_visit() returns void language plpgsql security definer set search_path to '' as $f$ begin return; end; $f$;
+create function public.record_site_visit(uuid) returns void language plpgsql security definer set search_path to '' as $f$ begin return; end; $f$;
 
 revoke all on function public.public_service_requests() from public,anon,authenticated;
 revoke all on function public.public_job_posts() from public,anon,authenticated;
