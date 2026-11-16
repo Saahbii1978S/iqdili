@@ -63,3 +63,11 @@ jobs:
         run: |
           createdb --host 127.0.0.1 --username postgres public_rpc_test
           psql --host 127.0.0.1 --username postgres --dbname public_rpc_test --set ON_ERROR_STOP=1 --file supabase/tests/public-listing-rpcs.sql
+
+      - name: Run two-session Storage cleanup concurrency tests in isolated database
+        env:
+          PGPASSWORD: postgres
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/storage_cleanup_concurrency_test
+        run: |
+          createdb --host 127.0.0.1 --username postgres storage_cleanup_concurrency_test
+          bash supabase/tests/storage-cleanup-concurrency.sh
