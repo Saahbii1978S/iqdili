@@ -1,4 +1,4 @@
-name: Build and publish Ahla Tounsa Android APK
+name: Build Ahla Tounsa Android debug APK for testing
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -37,7 +37,7 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Build installable debug APK
+      - name: Build debug APK for testing
         working-directory: android
         run: gradle --no-daemon assembleDebug
 
@@ -53,27 +53,10 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK"
           echo "Verified APK size: $(stat -c%s "$APK") bytes"
 
-      - name: Prepare direct-download APK
-        run: |
-          mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk dist/ahla-tounsa.apk
-
-      - name: Keep workflow artifact backup
+      - name: Keep debug APK as a testing artifact only
         uses: actions/upload-artifact@v4
         with:
-          name: ahla-tounsa-debug-apk
-          path: dist/ahla-tounsa.apk
+          name: ahla-tounsa-debug-apk-testing-only
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
-
-      - name: Publish stable direct-download release
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: android-latest
-          name: Ahla Tounsa Android APK
-          target_commitish: main
-          files: dist/ahla-tounsa.apk
-          overwrite_files: true
-          make_latest: true
-          generate_release_notes: false
