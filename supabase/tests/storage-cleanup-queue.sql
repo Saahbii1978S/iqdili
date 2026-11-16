@@ -99,7 +99,8 @@ insert into auth.users(id) values
   ('66666666-6666-4666-8666-666666666666'),
   ('77777777-7777-4777-8777-777777777777'),
   ('88888888-8888-4888-8888-888888888888'),
-  ('99999999-9999-4999-8999-999999999999');
+  ('99999999-9999-4999-8999-999999999999'),
+  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
 
 create or replace function public.test_account_snapshot(p_user_id uuid)
 returns jsonb
@@ -882,7 +883,7 @@ end $$;
 -- Exercise actual PostgreSQL RLS with SET ROLE and synthetic JWT claims.
 -- anon must not be able to query the listing tables at all.
 insert into public.service_requests(user_id,title,status)
-values ('22222222-2222-4222-8222-222222222222','rls-isolation-fixture','approved');
+values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','rls-isolation-fixture','approved');
 
 set role anon;
 do $rls_anon$
@@ -900,7 +901,7 @@ reset role;
 -- A signed-in non-admin has the table grant but RLS must hide all rows and
 -- make UPDATE affect zero rows.
 set role authenticated;
-select pg_catalog.set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',false);
+select pg_catalog.set_config('request.jwt.claim.sub','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',false);
 do $rls_nonadmin$
 declare visible_rows integer;
 begin
@@ -920,7 +921,7 @@ begin
   if not exists (
     select 1 from public.service_requests
      where title='rls-isolation-fixture'
-       and user_id='22222222-2222-4222-8222-222222222222'
+       and user_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
   ) then
     raise exception 'Non-admin UPDATE changed a protected listing';
   end if;
@@ -951,7 +952,7 @@ begin
   if not exists (
     select 1 from public.service_requests
      where title='rls-admin-modified'
-       and user_id='22222222-2222-4222-8222-222222222222'
+       and user_id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
   ) then
     raise exception 'Admin UPDATE did not pass the intended RLS policy';
   end if;
