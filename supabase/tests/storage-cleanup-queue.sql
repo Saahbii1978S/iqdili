@@ -796,4 +796,54 @@ begin
     raise exception 'Auth deletion did not cascade the account deletion rate-limit row';
   end if;
 
+
+  -- Catalog-level security regression checks for privileged public RPCs.
+  -- Every SECURITY DEFINER function in public must pin an empty search_path
+  -- and must not inherit EXECUTE from PUBLIC, anon, or authenticated.
+  if exists (
+    select 1
+      from pg_catalog.pg_proc p
+      join pg_catalog.pg_namespace n on n.oid = p.pronamespace
+     where n.nspname = 'public'
+       and p.prosecdef
+       and (
+         not coalesce(p.proconfig, array[]::text[]) @> array['search_path=""']
+         or exists (
+           select 1
+             from pg_catalog.aclexplode(
+               coalesce(p.proacl, pg_catalog.acldefault('f', p.proowner))
+             ) acl
+            where acl.grantee = 0
+              and acl.privilege_type = 'EXECUTE'
+         )
+         or has_function_privilege('anon', p.oid, 'EXECUTE')
+         or has_function_privilege('authenticated', p.oid, 'EXECUTE')
+       )
+  ) then
+    raise exception 'A public SECURITY DEFINER function has an unsafe search_path or untrusted EXECUTE grant';
+  end if;
+
+  -- Internal account deletion tables must not be readable or writable by
+  -- browser roles, even if a future migration accidentally adds a broad grant.
+  if has_table_privilege('anon', 'public.account_deletion_locks', 'SELECT')
+     or has_table_privilege('authenticated', 'public.account_deletion_locks', 'SELECT')
+     or has_table_privilege('anon', 'public.account_deletion_rate_limits', 'SELECT')
+     or has_table_privilege('authenticated', 'public.account_deletion_rate_limits', 'SELECT')
+     or has_table_privilege('anon', 'public.account_deletion_rate_limits', 'INSERT')
+     or has_table_privilege('authenticated', 'public.account_deletion_rate_limits', 'INSERT')
+  then
+    raise exception 'Browser roles have direct access to internal account-deletion tables';
+  end if;
+
+  -- Privileged queue and account-deletion RPCs must remain service_role-only.
+  if has_function_privilege('anon', 'public.block_writes_during_account_deletion()', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.block_writes_during_account_deletion()', 'EXECUTE')
+     or has_function_privilege('anon', 'public.defer_storage_cleanup_job(bigint,text,text,uuid)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.defer_storage_cleanup_job(bigint,text,text,uuid)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.consume_account_deletion_rate_limit(uuid)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.consume_account_deletion_rate_limit(uuid)', 'EXECUTE')
+  then
+    raise exception 'An internal RPC is executable by a browser role';
+  end if;
+
 end $$;
