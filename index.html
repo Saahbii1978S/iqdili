@@ -1992,11 +1992,20 @@ function notifyRecentConfirmedSignup(session){
 function startSiteVisitTracking(){
  if(siteVisitHeartbeatStarted||!db)return;
  siteVisitHeartbeatStarted=true;
- const sendHeartbeat=()=>{
+ const sendHeartbeat=async()=>{
   if(!db)return;
-  db.rpc("record_site_visit").then(({error})=>{
+  try{
+   const {data:sessionData,error:sessionError}=await db.auth.getSession();
+   if(sessionError){console.warn("Visitor count session check:",sessionError.message);return;}
+   const session=sessionData?.session||null;
+   if(session){
+    const {data:isAdmin,error:adminError}=await db.rpc("is_admin");
+    if(adminError){console.warn("Visitor count admin check:",adminError.message);return;}
+    if(isAdmin===true)return;
+   }
+   const {error}=await db.rpc("record_site_visit");
    if(error)console.warn("Visitor count:",error.message);
-  }).catch(()=>{});
+  }catch(error){console.warn("Visitor count heartbeat:",error);}
  };
  sendHeartbeat();
  window.setInterval(sendHeartbeat,60000);
