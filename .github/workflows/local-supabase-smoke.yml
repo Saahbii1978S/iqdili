@@ -16,7 +16,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: local-supabase-${{ github.ref }}
+  # Push and pull_request events for the same head branch share one runner slot.
+  group: local-supabase-${{ github.head_ref || github.ref }}
   # Do not cancel a slow local Supabase startup when another commit is pushed.
   cancel-in-progress: false
 
