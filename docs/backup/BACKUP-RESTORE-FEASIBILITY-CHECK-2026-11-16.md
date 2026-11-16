@@ -23,19 +23,50 @@ performed.
   `pg_cron`, `uuid-ossp`, `pg_stat_statements`, and `vault`. A restore
   target must account for the extensions actually used by the schema.
 
-## Backup/restore implications from current Supabase documentation
-- Supabase's platform-to-self-hosted restore guide documents separate dumps
-  for roles, schema, and data using `supabase db dump`.
-- The guide states the database dump includes schema, data, roles, RLS
-  policies, functions, triggers, and `auth.users` plus related database data.
-- Storage object bytes are not included in the database dump and must be
+## Edge Function inventory (read-only, 2026-11-16)
+Supabase currently reports 12 deployed Edge Functions, all with status ACTIVE:
+
+| Function | Deployed version | JWT verification |
+| --- | ---: | --- |
+| ask-iqdili | 49 | off |
+| submit-public-post | 8 | off |
+| upload-pending-image | 6 | off |
+| admin-post-image | 5 | off |
+| admin-approve-post | 11 | off |
+| admin-delete-post | 10 | off |
+| expire-posts | 5 | off |
+| my-posts | 4 | off |
+| admin-update-post-status | 2 | off |
+| delete-account | 4 | on |
+| delete-my-post | 6 | on |
+| notify-admin-new-user | 1 | on |
+
+The integration branch contains source directories for these 12 functions, plus
+`process-storage-cleanup`. That extra worker directory is not present in the
+current deployed ACTIVE function inventory; do not mistake source presence for
+production deployment. The worker has intentionally not been deployed.
+Supabase's deployed function metadata includes source SHA-256 values; a future
+recovery check should compare deployed source with repository source and preserve
+the exact deployed versions. Secret values were neither requested nor inspected.
+
+## Backup/restore implications
+- Supabase's platform-to-self-hosted guide describes separate role, schema, and
+  data exports using `supabase db dump`.
+- Supabase CLI's Supabase-specific dump filtering excludes managed schemas,
+  including Auth and Storage. Do not assume a normal application schema/data
+  dump contains all Auth records or Storage metadata/files. The Auth recovery
+  path must be explicitly confirmed using the supported current procedure.
+- Storage object bytes are not included in a database dump and must be
   transferred separately. Storage metadata rows alone are not a copy of files.
-- Edge Functions and project-level Auth/provider, SMTP, JWT/API-key, redirect,
-  and domain settings require separate handling/configuration.
+- Edge Function source, deployed versions, and project-level Auth/provider,
+  SMTP, JWT/API-key, redirect, and domain settings require separate handling.
 - Existing platform-issued tokens are not portable to a different JWT secret;
   users may need to authenticate again in a restored environment.
 
-Reference: https://supabase.com/docs/guides/self-hosting/restore-from-platform
+References:
+- https://supabase.com/docs/guides/self-hosting/restore-from-platform
+- https://supabase.com/docs/reference/cli/supabase-db-dump
+- https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore
 
 ## Current readiness
 | Area | Status |
@@ -44,27 +75,31 @@ Reference: https://supabase.com/docs/guides/self-hosting/restore-from-platform
 | Complete original migration SQL in repository | Missing |
 | Local schema reconstruction from migrations | Not ready |
 | Actual database roles/schema/data dump | Not performed |
-| Auth database data included in documented DB dump process | Documented; not exported or restore-tested |
+| Auth recovery export and restore verification | Not performed; separate supported path required |
 | Storage object files copied and checksummed | Not performed |
-| Edge Functions inventory/export/restore validation | Not completed in this check |
+| Deployed Edge Functions inventoried | Verified (12 ACTIVE functions) |
+| Deployed function source compared/exported for recovery | Not completed |
 | Restore drill in an isolated target | Not performed |
 | End-to-end recovery proof | Not achieved |
 
 ## Safe next actions
-1. Obtain an authorized database connection through the project owner's
-   Supabase Dashboard/approved secret manager; never paste credentials into
-   chat, source files, or workflow logs.
-2. From a trusted local environment, create separate roles, schema, and data
-   dumps with the current Supabase CLI documentation, storing outputs outside
-   the public repository and encrypting them at rest.
-3. Separately inventory and copy Storage objects from each bucket, preserving
+1. The project owner obtains authorized database access privately through the
+   Supabase Dashboard/approved secret manager. Never paste credentials into
+   chat, source files, commits, or workflow logs.
+2. From a trusted local environment, create separate roles, schema, and
+   application-data dumps with the current Supabase CLI documentation, storing
+   outputs outside the public repository and encrypting them at rest.
+3. Confirm and execute the supported Auth recovery procedure separately; do
+   not mark Auth backed up based only on the ordinary CLI dump.
+4. Separately inventory and copy Storage objects from each bucket, preserving
    bucket configuration and object paths; verify counts, byte sizes, and
    SHA-256 checksums. Treat private pending images as private.
-4. Inventory Edge Functions and project-level Auth/SMTP settings without
-   exposing secrets.
-5. Restore only into an isolated local/test environment, then compare table,
-   function, trigger, policy, extension, and row-count inventories.
-6. Do not declare recovery ready until the isolated restore and file checks
+5. Export/compare the exact deployed Edge Function source and versions; keep
+   secret values out of source control.
+6. Restore only into an isolated local/test environment, then compare table,
+   function, trigger, policy, extension, Auth, Storage, and row-count
+   inventories.
+7. Do not declare recovery ready until the isolated restore and file checks
    pass. Do not alter production or publish a new release as part of this work.
 
 ## Explicit non-actions
