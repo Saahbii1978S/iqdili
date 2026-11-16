@@ -82,3 +82,32 @@ Deno.test("dead-letters an exhausted job and continues processing the rest of th
   assertEquals(result, { completed: 1, retried: 0, deadLettered: 1, deferred: 0 });
   assertEquals(d.calls, ["reference", "head-5", "fail", "reference", "head-6", "finish"]);
 });
+
+
+Deno.test("records a retry when Storage HEAD throws a network error", async () => {
+  const d = deps();
+  d.value.inspect = async () => {
+    d.calls.push("head");
+    throw new Error("network timeout");
+  };
+  const result = await processStorageCleanupJobs([job(9)], d.value);
+  assertEquals(result, { completed: 0, retried: 1, deadLettered: 0, deferred: 0 });
+  assertEquals(d.calls, ["reference", "head", "fail"]);
+});
+
+Deno.test("does not report completion when the queue lease cannot be finalized", async () => {
+  const d = deps();
+  d.value.finish = async () => { d.calls.push("finish"); return false; };
+  const result = await processStorageCleanupJobs([job(10)], d.value);
+  assertEquals(result, { completed: 0, retried: 1, deadLettered: 0, deferred: 0 });
+  assertEquals(d.calls, ["reference", "head", "reference", "delete", "finish", "fail"]);
+});
+
+Deno.test("records a retry when a referenced image cannot be safely deferred", async () => {
+  const d = deps();
+  d.value.isReferenced = async () => { d.calls.push("reference"); return true; };
+  d.value.defer = async () => { d.calls.push("defer"); return false; };
+  const result = await processStorageCleanupJobs([job(11)], d.value);
+  assertEquals(result, { completed: 0, retried: 1, deadLettered: 0, deferred: 0 });
+  assertEquals(d.calls, ["reference", "defer", "fail"]);
+});
