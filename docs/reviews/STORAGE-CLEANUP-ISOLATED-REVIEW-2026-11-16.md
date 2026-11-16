@@ -238,3 +238,46 @@
 لا يظهر في الملفات التي تمت مراجعتها أي migration جديدة تمنح anon أو authenticated صلاحية كتابة مباشرة على `storage.objects`، كما لا يظهر مسار رفع عميل مباشر في Edge Function المرشحة. لكن الأدلة الحالية لا تكفي لإصدار شهادة بأن كل عمليات Storage المباشرة ممنوعة في الإنتاج؛ اختبار السياسات اصطناعي، ولم تُفحص الصلاحيات المنشورة في بيئة staging ولم تُجرّب واجهة Storage API.
 
 **القرار يبقى: لا دمج لـ PR #41، ولا تطبيق migrations، ولا نشر وظائف أو تغيير سياسات الإنتاج.** لا تُفتح أو تُحذف ملفات `pending-images` الخمسة، ولا يقع أي تغيير في الإعلانات أو الموقع أو Supabase.
+
+
+## تدقيق صلاحيات RPC ودوال SECURITY DEFINER — 2026-11-16
+
+### النطاق
+تمت مراجعة SQL المرشح في PR #41، مع التركيز على:
+- `storage_cleanup_jobs` و`account_deletion_locks` و`account_deletion_rate_limits`.
+- الدوال `claim_storage_cleanup_jobs` و`approve_post_if_unchanged` و`update_post_status_if_unchanged` و`activate_storage_cleanup_jobs`.
+- الدوال `delete_account_posts_and_activate_cleanup` و`delete_post_and_activate_storage_cleanup` و`is_storage_cleanup_object_referenced`.
+- دوال triggers التي تحمل `SECURITY DEFINER`: `block_writes_during_account_deletion` و`guard_storage_image_attachment` و`lock_storage_image_detachment` و`reactivate_deferred_storage_cleanup_jobs` و`defer_storage_cleanup_job`.
+- اختبار `supabase/tests/public-listing-rpcs.sql`.
+
+### نتائج إيجابية من SQL المرشح
+1. **الجداول الداخلية:** الجداول الجديدة المخصصة للطابور والأقفال وحدود المحاولات عليها RLS، وتم سحب صلاحيات `PUBLIC` و`anon` و`authenticated`، مع منح الوصول إلى `service_role` فقط.
+2. **RPCs الداخلية:** دوال الحجز والحذف وتفعيل التنظيف وفحص المراجع وحدود حذف الحساب تسحب EXECUTE من `PUBLIC/anon/authenticated` وتمنحه إلى `service_role` فقط.
+3. **دوال الإدارة:** `approve_post_if_unchanged` و`update_post_status_if_unchanged` تمنعان `PUBLIC` و`anon`، وتسمحان لـ`authenticated` باستدعاء RPC فقط بعد التحقق داخل الدالة من `auth.uid()` ومن `public.is_admin()`، مع مقارنة لقطة السجل كاملة.
+4. **دوال triggers ذات الامتيازات:** الدوال `SECURITY DEFINER` التي تستعملها triggers تسحب EXECUTE من `PUBLIC` و`anon` و`authenticated`، ولا تمنح استدعاء مباشراً لهذه الأدوار. هذا مناسب لأن trigger يستدعي دالة trigger دون أن يحتاج المستخدم صلاحية EXECUTE مباشرة عليها.
+5. **تقليل مخاطر search_path:** الدوال الجديدة التي تمت مراجعتها تضبط `search_path = ''` وتستخدم أسماء مؤهلة مثل `public` و`pg_catalog`، ما يقلل مخاطر object-shadowing.
+6. **حماية هوية الإدارة:** دوال اعتماد الإعلان وتغيير حالته لا تعتمد على كون المستدعي authenticated فقط؛ بل تتحقق من `is_admin()` داخل قاعدة البيانات أيضاً.
+
+### ملاحظة على الدوال العامة المقصودة
+اختبار `public-listing-rpcs.sql` ينشئ نماذج اختبار لـ4 دوال قراءة عامة (`public_service_requests` و`public_job_posts` و`public_real_estate_posts` و`public_market_posts`) ويمنحها EXECUTE إلى `anon` و`authenticated`. النماذج تقصر النتائج على `approved` وتخفي رقم الهاتف عندما يكون `contact_public=false`. هذا تصميم ممكن لدوال قراءة عامة، لكن الاختبار الاصطناعي لا يثبت وحده أن تعريفات الإنتاج أو صلاحياتها مطابقة، ولا يختبر كل الحقول الحساسة أو حدود حجم النتائج.
+
+### نقاط مفتوحة ومخاطر
+1. **دالة عدّ الزيارات العامة:** الاختبار نفسه يتوقع أن `record_site_visit()` (من دون معاملات) قابلة للاستدعاء من `anon`، بينما يمنع استدعاء overload الذي يأخذ UUID. هذا يجعل نقطة تسجيل الزيارة واجهة عامة مقصودة؛ يلزم تدقيق تعريفها الفعلي في الإنتاج للتأكد من أنها لا تقبل هوية زائر يختارها العميل، ولا تسمح بتضخيم العداد أو الكتابة في سجلات غير محدودة. لم يُثبت هذا الاختبار وجود rate limit أو حماية من التكرار أو bot abuse. لا نعتبر ذلك ثغرة مؤكدة قبل قراءة تعريف الإنتاج واختباره في staging.
+2. **التحقق من `public.is_admin()`:** RPCs الإدارية تعتمد على هذه الدالة. يجب إكمال تدقيق تعريفها الفعلي وACL الخاص بها، والتأكد من أنها تعتمد مصدراً موثوقاً لصلاحية الإدارة ولا تقرأ `user_metadata` القابل للتعديل من المستخدم. لم تتغير هذه الدالة ضمن الملفات المرشحة التي فُحصت هنا.
+3. **الاختبار لا يثبت ACL الإنتاج:** ملف `public-listing-rpcs.sql` ينشئ أدواراً وجداول ودوال stand-in داخل قاعدة اختبار، ثم يضع grants/revokes صراحةً في بيئة الاختبار. هو اختبار عقد للسياسات المقصودة، وليس قراءة تلقائية لـ`pg_proc.proacl` أو `has_function_privilege` من مشروع الإنتاج. يجب إجراء جرد read-only في staging للإمضاءات الفعلية لكل دوال `SECURITY DEFINER` وحقوق EXECUTE الموروثة من `PUBLIC`.
+4. **التأكد من عدم وجود overloads:** يجب جرد كل overload لكل اسم دالة، لأن سحب EXECUTE من توقيع واحد لا يسحبها تلقائياً من توقيع آخر. الاختبار يلفت النظر إلى `record_site_visit(uuid)` مقابل `record_site_visit()`، لكن لا يمثل جرداً شاملاً لكل الدوال.
+5. **منح authenticated لدوال الإدارة:** هذا مقبول فقط إذا بقي فحص `is_admin()` داخل الدالة إلزامياً، وكانت صلاحيات UPDATE/RLS على الجداول لا تسمح بتجاوز ذلك عبر Data API مباشرة. يلزم اختبار role-based في staging لكل من anon ومستخدم عادي ومشرف/مدير، بما في ذلك استدعاء RPC مباشرة دون المرور بالواجهة.
+6. **الدوال ذات الامتيازات في schema public:** رغم سحب EXECUTE من الأدوار العامة في SQL المرشح، فإن وضعها في schema مكشوف يزيد أهمية التحقق من ACL الفعلية بعد النشر. الأفضل مستقبلاً وضع الوظائف الداخلية غير المطلوبة عبر PostgREST في schema غير مكشوف، إذا كان ذلك متوافقاً مع طريقة تشغيل المشروع.
+
+### اختبارات القبول المطلوبة
+- جرد جميع دوال `SECURITY DEFINER` في schemas المكشوفة، مع التوقيع الكامل ومالك الدالة و`proconfig` وACL وحقوق EXECUTE الفعلية لـanon/authenticated/service_role.
+- اختبار مباشر في staging يثبت أن anon والمستخدم العادي لا يستطيعان استدعاء أي RPC داخلي أو trigger function أو دالة حذف/تنظيف.
+- اختبار أن المستخدم العادي لا يستطيع اعتماد إعلان أو رفضه أو إلغاء نشره باستدعاء RPC مباشرة، وأن المدير المخوّل فقط ينجح.
+- مراجعة تعريف `is_admin()` ومصدر صلاحيات الإدارة، والتأكد من عدم الاعتماد على user-editable metadata.
+- مراجعة تعريف `record_site_visit()` واختبار إساءة الاستدعاء والتكرار والحدود.
+- جرد overloads لكل الدوال العامة والحساسة، ثم إعادة فحص ACL بعد تطبيق أي migrations في staging فقط.
+
+### القرار
+تُظهر migrations المرشحة انضباطاً جيداً في سحب EXECUTE عن RPCs الداخلية ودوال triggers ذات الامتيازات، مع حصر وظائف التنظيف في `service_role` والتحقق من صلاحية الإدارة داخل RPCs المخصصة لها. لكن لا يمكن اعتماد الأمان النهائي قبل جرد ACL وتعريفات الدوال الفعلية في staging، ومراجعة `is_admin()` و`record_site_visit()` واختبار الاستدعاء المباشر.
+
+**لا دمج لـ PR #41، ولا تطبيق migrations أو نشر دوال أو تغيير صلاحيات الإنتاج.** هذا التدقيق ساكن على ملفات PR المرشح؛ لم يقع تنفيذ أي RPC على الإنتاج، ولم تتغير بيانات أو إعلانات أو صور.
