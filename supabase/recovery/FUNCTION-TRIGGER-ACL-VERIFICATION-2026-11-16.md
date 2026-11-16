@@ -34,6 +34,7 @@ All eight application triggers are enabled:
 
 ## Application event trigger
 - `ensure_rls` is enabled for `ddl_command_end`, tags `CREATE TABLE`, `CREATE TABLE AS`, and `SELECT INTO`; invokes `public.rls_auto_enable()`.
+- Exact function behavior was verified: it reads `pg_event_trigger_ddl_commands()`, filters to table/partitioned-table creation commands in schema `public`, and enables RLS on the new object. It catches errors and writes a server log rather than aborting the DDL. It is SECURITY DEFINER with `search_path = pg_catalog` and EXECUTE restricted to `postgres`.
 - Other observed event triggers belong to Supabase/extension-managed schemas and must not be copied into app migrations.
 
 ## Sequences
@@ -68,7 +69,7 @@ ACLs are object-specific and must not be replaced with blanket grants:
 The catalog data is now substantially more complete, but do not call the local database a faithful restore yet. Remaining items include:
 1. Capture the full exact table ACL and column ACL map in machine-readable form and compare it against the intended local role model.
 2. Capture default ACLs and all grants for sequences, functions, schemas, views, and storage objects.
-3. Capture the full definition of `public.rls_auto_enable()` and exact extension dependencies.
+3. Capture exact extension dependencies and any missing extension configuration.
 4. Capture all Storage bucket metadata and every Storage policy; do not read or export Storage objects.
 5. Capture scheduler job definition without changing or executing it.
 6. Build the local-only baseline, apply it only to local Supabase, and compare object-by-object.
