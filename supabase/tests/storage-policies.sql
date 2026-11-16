@@ -75,6 +75,26 @@ end;
 $storage_authenticated_read$;
 reset role;
 
+-- Authenticated clients may also read the two public buckets, but not pending images.
+set role authenticated;
+do $storage_authenticated_public_read$
+declare
+  listing_count integer;
+  market_count integer;
+begin
+  select count(*) into listing_count
+    from storage.objects where bucket_id = 'listing-images';
+  select count(*) into market_count
+    from storage.objects where bucket_id = 'market-images';
+
+  if listing_count <> 1 or market_count <> 1 then
+    raise exception 'Authenticated public-bucket read mismatch: listing %, market %',
+      listing_count, market_count;
+  end if;
+end;
+$storage_authenticated_public_read$;
+reset role;
+
 -- Client roles must not receive direct object mutation privileges.
 do $storage_write_acl$
 begin
