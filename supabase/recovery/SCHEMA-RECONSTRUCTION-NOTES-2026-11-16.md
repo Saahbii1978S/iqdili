@@ -159,3 +159,14 @@ The catalog work has improved the inventory but **does not yet justify generatin
 - RLS state was checked table-by-table: all 14 public tables have RLS enabled and none is FORCE RLS; all four private tables have RLS disabled and none is FORCE RLS. The direct schema/table ACL checks above remain essential context for the private tables.
 - All 11 public sequences have a dependency on a corresponding table column. Identity sequences use dependency type `i`; legacy `nextval` sequences for `jobs`, `market`, `properties`, and `services` use dependency type `a`. Exact table/column pairs were verified for all sequences.
 - No policies were found in `private`; the only application policies outside public tables are the two Storage object SELECT policies above. These exact policies and view options are required for faithful local reconstruction; do not broaden them.
+
+
+## Constraint and index inventory (read-only, 2026-11-16)
+- Catalog counts: public has 14 primary keys, 10 foreign keys, and 2 CHECK constraints; private has 4 primary keys and 6 CHECK constraints. All observed constraints were validated.
+- Public foreign keys include Auth-user references with the observed delete actions: `admins.user_id` and `staff_roles.user_id` cascade; optional post ownership references on the four modern post tables set NULL; `staff_roles.granted_by` and both admin-role event actor/target references set NULL. Audit actor reference also sets NULL.
+- Private checks enforce 64-character lowercase-hex fingerprints, nonnegative request counts, positive visitor counts, and the singleton boolean config key.
+- Non-primary application indexes captured:
+  - Private: `ask_rate_limits_updated_at_idx`, `pending_image_rate_limits_updated_at_idx`, `site_visitor_days_last_seen_idx`.
+  - Public admin/audit: `admin_role_events_actor_id_idx`, `admin_role_events_target_user_id_idx`, `admin_status_audit_actor_id_idx`, `staff_roles_granted_by_idx`.
+  - Each of the four modern post tables has a partial `user_id IS NOT NULL` index and a partial expiry index restricted to approved rows with non-null `expires_at`.
+- The catalog grant inventory confirms client-role access is not uniform across tables and views; object-specific grants must be recreated rather than using a broad blanket GRANT. A complete grant reconstruction still needs a carefully filtered ACL export, including view and column ACLs, and should not import Supabase-managed object privileges.
