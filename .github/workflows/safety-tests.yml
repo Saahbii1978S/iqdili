@@ -54,3 +54,11 @@ jobs:
           psql --host 127.0.0.1 --username postgres --dbname postgres \
             --set ON_ERROR_STOP=1 \
             --file supabase/tests/storage-cleanup-queue.sql
+
+      - name: Run isolated Storage policy regression tests
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql --host 127.0.0.1 --username postgres --dbname postgres \
+            --set ON_ERROR_STOP=1 \
+            --file supabase/tests/storage-policies.sql
