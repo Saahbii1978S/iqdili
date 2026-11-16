@@ -882,7 +882,7 @@ end $$;
 -- Exercise actual PostgreSQL RLS with SET ROLE and synthetic JWT claims.
 -- anon must not be able to query the listing tables at all.
 insert into public.service_requests(user_id,title,status)
-values ('22222222-2222-4222-8222-222222222222','rls-isolation-fixture','approved');
+values ('33333333-3333-4333-8333-333333333333','rls-isolation-fixture','approved');
 
 set role anon;
 do $rls_anon$
