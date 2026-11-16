@@ -36,13 +36,12 @@ fi
 finish_holder claim_first
 [[ "$(sql "select status from cleanup_concurrency.cleanup_jobs where object_path='race/claim-first.jpg'")" == "processing" ]]
 
-# 2. Attachment wins the object lock: the worker must observe the committed
-# reference and stage the job rather than claim it for deletion.
-sql "insert into cleanup_concurrency.cleanup_jobs(bucket,object_path,status,lease_token) values ('listing-images','race/attach-first.jpg','pending',gen_random_uuid())"
+# 2. Attachment wins the object lock before cleanup enqueue: enqueue must
+# observe the committed reference and create a staged job, never a pending one.
 start_holder attach_first "begin; insert into cleanup_concurrency.listings(bucket,object_path) values ('listing-images','race/attach-first.jpg'); select pg_sleep(1); commit;"
-CLAIM_RESULT="$(sql "select cleanup_concurrency.claim_one()")"
+ENQUEUE_RESULT="$(sql "select cleanup_concurrency.enqueue_one('listing-images','race/attach-first.jpg')")"
 finish_holder attach_first
-[[ "$CLAIM_RESULT" == "staged" ]]
+[[ "$ENQUEUE_RESULT" == "staged" ]]
 [[ "$(sql "select status from cleanup_concurrency.cleanup_jobs where object_path='race/attach-first.jpg'")" == "staged" ]]
 
 # 3. Final detachment commits before the worker's defer request: defer must
