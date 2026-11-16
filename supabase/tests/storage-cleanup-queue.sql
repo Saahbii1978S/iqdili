@@ -565,6 +565,12 @@ begin
     '[{"bucket":"listing-images","object_path":"services/deferred-reference.jpg"}]'::jsonb
   );
   if n <> 1 then raise exception 'Final detachment did not reactivate the deferred image'; end if;
+  if (select status from public.storage_cleanup_jobs
+       where bucket='listing-images' and object_path='services/deferred-reference.jpg') <> 'pending'
+     or (select last_error from public.storage_cleanup_jobs
+          where bucket='listing-images' and object_path='services/deferred-reference.jpg') is not null then
+    raise exception 'Reactivation did not clear deferred state';
+  end if;
   select * into claimed from public.claim_storage_cleanup_jobs(1)
    where object_path='services/deferred-reference.jpg';
   if claimed.id is null or claimed.attempts <> 1 then
