@@ -96,3 +96,10 @@
 - No private salt value.
 - No storage object names or contents.
 - No production changes or deployments.
+
+
+## Follow-up privilege verification (read-only)
+- Direct role checks confirm `anon`, `authenticated`, and `service_role` have neither `USAGE` nor `CREATE` on schema `private`.
+- Those three roles also lack direct `SELECT`/`INSERT` on `private.ask_rate_limits` and `SELECT` on `private.site_visit_config`; the `postgres` owner has these privileges.
+- Therefore the Supabase table-list advisory about disabled RLS is a warning that must be tracked, but its blanket statement that these tables are directly exposed through the client roles is not supported by the current direct privilege checks. Do not auto-enable RLS: the SECURITY DEFINER functions are designed to access these private tables, and any policy/privilege change requires a separate security design and explicit approval.
+- The full grant inventory also includes Supabase-managed `storage` relations and is not treated as application DDL.
