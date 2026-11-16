@@ -1,6 +1,8 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const TOKEN_HASH="5315d23014e4a1d37335410ac337d9f10d5d4408019d9f165a6b557130a09dd3";
 const tables:Record<string,{bucket:string,folder:string}>={service_requests:{bucket:"listing-images",folder:"services"},job_posts:{bucket:"listing-images",folder:"jobs"},real_estate_posts:{bucket:"listing-images",folder:"realty"},market_posts:{bucket:"market-images",folder:"market"}};
+const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],real_estate_posts:["1","2","6"],market_posts:["2","3","7","8","9"]};
+function isProtectedDemo(table:string,row:Record<string,unknown>){const text=(String(row.title||"")+" "+String(row.description||"")).toLowerCase();return (protectedDemoIds[table]||[]).includes(String(row.id))||/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(text);}
 async function sha(v:string){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");}
 function validPath(p:unknown,f:string):p is string{return typeof p==="string"&&p.startsWith(f+"/")&&/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(p)&&!p.includes("..")&&!p.includes("//");}
 async function remove(url:string,key:string,bucket:string,paths:string[]){if(!paths.length)return true;const r=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:paths})});if(!r.ok){console.error("expiry storage removal",bucket,r.status);return false;}return true;}
@@ -50,6 +52,7 @@ Deno.serve(async(req:Request)=>{
   if(!q.ok){result[table]=-1;continue;}
   const rows=await q.json();let count=0;
   for(const row of rows){
+   if(isProtectedDemo(table,row)){console.warn("Protected demo listing skipped by expiry job",table,row.id);continue;}
    const paths=Array.isArray(row.image_urls)?row.image_urls:[];
    if(paths.some((p:unknown)=>!validPath(p,c.folder)))continue;
    const d=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(row.id))+"&status=eq.approved&expires_at=lte."+encodeURIComponent(now),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
