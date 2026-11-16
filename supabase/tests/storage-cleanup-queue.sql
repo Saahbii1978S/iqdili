@@ -49,7 +49,9 @@ create or replace function public.is_admin()
 returns boolean
 language sql stable
 as $admin_stub$
-  select auth.uid() is not null;
+  -- Synthetic owner identity for the isolated RLS harness; all other users
+  -- are non-admins. This is not copied to production.
+  select auth.uid() = '11111111-1111-4111-8111-111111111111'::uuid;
 $admin_stub$;
 
 \ir ../migrations/20261115090000_storage_cleanup_jobs.sql
@@ -57,6 +59,34 @@ $admin_stub$;
 \ir ../migrations/20261115150000_storage_cleanup_detachment_lock.sql
 \ir ../migrations/20261116100000_storage_cleanup_atomic_defer.sql
 \ir ../migrations/20261116130000_account_deletion_limits.sql
+
+-- Reproduce the verified production access shape for the four modern listing
+-- tables: authenticated direct reads/updates are admin-only; anon has no table
+-- grant. The public approved-listing RPCs are not reconstructed in this harness.
+alter table public.service_requests enable row level security;
+alter table public.job_posts enable row level security;
+alter table public.real_estate_posts enable row level security;
+alter table public.market_posts enable row level security;
+
+grant select, update on public.service_requests, public.job_posts,
+  public.real_estate_posts, public.market_posts to authenticated;
+
+create policy service_requests_admin_select on public.service_requests
+  for select to authenticated using (public.is_admin());
+create policy service_requests_admin_update on public.service_requests
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy job_posts_admin_select on public.job_posts
+  for select to authenticated using (public.is_admin());
+create policy job_posts_admin_update on public.job_posts
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy real_estate_posts_admin_select on public.real_estate_posts
+  for select to authenticated using (public.is_admin());
+create policy real_estate_posts_admin_update on public.real_estate_posts
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy market_posts_admin_select on public.market_posts
+  for select to authenticated using (public.is_admin());
+create policy market_posts_admin_update on public.market_posts
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
 
 
 -- Minimal Auth users required by the account-deletion lock FK in the local test database.
@@ -847,3 +877,85 @@ begin
   end if;
 
 end $$;
+
+
+-- Exercise actual PostgreSQL RLS with SET ROLE and synthetic JWT claims.
+-- anon must not be able to query the listing tables at all.
+insert into public.service_requests(user_id,title,status)
+values ('22222222-2222-4222-8222-222222222222','rls-isolation-fixture','approved');
+
+set role anon;
+do $rls_anon$
+begin
+  begin
+    perform count(*) from public.service_requests;
+    raise exception 'anon unexpectedly read service_requests';
+  exception when insufficient_privilege then
+    null;
+  end;
+end;
+$rls_anon$;
+reset role;
+
+-- A signed-in non-admin has the table grant but RLS must hide all rows and
+-- make UPDATE affect zero rows.
+set role authenticated;
+select pg_catalog.set_config('request.jwt.claim.sub','22222222-2222-4222-8222-222222222222',false);
+do $rls_nonadmin$
+declare visible_rows integer;
+begin
+  select count(*) into visible_rows from public.service_requests;
+  if visible_rows <> 0 then
+    raise exception 'Non-admin authenticated user saw % service_requests rows', visible_rows;
+  end if;
+end;
+$rls_nonadmin$;
+update public.service_requests
+   set title='rls-nonadmin-modified'
+ where title='rls-isolation-fixture';
+reset role;
+
+do $rls_nonadmin_verify$
+begin
+  if not exists (
+    select 1 from public.service_requests
+     where title='rls-isolation-fixture'
+       and user_id='22222222-2222-4222-8222-222222222222'
+  ) then
+    raise exception 'Non-admin UPDATE changed a protected listing';
+  end if;
+end;
+$rls_nonadmin_verify$;
+
+-- The synthetic owner identity can read and update through the authenticated
+-- role, matching the verified production is_admin() policy boundary.
+set role authenticated;
+select pg_catalog.set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false);
+do $rls_admin$
+declare visible_rows integer;
+begin
+  select count(*) into visible_rows from public.service_requests
+   where title='rls-isolation-fixture';
+  if visible_rows <> 1 then
+    raise exception 'Synthetic admin expected one fixture row, found %', visible_rows;
+  end if;
+end;
+$rls_admin$;
+update public.service_requests
+   set title='rls-admin-modified'
+ where title='rls-isolation-fixture';
+reset role;
+
+do $rls_admin_verify$
+begin
+  if not exists (
+    select 1 from public.service_requests
+     where title='rls-admin-modified'
+       and user_id='22222222-2222-4222-8222-222222222222'
+  ) then
+    raise exception 'Admin UPDATE did not pass the intended RLS policy';
+  end if;
+end;
+$rls_admin_verify$;
+
+delete from public.service_requests where title='rls-admin-modified';
