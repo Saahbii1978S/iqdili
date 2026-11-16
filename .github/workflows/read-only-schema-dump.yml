@@ -33,7 +33,7 @@ jobs:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set +x
-          supabase db dump --db-url "$SUPABASE_DB_URL" -f production-schema.sql
+          supabase db dump --remote="$SUPABASE_DB_URL" -f production-schema.sql
           test -s production-schema.sql
 
       - name: Upload private schema artifact
