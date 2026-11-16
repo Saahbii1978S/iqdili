@@ -676,4 +676,4 @@ begin
      or not has_function_privilege('service_role', 'public.defer_storage_cleanup_job(bigint,text,text,uuid)', 'EXECUTE') then
     raise exception 'Atomic defer RPC permissions are not restricted to service_role';
   end if;
-end $;
+end $$;
