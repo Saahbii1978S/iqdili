@@ -275,8 +275,11 @@ begin
 
   update public.storage_cleanup_jobs q
      set status = 'pending',
+         attempts = 0,
          lease_until = null,
          lease_token = null,
+         last_error = null,
+         completed_at = null,
          updated_at = pg_catalog.now()
     from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
    where q.bucket = x.bucket
