@@ -78,7 +78,7 @@ after delete or update of bucket, object_path on listings
 for each row execute function reactivate_deferred();
 
 create function enqueue_one(p_bucket text, p_path text) returns text
-language plpgsql as $
+language plpgsql as $$
 begin
   perform cleanup_concurrency.object_lock(p_bucket,p_path);
   if cleanup_concurrency.has_reference(p_bucket,p_path) then
