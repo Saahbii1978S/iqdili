@@ -90,7 +90,7 @@ begin
   values (p_bucket,p_path,'pending',gen_random_uuid());
   return 'pending';
 end;
-$;
+$$;
 
 create function claim_one() returns text
 language plpgsql as $$
