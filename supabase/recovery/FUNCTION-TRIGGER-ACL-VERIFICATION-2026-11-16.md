@@ -90,3 +90,26 @@ Storage bucket metadata (no objects read):
 - `market-images`: public; 3 MiB maximum; JPEG, PNG, WebP.
 - `pending-images`: private; 3 MiB maximum; JPEG, PNG, WebP.
 - The only application Storage policies returned by the catalog query are public SELECT on `storage.objects` for `market-images` and `listing-images`. No public-read policy exists for `pending-images`.
+
+
+## Storage policy completeness, extensions, and scheduler metadata
+- A complete read-only query of `pg_policies` for schema `storage` returned exactly two policies:
+  - `Market images public read`: permissive SELECT for role `public`, restricted to bucket `market-images`.
+  - `Public read listing images`: permissive SELECT for role `public`, restricted to bucket `listing-images`.
+- No Storage INSERT, UPDATE, or DELETE policies were returned. No public read policy exists for `pending-images`.
+- Installed extensions and versions observed:
+  - `pg_cron` 1.6.4 (`pg_catalog`)
+  - `pg_net` 0.20.4 (`extensions`)
+  - `pg_stat_statements` 1.11 (`extensions`)
+  - `pgcrypto` 1.3 (`extensions`)
+  - `plpgsql` 1.0 (`pg_catalog`)
+  - `supabase_vault` 0.3.1 (`vault`)
+  - `uuid-ossp` 1.1 (`extensions`)
+- The database timezone setting is `UTC`. The active `expire-posts-daily` job is scheduled as `17 3 * * *`. Its command/body was intentionally not read, and it was not run or modified. Do not infer local Tunisia execution time from the schedule alone without checking the scheduler's timezone semantics.
+- The extension inventory is evidence for compatibility planning only. Supabase-managed extensions/schemas and platform event triggers must be provisioned by the local Supabase stack where supported, not recreated as ordinary app DDL.
+
+## Default ACL caution
+The public-schema default ACL for objects created by `postgres` grants broad table privileges and function EXECUTE to client roles by default, and grants sequence privileges according to its recorded ACL. This means every new table/function created under that owner must be reviewed immediately:
+- New public tables must have RLS enabled and deliberate policies; the `ensure_rls` event trigger enables RLS but does not create policies.
+- New SECURITY DEFINER functions must have explicit, least-privilege EXECUTE grants/revokes; do not rely on defaults.
+- Do not silently change the production default ACL. A future hardening migration would require impact analysis and explicit user approval.
