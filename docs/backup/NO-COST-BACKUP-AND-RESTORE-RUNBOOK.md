@@ -37,7 +37,7 @@ After the owner has obtained the database connection string privately from the S
 ```sh
 read -rsp "Database connection string: " SUPABASE_DB_URL
 export SUPABASE_DB_URL
-printf '\\n'
+printf '\n'
 ```
 
 Create a protected local directory and export roles, schema and application data as separate files:
