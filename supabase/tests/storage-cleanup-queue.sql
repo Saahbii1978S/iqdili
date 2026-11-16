@@ -235,6 +235,43 @@ begin
     raise exception 'A listing was inserted after account deletion began';
   end if;
 
+  -- The persistent account lock must cover every listing category, not only services.
+  begin
+    insert into public.job_posts(user_id,title,status,image_urls)
+    values (u1,'blocked job','pending',array[]::text[]);
+    raise exception 'Expected account deletion lock to block job_posts';
+  exception when others then
+    if sqlerrm not like '%Account deletion is in progress%' then raise; end if;
+  end;
+  begin
+    insert into public.real_estate_posts(user_id,title,status,image_urls)
+    values (u1,'blocked property','pending',array[]::text[]);
+    raise exception 'Expected account deletion lock to block real_estate_posts';
+  exception when others then
+    if sqlerrm not like '%Account deletion is in progress%' then raise; end if;
+  end;
+  begin
+    insert into public.market_posts(user_id,title,status,image_urls)
+    values (u1,'blocked market post','pending',array[]::text[]);
+    raise exception 'Expected account deletion lock to block market_posts';
+  exception when others then
+    if sqlerrm not like '%Account deletion is in progress%' then raise; end if;
+  end;
+
+  -- Changing ownership into a deletion-locked account must also be rejected.
+  insert into public.job_posts(user_id,title,status,image_urls)
+  values (u4,'ownership transfer fixture','pending',array[]::text[]);
+  begin
+    update public.job_posts set user_id=u1 where user_id=u4 and title='ownership transfer fixture';
+    raise exception 'Expected ownership transfer into a deletion-locked account to fail';
+  exception when others then
+    if sqlerrm not like '%Account deletion is in progress%' then raise; end if;
+  end;
+  if not exists(select 1 from public.job_posts where user_id=u4 and title='ownership transfer fixture') then
+    raise exception 'Rejected ownership transfer changed the original listing';
+  end if;
+  delete from public.job_posts where user_id=u4 and title='ownership transfer fixture';
+
   -- Account deletion proceeds, but shared image jobs stay staged until the final reference is removed.
   insert into public.service_requests(user_id,title,status,image_urls)
   values
@@ -676,4 +713,13 @@ begin
      or not has_function_privilege('service_role', 'public.defer_storage_cleanup_job(bigint,text,text,uuid)', 'EXECUTE') then
     raise exception 'Atomic defer RPC permissions are not restricted to service_role';
   end if;
+  -- Deleting the Auth identity must cascade only its persistent deletion lock.
+  if not exists(select 1 from public.account_deletion_locks where user_id=u1) then
+    raise exception 'Expected account deletion lock to persist until Auth deletion';
+  end if;
+  delete from auth.users where id=u1;
+  if exists(select 1 from public.account_deletion_locks where user_id=u1) then
+    raise exception 'Auth user deletion did not cascade its account deletion lock';
+  end if;
+
 end $$;
