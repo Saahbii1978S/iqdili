@@ -17,6 +17,7 @@ declare
   still_referenced boolean;
 begin
   if p_id is null
+     or p_bucket is null
      or p_bucket not in ('listing-images', 'market-images', 'pending-images')
      or p_object_path is null
      or p_lease_token is null then
