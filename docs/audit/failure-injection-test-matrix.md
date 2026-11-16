@@ -54,6 +54,7 @@ The implementation is not ready until all of these invariants pass:
 | S18 | Account rows/tasks commit, then Auth deletion fails | Durable cleanup tasks remain available | Tasks persist and can complete independently |
 | S19 | Approval creates a new public copy, then status update definitively fails | Only the copy created by this attempt is queued for compensation | Original pending object and pre-existing public object remain |
 | S20 | Approval finds an already-existing public object, then status update fails | Compensation does not delete that pre-existing object | Existing object remains untouched |
+| S21 | Worker claim races listing deletion or image detachment for the same object | Both paths acquire the object advisory lock before the cleanup-job row lock; no deadlock, duplicate lease, or premature delete | Repeat two-session interleavings; both transactions finish and the final task/reference state is correct |
 
 ## 4. Notification outbox: required invariants
 
