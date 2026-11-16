@@ -56,6 +56,7 @@ $admin_stub$;
 \ir ../migrations/20261115120000_storage_cleanup_attachment_lock.sql
 \ir ../migrations/20261115150000_storage_cleanup_detachment_lock.sql
 \ir ../migrations/20261116100000_storage_cleanup_atomic_defer.sql
+\ir ../migrations/20261116130000_account_deletion_limits.sql
 
 
 -- Minimal Auth users required by the account-deletion lock FK in the local test database.
@@ -64,7 +65,11 @@ insert into auth.users(id) values
   ('22222222-2222-4222-8222-222222222222'),
   ('33333333-3333-4333-8333-333333333333'),
   ('44444444-4444-4444-8444-444444444444'),
-  ('55555555-5555-4555-8555-555555555555');
+  ('55555555-5555-4555-8555-555555555555'),
+  ('66666666-6666-4666-8666-666666666666'),
+  ('77777777-7777-4777-8777-777777777777'),
+  ('88888888-8888-4888-8888-888888888888'),
+  ('99999999-9999-4999-8999-999999999999');
 
 create or replace function public.test_account_snapshot(p_user_id uuid)
 returns jsonb
@@ -95,6 +100,10 @@ declare
   u3 uuid := '33333333-3333-4333-8333-333333333333';
   u4 uuid := '44444444-4444-4444-8444-444444444444';
   u5 uuid := '55555555-5555-4555-8555-555555555555';
+  u6 uuid := '66666666-6666-4666-8666-666666666666';
+  u7 uuid := '77777777-7777-4777-8777-777777777777';
+  u8 uuid := '88888888-8888-4888-8888-888888888888';
+  u9 uuid := '99999999-9999-4999-8999-999999999999';
 begin
   if has_table_privilege('anon', 'public.storage_cleanup_jobs', 'SELECT')
      or has_table_privilege('authenticated', 'public.storage_cleanup_jobs', 'SELECT') then
@@ -720,6 +729,71 @@ begin
   delete from auth.users where id=u1;
   if exists(select 1 from public.account_deletion_locks where user_id=u1) then
     raise exception 'Auth user deletion did not cascade its account deletion lock';
+  end if;
+
+  -- Account listing cap is global across all four categories, not per table.
+  if not has_function_privilege('service_role', 'public.account_post_count_within_limit(uuid)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.account_post_count_within_limit(uuid)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.account_post_count_within_limit(uuid)', 'EXECUTE') then
+    raise exception 'Account listing count RPC permissions are not restricted to service_role';
+  end if;
+  insert into public.service_requests(user_id,title,status)
+    select u6,'limit-9999-services-'||g,'pending' from generate_series(1,2500) g;
+  insert into public.job_posts(user_id,title,status)
+    select u6,'limit-9999-jobs-'||g,'pending' from generate_series(1,2500) g;
+  insert into public.real_estate_posts(user_id,title,status)
+    select u6,'limit-9999-realty-'||g,'pending' from generate_series(1,2500) g;
+  insert into public.market_posts(user_id,title,status)
+    select u6,'limit-9999-market-'||g,'pending' from generate_series(1,2499) g;
+  if not public.account_post_count_within_limit(u6) then
+    raise exception 'Account with 9,999 total listings should be allowed';
+  end if;
+
+  insert into public.service_requests(user_id,title,status)
+    select u7,'limit-10000-services-'||g,'pending' from generate_series(1,2500) g;
+  insert into public.job_posts(user_id,title,status)
+    select u7,'limit-10000-jobs-'||g,'pending' from generate_series(1,2500) g;
+  insert into public.real_estate_posts(user_id,title,status)
+    select u7,'limit-10000-realty-'||g,'pending' from generate_series(1,2500) g;
+  insert into public.market_posts(user_id,title,status)
+    select u7,'limit-10000-market-'||g,'pending' from generate_series(1,2500) g;
+  if public.account_post_count_within_limit(u7) then
+    raise exception 'Account with 10,000 total listings should be rejected';
+  end if;
+
+  insert into public.service_requests(user_id,title,status)
+    select u8,'limit-10001-services-'||g,'pending' from generate_series(1,2501) g;
+  insert into public.job_posts(user_id,title,status)
+    select u8,'limit-10001-jobs-'||g,'pending' from generate_series(1,2500) g;
+  insert into public.real_estate_posts(user_id,title,status)
+    select u8,'limit-10001-realty-'||g,'pending' from generate_series(1,2500) g;
+  insert into public.market_posts(user_id,title,status)
+    select u8,'limit-10001-market-'||g,'pending' from generate_series(1,2500) g;
+  if public.account_post_count_within_limit(u8) then
+    raise exception 'Account with 10,001 total listings should be rejected';
+  end if;
+
+  -- Deletion attempts are capped at three per hour, while a locked deletion can retry.
+  if not has_function_privilege('service_role', 'public.consume_account_deletion_rate_limit(uuid)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.consume_account_deletion_rate_limit(uuid)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.consume_account_deletion_rate_limit(uuid)', 'EXECUTE') then
+    raise exception 'Account deletion rate limit RPC permissions are not restricted to service_role';
+  end if;
+  if not public.consume_account_deletion_rate_limit(u9)
+     or not public.consume_account_deletion_rate_limit(u9)
+     or not public.consume_account_deletion_rate_limit(u9) then
+    raise exception 'The first three account deletion attempts should be allowed';
+  end if;
+  if public.consume_account_deletion_rate_limit(u9) then
+    raise exception 'The fourth account deletion attempt in the same hour should be rejected';
+  end if;
+  insert into public.account_deletion_locks(user_id) values (u9);
+  if not public.consume_account_deletion_rate_limit(u9) then
+    raise exception 'An account with an existing deletion lock must be able to retry';
+  end if;
+  delete from auth.users where id=u9;
+  if exists(select 1 from public.account_deletion_rate_limits where user_id=u9) then
+    raise exception 'Auth deletion did not cascade the account deletion rate-limit row';
   end if;
 
 end $$;
