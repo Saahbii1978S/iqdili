@@ -3809,6 +3809,9 @@ if ("serviceWorker" in navigator) {
  const status=document.getElementById("guide-nearby-status");
  if(!button||!category||!status)return;
  const searches={
+  heritage:"معالم تاريخية وأثرية ومتاحف",
+  nature:"محميات طبيعية وغابات وحدائق وطنية",
+  culture:"مواقع ثقافية وجزر ومتاحف",
   restaurant:"مطاعم عائلية",
   "family-cafe":"مقاهي عائلية",
   parks:"منتزهات وحدائق",
@@ -3817,6 +3820,8 @@ if ("serviceWorker" in navigator) {
   family:"فضاءات عائلية",
   leisure:"أماكن ترفيه عائلية",
   cafe:"مقاهي",
+  stay:"فنادق ودور ضيافة وإقامة",
+  walking:"مسارات مشي ومماشي",
   waterpark:"مدن مائية",
   sports:"فضاءات رياضية"
  };
@@ -3824,7 +3829,7 @@ if ("serviceWorker" in navigator) {
   const kind=category.value;
   const query=searches[kind];
   if(!query){
-   status.textContent="اختار أولاً نوع المكان: مطاعم، مقاهي عائلية، أو منتزهات وحدائق.";
+   status.textContent="اختار نوع المكان من القائمة أولاً باش نبحثولك على الأقرب.";
    category.focus();
    return;
   }
