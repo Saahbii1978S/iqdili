@@ -7,13 +7,12 @@
 The worker is a server-side scheduled Edge Function. It must never be callable by ordinary public clients.
 
 ### Request authentication
-- Require a dedicated high-entropy worker secret from Supabase function secrets.
-- Compare the presented credential safely and reject missing/invalid credentials before database access.
-- Never place the secret in source, SQL, GitHub Actions YAML, logs, browser code, or documentation examples.
-- Do not reuse the scheduled expiry verifier without a separate security review and explicit rotation plan.
+- Require the project's service-role JWT on the trusted scheduler request, matching both the `apikey` and `Authorization: Bearer` headers. The Edge Function verifies both before claiming jobs.
+- The service-role JWT is a privileged credential: store it only in the trusted scheduler's secret store and Supabase function configuration; never place it in source, SQL, GitHub Actions YAML, logs, browser code, or a public URL.
+- Keep normal JWT verification enabled. Do not invoke this worker with a user session or anon key.
 
 ### Processing loop
-1. Claim a bounded batch from the private outbox through a narrowly scoped database operation.
+1. Claim a bounded batch from `public.storage_cleanup_jobs`; the table has RLS enabled and table privileges are restricted to `service_role`, while the claim RPC is executable only by `service_role`.
 2. For each task, revalidate bucket and path against the same fixed allowlist used at enqueue time.
 3. Delete the exact object key from the exact bucket using server-side Storage credentials.
 4. Treat confirmed object-not-found as success.
@@ -44,8 +43,8 @@ Provide an admin-only way to inspect pending/retry/dead counts and oldest task a
 
 | Scenario | Expected result |
 |---|---|
-| Worker called without secret | Reject before claiming tasks |
-| Wrong secret | Reject; no database changes |
+| Worker called without the service-role JWT | Reject before claiming tasks |
+| Invalid/mismatched service-role credentials | Reject; no database changes |
 | Empty queue | Successful no-op |
 | Storage delete succeeds | Task becomes completed |
 | Object already absent | Task becomes completed (idempotent) |
