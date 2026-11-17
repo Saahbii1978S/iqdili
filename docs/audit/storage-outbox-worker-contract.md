@@ -22,9 +22,9 @@ The worker is a server-side scheduled Edge Function. It must never be callable b
 
 ### Retry policy
 - Retry network timeouts, rate limits, and transient server failures.
-- Use bounded exponential backoff with jitter and a maximum delay.
+- The current SQL claim policy uses bounded exponential backoff without jitter: the next claim is eligible after 2, 4, 8, 16, 32, then 60 minutes (capped), measured from the last queue update. The scheduler cadence can make the actual delay longer.
 - Treat malformed paths and disallowed buckets as permanent failures.
-- After the configured attempt ceiling, retain the task as dead and alert the administrator.
+- After eight claims/attempts, retain the task as `dead_letter`. This implementation returns aggregate dead-letter counts but does not send an administrator alert; an external monitor/scheduler must alert on nonzero dead-letter counts.
 - Ensure an expired lease can be reclaimed after worker crash.
 - A stale worker whose lease has been replaced must not be able to complete or reschedule the task.
 
