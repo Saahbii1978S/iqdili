@@ -162,6 +162,30 @@ begin
     if sqlerrm <> 'Invalid cleanup job batch' then raise; end if;
   end;
 
+  -- A completed key can be reused only with a fresh upload; a later cleanup
+  -- request must reactivate its old unique queue row instead of silently
+  -- treating the previous completion as the new cleanup.
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,attempts)
+  values ('listing-images','services/reactivate-completed.jpg','completed',4);
+  if public.activate_storage_cleanup_jobs(
+    '[{"bucket":"listing-images","object_path":"services/reactivate-completed.jpg"}]'::jsonb
+  ) <> 1 then
+    raise exception 'Completed cleanup job was not accepted for reactivation';
+  end if;
+  if not exists (
+    select 1 from public.storage_cleanup_jobs
+     where bucket='listing-images'
+       and object_path='services/reactivate-completed.jpg'
+       and status='pending'
+       and attempts=0
+       and lease_token is null
+       and completed_at is null
+  ) then
+    raise exception 'Completed cleanup job was not reset to pending';
+  end if;
+  delete from public.storage_cleanup_jobs
+   where bucket='listing-images' and object_path='services/reactivate-completed.jpg';
+
   begin
     insert into public.storage_cleanup_jobs(bucket,object_path)
     values ('listing-images','services/../escape.jpg');
