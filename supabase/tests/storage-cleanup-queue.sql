@@ -222,8 +222,8 @@ begin
   if not public.update_post_status_if_unchanged('service_requests',n,expected_row,'rejected') then
     raise exception 'Valid pending-to-rejected transition was rejected';
   end if;
-  if not exists(select 1 from public.service_requests where id=n and status='rejected') then
-    raise exception 'Rejected transition did not update status';
+  if not exists(select 1 from public.service_requests where id=n and status='rejected' and cardinality(image_urls)=0) then
+    raise exception 'Rejected transition did not clear image references';
   end if;
 
   insert into public.market_posts(user_id,title,description,status,image_urls,price,phone)
@@ -233,8 +233,8 @@ begin
   if not public.update_post_status_if_unchanged('market_posts',n,expected_row,'unpublished') then
     raise exception 'Valid approved-to-unpublished transition was rejected';
   end if;
-  if not exists(select 1 from public.market_posts where id=n and status='unpublished') then
-    raise exception 'Unpublished transition did not update status';
+  if not exists(select 1 from public.market_posts where id=n and status='unpublished' and cardinality(image_urls)=0) then
+    raise exception 'Unpublished transition did not clear image references';
   end if;
 
   insert into public.real_estate_posts(user_id,title,description,status,image_urls,price,phone)
