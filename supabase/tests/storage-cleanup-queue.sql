@@ -76,6 +76,10 @@ alter table public.market_posts enable row level security;
 
 grant select, update on public.service_requests, public.job_posts,
   public.real_estate_posts, public.market_posts to authenticated;
+-- Mirror Supabase's service_role access to listing rows for the invoker-security
+-- worker/reference-check RPCs exercised by the actual-migration race tests.
+grant select, insert, update, delete on public.service_requests, public.job_posts,
+  public.real_estate_posts, public.market_posts to service_role;
 
 create policy service_requests_admin_select on public.service_requests
   for select to authenticated using (public.is_admin());
