@@ -73,7 +73,7 @@ Deno.serve(async(req:Request)=>{
   result[table]=count;protectedSkipped[table]=protectedCount;
  }
  const totalDeleted=Object.values(result).reduce((sum,count)=>sum+Math.max(count,0),0);
- if(cleanupFailures.length)await sendAdminAlert("تنبيه تنظيف صور الإعلانات المنتهية","تم حذف الإعلانات من قاعدة البيانات، لكن بقيت صور تحتاج تنظيفاً:\n"+cleanupFailures.join("\n"));
+ if(cleanupFailures.length)await sendAdminAlert("تعذّر تجهيز تنظيف بعض الإعلانات المنتهية","تم الإبقاء على الإعلانات وصورها دون حذف لأن تسجيل مهام تنظيف الصور لم ينجح:\n"+cleanupFailures.join("\n"));
  if(totalDeleted>0)await sendAdminAlert("ملخّص الحذف الآلي في أحلى توانسة","تم حذف إعلانات انتهت مدتها بعد 3 أشهر.\n"+Object.entries(result).map(([table,count])=>table+": "+count).join("\n"));
  if(scanErrors.length)await sendAdminAlert("خطأ تقني في الحذف الآلي","تعذّر فحص بعض أقسام الإعلانات: "+[...new Set(scanErrors)].join(", ")+". راجع سجلات Supabase.");
  if(deleteErrors.length)await sendAdminAlert("تعذّر حذف بعض الإعلانات المنتهية","فشلت عملية حذف بعض السجلات: "+deleteErrors.slice(0,100).join("\n")+(deleteErrors.length>100?"\nوبقية السجلات في سجلات الوظيفة.":""));
