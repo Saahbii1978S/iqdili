@@ -773,6 +773,7 @@ main>section input[type="file"]::file-selector-button{
 <p>هنا تلقى طلبات الخدمات المنشورة والمقبولة. الطلبات اللي مازالت في المراجعة أو المرفوضة ما تظهرش للعموم.</p>
 <label for="public-services-search">🔎 فتّش في طلبات الخدمات</label><input id="public-services-search" maxlength="100" type="search" placeholder="اكتب نوع الخدمة أو المنطقة..." aria-label="البحث في الخدمات المنشورة"><label for="services-governorate-filter">الولاية</label><select id="services-governorate-filter" aria-label="تصفية الخدمات حسب الولاية"></select>
 <div id="public-services-list" aria-live="polite"><p class="muted">جاري تحميل الخدمات...</p></div>
+<div id="curated-services" class="curated-feed" aria-live="polite"></div>
 
 
 </div>
@@ -800,6 +801,7 @@ main>section input[type="file"]::file-selector-button{
 <div class="box"><p>هنا تلقى عروض الانتداب وفرص العمل المنشورة والمقبولة. الإعلانات المعلّقة أو المرفوضة ما تظهرش للعموم.</p>
 <label for="public-jobs-search">🔎 فتّش في فرص العمل</label><input id="public-jobs-search" maxlength="100" type="search" placeholder="اكتب المهنة أو المنطقة..."><label for="jobs-governorate-filter">الولاية</label><select id="jobs-governorate-filter" aria-label="تصفية فرص العمل حسب الولاية"></select>
 <div id="public-jobs-list" aria-live="polite"><p class="muted">جاري تحميل فرص العمل...</p></div>
+<div id="curated-jobs" class="curated-feed" aria-live="polite"></div>
 
 </div>
 <div class="box"><h3>تحب تنشر فرصة أو تبحث عن عمل؟</h3><button type="button" data-toggle-form="job-form">أضف إعلان عمل</button></div>
