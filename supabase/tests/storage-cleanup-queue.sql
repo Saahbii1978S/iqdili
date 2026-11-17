@@ -270,8 +270,8 @@ begin
   values (u1,'test listing','approved',array['services/a.jpg']);
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values
-    ('listing-images','services/a.jpg','staged'),
-    ('pending-images','services/a.jpg','staged');
+    ('listing-images','services/a.jpg','completed'),
+    ('pending-images','services/a.jpg','completed');
 
   result := public.delete_account_posts_and_activate_cleanup(
     u1,
@@ -486,8 +486,8 @@ begin
   values (u4,'atomic post','snapshot','pending',array['services/atomic.jpg']);
   insert into public.storage_cleanup_jobs(bucket,object_path,status)
   values
-    ('listing-images','services/atomic.jpg','staged'),
-    ('pending-images','services/atomic.jpg','staged');
+    ('listing-images','services/atomic.jpg','completed'),
+    ('pending-images','services/atomic.jpg','completed');
   select id into n from public.service_requests where user_id=u4 and title='atomic post';
   select pg_catalog.to_jsonb(r) into expected_row from public.service_requests r where r.id=n;
   result := public.delete_post_and_activate_storage_cleanup(
