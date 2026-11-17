@@ -681,6 +681,9 @@ main>section input[type="file"]::file-selector-button{
   #guide .guide-places a{display:inline-block;font-size:12px;line-height:1.5;min-height:40px;padding:6px 3px}
 }
 </style>
+<style id="curated-feed-styles">
+.curated-feed{margin:18px 0 8px}.curated-feed .curated-heading{margin:0 0 6px;font-size:1.08rem}.curated-feed .curated-note{color:#667085;font-size:.88rem;margin:0 0 12px}.curated-feed .curated-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px}.curated-feed .curated-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;box-shadow:0 2px 8px rgba(16,24,40,.04)}.curated-feed .curated-card h4{margin:0 0 8px;font-size:1rem;line-height:1.5}.curated-feed .curated-card p{margin:0 0 10px;line-height:1.7}.curated-feed .curated-source{font-size:.82rem;color:#667085;margin-bottom:9px}.curated-feed .curated-card a{display:inline-block;color:#14566a;font-weight:700;text-decoration:underline;text-underline-offset:3px}.curated-feed .curated-meta{font-size:.75rem;color:#7b8492;margin-top:9px}.curated-feed .curated-label{display:inline-block;font-size:.72rem;background:#f1f5f9;color:#334155;border-radius:999px;padding:3px 8px;margin-bottom:8px}
+</style>
 </head>
 <body>
 <header>
@@ -768,6 +771,7 @@ main>section input[type="file"]::file-selector-button{
 <p>هنا تلقى طلبات الخدمات المنشورة والمقبولة. الطلبات اللي مازالت في المراجعة أو المرفوضة ما تظهرش للعموم.</p>
 <label for="public-services-search">🔎 فتّش في طلبات الخدمات</label><input id="public-services-search" maxlength="100" type="search" placeholder="اكتب نوع الخدمة أو المنطقة..." aria-label="البحث في الخدمات المنشورة"><label for="services-governorate-filter">الولاية</label><select id="services-governorate-filter" aria-label="تصفية الخدمات حسب الولاية"></select>
 <div id="public-services-list" aria-live="polite"><p class="muted">جاري تحميل الخدمات...</p></div>
+<div id="curated-services" class="curated-feed" aria-live="polite"></div>
 </div>
 <div class="box">
 <h3>تحب تطلب خدمة؟</h3>
@@ -792,7 +796,8 @@ main>section input[type="file"]::file-selector-button{
 <h2>فرص العمل والإعلانات المهنية</h2>
 <div class="box"><p>هنا تلقى عروض الانتداب وفرص العمل المنشورة والمقبولة. الإعلانات المعلّقة أو المرفوضة ما تظهرش للعموم.</p>
 <label for="public-jobs-search">🔎 فتّش في فرص العمل</label><input id="public-jobs-search" maxlength="100" type="search" placeholder="اكتب المهنة أو المنطقة..."><label for="jobs-governorate-filter">الولاية</label><select id="jobs-governorate-filter" aria-label="تصفية فرص العمل حسب الولاية"></select>
-<div id="public-jobs-list" aria-live="polite"><p class="muted">جاري تحميل فرص العمل...</p></div></div>
+<div id="public-jobs-list" aria-live="polite"><p class="muted">جاري تحميل فرص العمل...</p></div>
+<div id="curated-jobs" class="curated-feed" aria-live="polite"></div></div>
 <div class="box"><h3>تحب تنشر فرصة أو تبحث عن عمل؟</h3><button type="button" data-toggle-form="job-form">أضف إعلان عمل</button></div>
 <div id="job-form" class="hidden"><div class="box"><h3>نشر إعلان عمل</h3>
 <label for="jk">نوع الإعلان</label><select id="jk"><option>نبحث عن عمل</option><option>عرض انتداب</option><option>تربص أو تكوين</option></select>
@@ -819,7 +824,8 @@ main>section input[type="file"]::file-selector-button{
 <p class="muted">هذه قائمة توعوية عامة وليست استشارة قانونية ولا ضماناً لسلامة أي عرض. المنصة لا تعوّض التثبت المستقل من الوثائق والأطراف.</p>
 </div>
 <label for="public-realty-search">🔎 فتّش في العقارات</label><input id="public-realty-search" maxlength="100" type="search" placeholder="اكتب نوع العقار أو المنطقة..."><label for="realty-governorate-filter">الولاية</label><select id="realty-governorate-filter" aria-label="تصفية العقارات حسب الولاية"></select>
-<div id="public-realty-list" aria-live="polite"><p class="muted">جاري تحميل العقارات...</p></div></div>
+<div id="public-realty-list" aria-live="polite"><p class="muted">جاري تحميل العقارات...</p></div>
+<div id="curated-realty" class="curated-feed" aria-live="polite"></div></div>
 <div class="box"><h3>تحب تنشر إعلان عقاري؟</h3><button type="button" data-toggle-form="realty-form">أضف إعلان عقاري</button></div>
 <div id="realty-form" class="hidden"><div class="box"><h3>نشر إعلان عقاري</h3>
 <label for="rt">نوع العملية</label><select id="rt"><option>نبحث عن كراء</option><option>نبحث عن شراء</option><option>عرض كراء</option><option>عرض بيع</option></select>
@@ -833,7 +839,8 @@ main>section input[type="file"]::file-selector-button{
 <button type="button" class="send" data-table="realty">حفظ الطلب أو الإعلان</button><button type="button" data-close-form="realty-form" style="background:#647875">إغلاق الاستمارة</button></div></div></section>
 
 <section id="market" class="hidden"><h2>🛒 سوق أحلى توانسة المفتوح</h2>
-<div class="box"><p>تصفّح المنتجات والإعلانات المقبولة المنشورة للعموم.</p><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" maxlength="100" type="search" placeholder="اكتب اسم منتج أو منطقة..."><label for="market-governorate-filter">الولاية</label><select id="market-governorate-filter" aria-label="تصفية السوق حسب الولاية"></select><div id="market-list" aria-live="polite"><p class="muted">جاري تحميل إعلانات السوق...</p></div></div>
+<div class="box"><p>تصفّح المنتجات والإعلانات المقبولة المنشورة للعموم.</p><label for="market-search">🔎 فتّش في إعلانات السوق</label><input id="market-search" maxlength="100" type="search" placeholder="اكتب اسم منتج أو منطقة..."><label for="market-governorate-filter">الولاية</label><select id="market-governorate-filter" aria-label="تصفية السوق حسب الولاية"></select><div id="market-list" aria-live="polite"><p class="muted">جاري تحميل إعلانات السوق...</p></div>
+<div id="curated-market" class="curated-feed" aria-live="polite"></div></div>
 <div class="box"><h3>تحب تعرض منتج أو تفتّش على حاجة؟</h3><button type="button" data-toggle-form="market-form">أضف إعلان للسوق</button></div>
 <div id="market-form" class="hidden"><div class="box"><h3>نشر إعلان في السوق</h3>
 <label for="mt">نوع الإعلان</label><select id="mt"><option>عرض للبيع</option><option>نبحث عن منتج</option><option>عرض للتبادل</option></select>
@@ -876,6 +883,8 @@ main>section input[type="file"]::file-selector-button{
 <button type="button" id="share-good" style="margin-top:8px">📣 شارك باب الخير</button>
 <p id="share-good-status" class="muted" aria-live="polite"></p>
 </div>
+
+<div id="curated-good" class="curated-feed" aria-live="polite"></div>
 </section>
 
 <section id="guide" class="hidden">
@@ -1597,6 +1606,8 @@ main>section input[type="file"]::file-selector-button{
 <p class="note">الدليل وطني ويشمل الولايات الـ24. ما ننشروش أرقام هواتف أو أسعار أو ساعات عمل أو معلومات حجز قبل التثبت منها. يلزم مراجعة العنوان ووسائل الاتصال والتوقيت قبل الزيارة.</p>
 <a href="https://wa.me/21628637773?text=%D9%86%D8%AD%D8%A8%20%D9%86%D9%82%D8%AA%D8%B1%D8%AD%20%D8%A5%D8%B6%D8%A7%D9%81%D8%A9%20%D9%84%D9%84%D8%AF%D9%84%D9%8A%D9%84%20%D8%A7%D9%84%D8%AA%D9%88%D9%86%D8%B3%D9%8A" target="_blank" rel="noopener noreferrer" style="display:inline-flex;padding:10px 16px;border-radius:12px;background:#14566a;color:#fff;text-decoration:none;font-weight:700">اقترح مكاناً من أي ولاية</a>
 </div>
+
+<div id="curated-guide" class="curated-feed" aria-live="polite"></div>
 </section>
 
 <section id="ask" class="hidden"><div class="box"><h2>اسأل أحلى توانسة</h2><label for="q">اكتب سؤالك</label><textarea id="q" maxlength="1000" aria-describedby="ask-help"></textarea><p id="ask-help" class="muted">اكتب سؤالك باختصار، إلى 1000 حرف. الإجابات تعتمد على المعلومات المهيّأة في المنصة؛ موش كل سؤال عنده إجابة جاهزة.</p><div id="ask-turnstile" aria-hidden="true" style="height:0;overflow:hidden"></div><p class="muted">الحماية الآمنة تخدم تلقائياً في الخلفية؛ إذا لزم الأمر فقط، Cloudflare يطلب تحقق إضافي.</p><button type="button" id="ask-button" style="margin-top:10px">إرسال</button><p id="answer" class="hidden" aria-live="polite" style="background:#e3f3ef;padding:10px;border-radius:8px;margin-top:10px"></p></div></section>
@@ -3792,6 +3803,20 @@ if ("serviceWorker" in navigator) {
    status.textContent=messages[error.code]||"صار خطأ في تحديد الموقع. عاود المحاولة.";
   },{enableHighAccuracy:true,timeout:12000,maximumAge:60000});
  });
+})();
+</script>
+<script id="curated-feed-loader">
+(function(){
+ const feeds=[["services","curated-services","الخدمات"],["jobs","curated-jobs","فرص العمل"],["realty","curated-realty","العقارات"],["market","curated-market","السوق"],["good","curated-good","باب الخير"],["guide","curated-guide","الدليل التونسي"]];
+ const make=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;};
+ async function loadCuratedFeeds(){try{
+  const response=await fetch("./curated-posts.json",{cache:"no-store"});if(!response.ok)throw new Error("تعذر تحميل المحتوى");const payload=await response.json();
+  for(const [key,id,label] of feeds){const root=document.getElementById(id),items=payload.sections&&payload.sections[key];if(!root||!Array.isArray(items)||!items.length)continue;root.replaceChildren();root.append(make("h3","curated-heading","📌 معلومات ومنشورات مفيدة – "+label));root.append(make("p","curated-note","محتوى توعوي بملخصات أصلية وروابط لمصادر رسمية. موش إعلانات بيع أو انتداب. تثبّت من المصدر قبل أي إجراء."));const grid=make("div","curated-grid");
+   for(const item of items){if(!Array.isArray(item)||item.length<4)continue;const [title,summary,source,url]=item;let link;try{link=new URL(url,location.href);if(link.protocol!=="https:")continue;}catch(e){continue;}const card=make("article","curated-card");card.append(make("span","curated-label","معلومة توعوية"));card.append(make("h4","",String(title)));card.append(make("p","",String(summary)));card.append(make("div","curated-source","المصدر: "+String(source)));const a=make("a","","اقرأ في المصدر الرسمي");a.href=link.href;a.target="_blank";a.rel="noopener noreferrer";card.append(a);card.append(make("div","curated-meta","تاريخ التثبت من الرابط: "+String(payload.updatedAt||"غير محدد")));grid.append(card);}
+   root.append(grid);
+  }
+ }catch(error){console.warn("Curated content unavailable:",error);}}
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",loadCuratedFeeds,{once:true});else loadCuratedFeeds();
 })();
 </script>
 </body>
