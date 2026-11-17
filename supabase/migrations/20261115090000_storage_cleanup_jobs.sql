@@ -233,7 +233,7 @@ begin
 
   execute pg_catalog.format(
     'update public.%I as listing
-        set status = $1, image_urls = '{}'::text[]
+        set status = $1, image_urls = array[]::text[]
       where listing.id = $2
         and pg_catalog.to_jsonb(listing) = $3
       returning true',
