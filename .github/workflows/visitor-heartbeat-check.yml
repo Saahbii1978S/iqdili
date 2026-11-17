@@ -32,7 +32,7 @@ jobs:
           assert fn.index("if(isAdmin===true)return;") < fn.index('db.rpc("record_site_visit"'), "Admins must be excluded before recording a visit"
           assert 'db.rpc("record_site_visit",{p_visitor_id:visitorId})' in fn, "UUID visitor tracking RPC call is missing"
           helper_start = source.find("function getSiteVisitTrackingId()")
-          helper_end = source.find("\\nfunction startSiteVisitTracking()", helper_start)
+          helper_end = source.find("\nfunction startSiteVisitTracking()", helper_start)
           assert helper_start >= 0 and helper_end > helper_start, "Visitor ID helper was not found"
           helper = source[helper_start:helper_end]
           assert 'localStorage.getItem("ahla-visitor-id-v1")' in helper or 'localStorage.getItem(key)' in helper, "Persistent anonymous visitor ID is missing"
