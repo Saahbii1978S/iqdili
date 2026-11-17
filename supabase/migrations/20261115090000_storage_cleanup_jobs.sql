@@ -473,7 +473,7 @@ begin
     from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
    where q.bucket = x.bucket
      and q.object_path = x.object_path
-     and q.status in ('staged','pending','dead_letter');
+     and q.status in ('staged','pending','completed','dead_letter');
 
   with requested as (
     select distinct x.bucket, x.object_path
@@ -647,7 +647,7 @@ begin
     from pg_catalog.jsonb_to_recordset(p_jobs) as x(bucket text, object_path text)
    where q.bucket = x.bucket
      and q.object_path = x.object_path
-     and q.status in ('staged','pending','dead_letter');
+     and q.status in ('staged','pending','completed','dead_letter');
 
   select count(*) into activated_count
     from public.storage_cleanup_jobs q
