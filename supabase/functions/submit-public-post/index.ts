@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { activateStorageCleanup, buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, scheduleStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 
 const ALLOWED_ORIGIN = "https://saahbii1978s.github.io";
 const corsHeaders = {
@@ -270,8 +270,7 @@ Deno.serve(async (req: Request) => {
       if (uploadedPath) {
         try {
           const cleanupJobs = buildStorageCleanupJobs(["pending-images"], [uploadedPath]);
-          const queued = await enqueueStorageCleanup(supabaseUrl, serviceRoleKey, cleanupJobs);
-          const activated = queued && await activateStorageCleanup(supabaseUrl, serviceRoleKey, cleanupJobs);
+          const { queued, activated } = await scheduleStorageCleanup(supabaseUrl, serviceRoleKey, cleanupJobs);
           if (!queued || !activated) {
             console.error("Failed to activate orphaned submission image cleanup", {
               table,
