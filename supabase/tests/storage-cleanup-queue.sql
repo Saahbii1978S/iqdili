@@ -154,6 +154,14 @@ begin
     raise exception 'service_role cannot claim cleanup jobs';
   end if;
 
+  -- NULL JSON payloads must fail closed instead of being treated as empty batches.
+  begin
+    perform public.activate_storage_cleanup_jobs(null);
+    raise exception 'Expected null cleanup payload to be rejected';
+  exception when raise_exception then
+    if sqlerrm <> 'Invalid cleanup job batch' then raise; end if;
+  end;
+
   begin
     insert into public.storage_cleanup_jobs(bucket,object_path)
     values ('listing-images','services/../escape.jpg');
