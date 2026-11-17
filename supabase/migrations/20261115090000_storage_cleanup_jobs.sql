@@ -166,7 +166,7 @@ begin
   if p_table not in ('service_requests','job_posts','real_estate_posts','market_posts')
      or p_id is null
      or p_expected_row is null
-     or pg_catalog.jsonb_typeof(p_expected_row) <> 'object'
+     or pg_catalog.jsonb_typeof(p_expected_row) is distinct from 'object'
      or p_expected_row->>'status' <> 'pending'
      or p_expires_at is null
      or p_new_image_urls is null
@@ -223,7 +223,7 @@ begin
   if p_table not in ('service_requests','job_posts','real_estate_posts','market_posts')
      or p_id is null
      or p_expected_row is null
-     or pg_catalog.jsonb_typeof(p_expected_row) <> 'object'
+     or pg_catalog.jsonb_typeof(p_expected_row) is distinct from 'object'
      or expected_status is null
      or p_expected_row->>'status' is distinct from expected_status
      or auth.uid() is null
@@ -262,7 +262,7 @@ declare
   activated_count integer;
   requested_count integer;
 begin
-  if pg_catalog.jsonb_typeof(p_jobs) <> 'array'
+  if pg_catalog.jsonb_typeof(p_jobs) is distinct from 'array'
      or pg_catalog.jsonb_array_length(p_jobs) > 500 then
     raise exception 'Invalid cleanup job batch';
   end if;
@@ -327,9 +327,9 @@ declare
   active_count integer;
 begin
   if p_user_id is null
-     or pg_catalog.jsonb_typeof(p_jobs) <> 'array'
+     or pg_catalog.jsonb_typeof(p_jobs) is distinct from 'array'
      or pg_catalog.jsonb_array_length(p_jobs) > 500
-     or pg_catalog.jsonb_typeof(p_expected_rows) <> 'object'
+     or pg_catalog.jsonb_typeof(p_expected_rows) is distinct from 'object'
      or pg_catalog.jsonb_typeof(p_expected_rows->'service_requests') is distinct from 'array'
      or pg_catalog.jsonb_typeof(p_expected_rows->'job_posts') is distinct from 'array'
      or pg_catalog.jsonb_typeof(p_expected_rows->'real_estate_posts') is distinct from 'array'
@@ -576,7 +576,7 @@ begin
      or (p_require_owner and p_expected_user_id is null)
      or pg_catalog.jsonb_typeof(p_expected_row) is distinct from 'object'
      or pg_catalog.jsonb_typeof(p_expected_row->'image_urls') is distinct from 'array'
-     or pg_catalog.jsonb_typeof(p_jobs) <> 'array'
+     or pg_catalog.jsonb_typeof(p_jobs) is distinct from 'array'
      or pg_catalog.jsonb_array_length(p_jobs) > 500 then
     raise exception 'Invalid post cleanup request';
   end if;
