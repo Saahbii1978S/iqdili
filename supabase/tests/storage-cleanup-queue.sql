@@ -215,6 +215,11 @@ begin
 
   -- Status changes accept only the intended transition and the exact full reviewed row.
   perform pg_catalog.set_config('request.jwt.claim.sub', u1::text, true);
+  -- Deferred image jobs must be reactivated when the final listing reference is removed.
+  insert into public.storage_cleanup_jobs(bucket,object_path,status,last_error)
+  values
+    ('pending-images','services/reject.jpg','staged','Image is still referenced by a live listing; deferred until the final reference is removed'),
+    ('market-images','market/unpublish.jpg','staged','Image is still referenced by a live listing; deferred until the final reference is removed');
   insert into public.service_requests(user_id,title,description,status,image_urls,price,phone)
   values (u1,'reject transition','pending content','pending',array['services/reject.jpg'],90,'22222222');
   select id into n from public.service_requests where user_id=u1 and title='reject transition';
@@ -224,6 +229,9 @@ begin
   end if;
   if not exists(select 1 from public.service_requests where id=n and status='rejected' and cardinality(image_urls)=0) then
     raise exception 'Rejected transition did not clear image references';
+  end if;
+  if not exists(select 1 from public.storage_cleanup_jobs where bucket='pending-images' and object_path='services/reject.jpg' and status='pending') then
+    raise exception 'Rejected transition did not reactivate the deferred image cleanup job';
   end if;
 
   insert into public.market_posts(user_id,title,description,status,image_urls,price,phone)
@@ -235,6 +243,9 @@ begin
   end if;
   if not exists(select 1 from public.market_posts where id=n and status='unpublished' and cardinality(image_urls)=0) then
     raise exception 'Unpublished transition did not clear image references';
+  end if;
+  if not exists(select 1 from public.storage_cleanup_jobs where bucket='market-images' and object_path='market/unpublish.jpg' and status='pending') then
+    raise exception 'Unpublished transition did not reactivate the deferred image cleanup job';
   end if;
 
   insert into public.real_estate_posts(user_id,title,description,status,image_urls,price,phone)
@@ -251,6 +262,7 @@ begin
   delete from public.service_requests where title='reject transition';
   delete from public.market_posts where title='unpublish transition';
   delete from public.real_estate_posts where title='stale status transition';
+  delete from public.storage_cleanup_jobs where object_path in ('services/reject.jpg','market/unpublish.jpg');
   perform pg_catalog.set_config('request.jwt.claim.sub', '', true);
 
   -- Successful account deletion removes rows and activates the exact two-bucket image jobs.
