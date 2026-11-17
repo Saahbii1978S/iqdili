@@ -627,6 +627,7 @@ main>section input[type="file"]::file-selector-button{
   color:#fff!important;
 }
 
+.curated-feed .curated-source-link{display:inline-block;margin:0 0 8px;color:#14566b;font-size:.88rem;font-weight:700;text-decoration:underline;text-underline-offset:3px}.curated-feed .curated-source-link:focus-visible{outline:2px solid currentColor;outline-offset:3px;border-radius:4px}
 </style>
 <style id="ahla-user-settings-style">
 #ahla-settings-toggle{position:static;display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;width:auto;min-width:92px;height:36px;padding:0 10px;margin-inline-start:7px;border-radius:10px;background:#087f78;color:#fff;border:1px solid #075f5b;font-size:13px;font-weight:800;line-height:1;box-shadow:0 2px 5px #00000018;cursor:pointer;white-space:nowrap;transition:background .18s,border-color .18s}
@@ -3818,6 +3819,7 @@ if ("serviceWorker" in navigator) {
 (function(){
  const feeds=[["services","curated-services","الخدمات"],["jobs","curated-jobs","فرص العمل"],["realty","curated-realty","العقارات"],["market","curated-market","السوق"],["good","curated-good","باب الخير"],["guide","curated-guide","الدليل التونسي"]];
  const make=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=txt;return n;};
+ const sourceUrls={"البوابة الوطنية للخدمات الإدارية":"https://khadamet.gov.tn/","المساعدة في استخدام البوابة":"https://khadamet.gov.tn/المساعدة-في-استخدام-البوابة/","بوابة وزارة الداخلية":"https://portail.interieur.gov.tn/","بلدية تونس – خدمات على الخط":"https://www.commune-tunis.gov.tn/demarches-formalites_AR.aspx","دليل التسجيل – ANETI":"https://www.emploi.nat.tn/upload/inscription_demandeur.pdf","الوكالة الوطنية للتشغيل والعمل المستقل":"https://www.emploi.nat.tn/","منصة عروض الترشح – ANETI":"https://candidatures.aneti.tn/","وزارة التشغيل والتكوين المهني":"https://www.emploi.nat.tn/","ANETI – التشغيل الدولي":"https://international.emploi.nat.tn/","الديوان الوطني للملكية العقارية":"https://www.cpf.gov.tn/CPFWebSite/Arabe/SrvEnLigne.php","خدمات الديوان على الخط":"https://www.cpf.gov.tn/CPFWebSite/Arabe/SrvEnLigne.php","وزارة العدل – مسائل عقارية":"https://www.justice.gov.tn/index.php?id=527","وزارة التجارة – حقوق المستهلك":"https://commerce.gov.tn/droit-consom-commerce","وزارة التجارة – ممارسات البيع":"https://commerce.gov.tn/protection-contre-certaines-m%C3%A9thodes","وزارة التجارة – فض نزاعات الاستهلاك":"https://commerce.gov.tn/Reglement-r%C3%A9clamations-consommateurs","وزارة الشؤون الاجتماعية":"https://www.social.gov.tn/","الأسئلة الشائعة – وزارة الشؤون الاجتماعية":"https://www.social.gov.tn/","ANETI":"https://www.emploi.nat.tn/","وزارة التجارة":"https://commerce.gov.tn/","وزارة العدل":"https://www.justice.gov.tn/index.php?id=527"};
  async function loadCuratedFeeds(){
   try{
    const response=await fetch("./curated-posts.json",{cache:"no-store"});
@@ -3838,6 +3840,8 @@ if ("serviceWorker" in navigator) {
      card.append(make("h4","",String(title)));
      card.append(make("p","",String(summary)));
      card.append(make("div","curated-source","مرجع المعلومة: "+String(source)));
+     const sourceUrl=sourceUrls[String(source)];
+     if(sourceUrl){const link=make("a","curated-source-link","افتح المصدر الرسمي");link.href=sourceUrl;link.target="_blank";link.rel="noopener noreferrer";link.setAttribute("aria-label","افتح المصدر الرسمي: "+String(source));card.append(link);}
      card.append(make("div","curated-meta","محتوى تحريري داخل أحلى توانسة"));
      grid.append(card);
     }
