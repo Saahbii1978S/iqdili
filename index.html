@@ -3830,7 +3830,7 @@ if ("serviceWorker" in navigator) {
     if(!root||!Array.isArray(items)||!items.length)continue;
     root.replaceChildren();
     root.append(make("h3","curated-heading","📌 منشورات أحلى توانسة – "+label));
-    root.append(make("p","curated-note","محتوى توعوي مستقل داخل أحلى توانسة. نذكر الجهة المرجعية للمعلومة دون روابط إعلانية أو تحويل الزائر إلى منصات أخرى."));
+    root.append(make("p","curated-note","محتوى توعوي مستقل داخل أحلى توانسة، مع رابط مباشر للمصدر الرسمي حتى تنجم تتثبت وتكمل المعلومة."));
     const grid=make("div","curated-grid");
     for(const item of items){
      if(!Array.isArray(item)||item.length<3)continue;
@@ -3847,7 +3847,16 @@ if ("serviceWorker" in navigator) {
     }
     root.append(grid);
    }
-  }catch(error){console.warn("Curated content unavailable:",error);}
+  }catch(error){
+   console.warn("Curated content unavailable:",error);
+   for(const [,id,label] of feeds){
+    const root=document.getElementById(id);
+    if(!root)continue;
+    root.replaceChildren();
+    root.append(make("h3","curated-heading","📌 منشورات أحلى توانسة – "+label));
+    root.append(make("p","curated-note","تعذر تحميل المنشورات حالياً. عاود تحديث الصفحة بعد قليل."));
+   }
+  }
  }
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",loadCuratedFeeds,{once:true});else loadCuratedFeeds();
 })();
