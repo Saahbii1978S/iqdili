@@ -1,0 +1,35 @@
+name: Visitor heartbeat regression check
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "index.html"
+      - ".github/workflows/visitor-heartbeat-check.yml"
+      - "docs/operations/VISITOR-COUNTER-PR50-VALIDATION.md"
+
+permissions:
+  contents: read
+
+jobs:
+  heartbeat-invariants:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check visitor heartbeat invariants
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          source = Path("index.html").read_text(encoding="utf-8")
+          start = source.find("function startSiteVisitTracking()")
+          end = source.find("\nfunction connect()", start)
+          assert start >= 0 and end > start, "Visitor tracking function was not found"
+          fn = source[start:end]
+          assert "sendHeartbeat();" in fn, "Initial heartbeat must run immediately"
+          assert "window.setInterval(sendHeartbeat,120000)" in fn, "Expected a 120-second heartbeat interval"
+          assert fn.index("if(isAdmin===true)return;") < fn.index('db.rpc("record_site_visit")'), "Admins must be excluded before recording a visit"
+          assert "db.rpc(\"record_site_visit\")" in fn, "Visitor tracking RPC call is missing"
+          print("PASS: immediate heartbeat, 120-second interval, admin exclusion, and visit RPC are present.")
+          PY

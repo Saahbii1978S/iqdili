@@ -2008,7 +2008,7 @@ function startSiteVisitTracking(){
   }catch(error){console.warn("Visitor count heartbeat:",error);}
  };
  sendHeartbeat();
- window.setInterval(sendHeartbeat,60000);
+ window.setInterval(sendHeartbeat,120000);
 }
 function connect(){
 try{
