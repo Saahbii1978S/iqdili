@@ -1998,6 +1998,19 @@ let authListenerInstalled=false;
 let adminSignupNotificationAttemptedFor="";
 let siteVisitHeartbeatStarted=false;
 let siteVisitTrackingId=null;
+function notifyRecentConfirmedSignup(session){
+ const user=session?.user;
+ if(!db||!user?.id||!user?.email_confirmed_at||!user?.created_at)return;
+ const createdAt=Date.parse(user.created_at);
+ if(!Number.isFinite(createdAt)||Date.now()-createdAt>7*24*60*60*1000)return;
+ if(adminSignupNotificationAttemptedFor===user.id)return;
+ adminSignupNotificationAttemptedFor=user.id;
+ window.setTimeout(()=>{
+  db.functions.invoke("notify-admin-new-user").then(({error})=>{
+   if(error)console.warn("Admin signup notification:",error.message);
+  }).catch(error=>console.warn("Admin signup notification:",error));
+ },0);
+}
 function getSiteVisitTrackingId(){
  if(siteVisitTrackingId)return siteVisitTrackingId;
  const key="ahla-visitor-id-v1";
