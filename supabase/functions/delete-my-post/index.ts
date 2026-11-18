@@ -1,14 +1,17 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 const ORIGIN="https://saahbii1978s.github.io";
 const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
+
 const cfg:Record<string,{bucket:string,folder:string}>={
  service_requests:{bucket:"listing-images",folder:"services"},
  job_posts:{bucket:"listing-images",folder:"jobs"},
  real_estate_posts:{bucket:"listing-images",folder:"realty"},
  market_posts:{bucket:"market-images",folder:"market"}
 };
-const protectedIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST")return reply({error:"طريقة الطلب غير مدعومة."},405);
@@ -22,41 +25,43 @@ Deno.serve(async(req:Request)=>{
   if(!userRes.ok)return reply({error:"جلسة الحساب انتهت. عاود تسجيل الدخول."},401);
   const user=await userRes.json().catch(()=>({}));
   if(typeof user.id!=="string")return reply({error:"تعذّر التثبت من الحساب."},401);
-  const body=await req.json().catch(()=>null);
+  const boundedRequest=await readLimitedRequest(req,4096);
+  if(!boundedRequest)return reply({error:"حجم الطلب أكبر من المسموح."},413);
+  const body=await boundedRequest.json().catch(()=>null);
   const table=body?.table,id=body?.id;
   if(typeof table!=="string"||!Object.hasOwn(cfg,table)||!(typeof id==="string"||typeof id==="number")||String(id).length>30)return reply({error:"الطلب غير صالح."},400);
-  if((protectedIds[table]||[]).includes(String(id)))return reply({error:"هذا الإعلان التجريبي محمي ولا يمكن حذفه من حساب المستخدم."},403);
-  const query=new URLSearchParams({select:"id,user_id,title,description,status,image_urls","id":"eq."+String(id),"user_id":"eq."+user.id,limit:"2"});
+  const query=new URLSearchParams({select:"*","id":"eq."+String(id),"user_id":"eq."+user.id,limit:"2"});
   const rowRes=await fetch(url+"/rest/v1/"+table+"?"+query.toString(),{headers:{apikey:key,Authorization:"Bearer "+key}});
   if(!rowRes.ok)return reply({error:"تعذّر التثبت من ملكية الإعلان."},502);
   const rows=await rowRes.json();
   if(!Array.isArray(rows)||rows.length!==1||rows[0].user_id!==user.id)return reply({error:"الإعلان غير موجود في حسابك أو لا تملك صلاحية حذفه."},404);
-  const row=rows[0],demoText=(String(row.title||"")+" "+String(row.description||"")).toLowerCase();
-  if(/(تجريب|تجريبي|اختبار|test|demo|مثال)/i.test(demoText))return reply({error:"هذا الإعلان مصنّف كتجربة ومحمي من الحذف."},403);
+  const row=rows[0];
+  if(isProtectedDemoPost(table,id,row.title,row.description))return reply({error:"هذا الإعلان مصنّف كتجربة ومحمي من الحذف."},403);
   const paths=Array.isArray(row.image_urls)?row.image_urls:[];
   for(const path of paths){
    if(typeof path!=="string"||!path.startsWith(cfg[table].folder+"/")||!/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path)||path.includes("..")||path.includes("//"))return reply({error:"مسار صورة غير صالح؛ لم يقع حذف الإعلان."},409);
   }
-  const del=await fetch(url+"/rest/v1/"+table+"?id=eq."+encodeURIComponent(String(id))+"&user_id=eq."+encodeURIComponent(user.id),{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,Prefer:"return=representation"}});
-  if(!del.ok)return reply({error:"تعذّر حذف الإعلان من قاعدة البيانات. تواصل مع الإدارة."},502);
-  const deleted=await del.json().catch(()=>null);
-  if(!Array.isArray(deleted)||deleted.length!==1)return reply({error:"لم يتم حذف الإعلان؛ حدّث القائمة وحاول مجدداً."},409);
-  if(paths.length){
-   // Check both buckets: an unpublished post may still have its former public image copy.
-   for(const bucket of [cfg[table].bucket,"pending-images"]){
-    const existing=[];
-    for(const path of paths){
-     const encoded=path.split("/").map(encodeURIComponent).join("/");
-     const check=await fetch(url+"/storage/v1/object/info/"+bucket+"/"+encoded,{method:"HEAD",headers:{apikey:key,Authorization:"Bearer "+key}});
-     if(check.ok)existing.push(path);
-     else if(check.status!==404){console.error("Post deleted but image preflight failed",bucket,check.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان من قاعدة البيانات، لكن تعذّر التثبت من بعض الصور وتنظيفها. تواصل مع الإدارة لإتمام التنظيف."});}
-    }
-    if(existing.length){
-     const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:existing})});
-     if(!rm.ok){console.error("Post deleted but image cleanup failed",bucket,rm.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تنظيف بعض الصور. تم تسجيل المشكلة للإدارة."});}
-    }
-   }
+  const cleanupJobs=buildStorageCleanupJobs([cfg[table].bucket,"pending-images"],paths);
+  if(!await enqueueStorageCleanup(url,key,cleanupJobs)){
+   console.error("Could not enqueue user post image cleanup",table,id);
+   return reply({error:"تعذّر تجهيز تنظيف الصور بأمان. لم يقع حذف الإعلان."},503);
   }
-  return reply({ok:true,message:"تم حذف إعلانك وصوره."});
+  const deletion=await fetch(url+"/rest/v1/rpc/delete_post_and_activate_storage_cleanup",{
+   method:"POST",
+   headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},
+   body:JSON.stringify({
+    p_table:table,p_id:String(id),p_expected_user_id:user.id,p_require_owner:true,
+    p_expected_row:row,p_jobs:cleanupJobs
+   })
+  });
+  if(!deletion.ok){
+   const detail=await deletion.text().catch(()=>"");
+   console.error("delete-my-post atomic deletion failed",table,id,deletion.status,detail.slice(0,800));
+   return reply({error:"تعذّر حذف الإعلان وتفعيل تنظيف صوره بشكل آمن. لم يقع الحذف."},502);
+  }
+  const deletionResult=await deletion.json().catch(()=>null);
+  if(!deletionResult||deletionResult.deleted!==true)return reply({error:"تغيّرت بيانات الإعلان أثناء العملية؛ لم يقع حذف النسخة المحدّثة. حدّث القائمة وحاول مجدداً."},409);
+  const cleanupPending=Number(deletionResult.activated_jobs||0)+Number(deletionResult.deferred_jobs||0)>0;
+  return reply({ok:true,cleanupPending,message:cleanupPending?"تم حذف إعلانك، وتنظيف صوره جارٍ في الخلفية.":"تم حذف إعلانك."});
  }catch(error){console.error("delete-my-post error",String(error));return reply({error:"صار خطأ أثناء حذف الإعلان."},500);}
 });
