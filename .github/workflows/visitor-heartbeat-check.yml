@@ -1,6 +1,8 @@
 name: Visitor analytics regression check
 
 on:
+  push:
+    branches: ["feat/privacy-first-visitor-analytics"]
   pull_request:
     branches: ["main"]
     paths:
