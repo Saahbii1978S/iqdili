@@ -98,6 +98,9 @@ $function$;
 revoke all on function public.record_site_page_visit(text, text) from public;
 grant execute on function public.record_site_page_visit(text, text) to anon, authenticated;
 
+-- Disable the former client-supplied browser UUID endpoint so stale clients cannot keep recording without consent.
+revoke all on function public.record_site_visit(uuid) from public, anon, authenticated;
+
 create or replace function public.get_site_visitor_details()
 returns table (
   visitor_label text,
