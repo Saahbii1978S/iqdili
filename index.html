@@ -689,10 +689,9 @@ main>section input[type="file"]::file-selector-button{
 <style id="source-reference-style">.source-reference{color:inherit;text-decoration:none;cursor:default}</style>
 </head>
 <body>
-<div id="ahla-analytics-consent" role="dialog" aria-live="polite" aria-label="اختيار الخصوصية" style="display:none;position:fixed;z-index:9999;left:12px;right:12px;bottom:12px;max-width:760px;margin:auto;padding:16px;border:1px solid #cbd8d3;border-radius:16px;background:#fff;color:#182a25;box-shadow:0 8px 32px rgba(0,0,0,.18)">
- <strong>اختيار الخصوصية والإحصائيات</strong>
- <p style="margin:8px 0;font-size:14px;line-height:1.7">إذا توافق، نسجّلوا إحصائيات مجهولة: بصمة رقمية مجهولة مشتقّة من IP ومحمية بمفتاح سرّي، الأقسام اللي تزورها، واسم نطاق الموقع اللي جابك. ما نخزّنش IP الخام ولا البريد ولا محتوى الاستمارات، وما نحدّدوش الولاية. الأحداث تتحذف آلياً بعد 90 يوم. تنجم ترفض من غير ما يتعطّل عليك الموقع.</p>
- <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="ahla-analytics-accept" style="background:#176b5c">نوافق على الإحصائيات</button><button type="button" id="ahla-analytics-reject" style="background:#5b6670">لا أوافق</button></div>
+<div id="ahla-analytics-consent" role="dialog" aria-live="polite" aria-label="اختيار المشاركة" style="display:none;position:fixed;z-index:9999;left:12px;right:12px;bottom:12px;max-width:560px;margin:auto;padding:14px;border:1px solid #dce7e2;border-radius:14px;background:#fff;color:#182a25;box-shadow:0 6px 22px rgba(0,0,0,.12)">
+ <p style="margin:0 0 10px;font-size:15px;line-height:1.7">نحبّوا نطوّروا أحلى توانسة ونحسّنوا خدماتنا. توافق تعاونّا؟</p>
+ <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button type="button" id="ahla-analytics-accept" style="background:#176b5c">موافق</button><button type="button" id="ahla-analytics-reject" style="background:#5b6670">لا، شكراً</button><a href="#site-privacy-details" id="ahla-analytics-privacy-link" style="margin-inline-start:auto;color:#245c54;font-size:13px;font-weight:700">الخصوصية</a></div>
 </div>
 
 <header>
@@ -1731,6 +1730,22 @@ main>section input[type="file"]::file-selector-button{
  <details style="background:#fff;border:1px solid #dce7e2;border-radius:12px;padding:12px;margin:10px 0">
   <summary style="cursor:pointer;font-weight:700;color:#14564f">سياسة الخصوصية وحماية البيانات</summary>
   <div id="site-privacy" style="line-height:1.9;padding-top:10px">
+   <section id="site-privacy-details" style="padding:10px 12px;margin:0 0 14px;border:1px solid #e2ece8;border-radius:10px;background:#fbfdfc">
+    <h4 style="margin:0 0 8px;color:#14564f">إحصائيات استعمال الموقع</h4>
+    <p>1. نستعملوا إحصائيات استعمال الموقع لتحسين خدمات أحلى توانسة.</p>
+    <p>2. نستعملوا معرّفاً للمتصفح لربط الزيارات ببعضها.</p>
+    <p>3. نسجّلوا الأقسام وأوقات الزيارة.</p>
+    <details style="margin-top:8px">
+     <summary style="cursor:pointer;font-weight:700;color:#14564f">مزيد من المعلومات</summary>
+     <div style="padding-top:8px">
+      <p>المعرّف الإحصائي يُشتقّ من عنوان الاتصال بطريقة تشفير بمفتاح سرّي، ولا نخزّن عنوان IP الخام. هذا المعرّف قد يمثّل اتصالاً أو شبكة مشتركة، وليس إثباتاً لهوية شخص بعينه.</p>
+      <p>نسجّلوا القسم المفتوح ووقت الزيارة واسم نطاق الموقع المُحيل إذا توفّر. ما نسجّلوش عناوين الصفحات الكاملة أو كلمات البحث أو محتوى الاستمارات ضمن إحصائيات التصفّح.</p>
+      <p>تفاصيل الأقسام ومصادر الدخول تُحذف آلياً بعد 90 يوماً. الأرقام الإجمالية للزيارات تُستعمل في لوحة الإحصائيات.</p>
+      <p>المشاركة اختيارية. إذا تختار «لا، شكراً»، ما يبدأش تسجيل تفاصيل التصفّح. وتنجم تبدّل اختيارك من الرابط الموجود هنا.</p>
+      <p><a href="#ahla-analytics-consent" id="ahla-analytics-change-choice">تغيير اختياري في الإحصائيات</a></p>
+     </div>
+    </details>
+   </section>
    <p><strong>شنوة المعلومات اللي نجمعوها؟</strong> كي تبعث طلب خدمة أو إعلان، المنصة تستقبل المعلومات اللي تختار تعمّرها، كيف العنوان والوصف والمدينة ورقم الهاتف والصور الاختيارية، وتحفظها في قاعدة بياناتها السحابية لمراجعتها وإدارتها.</p>
    <p><strong>وقتاش يظهر الإعلان؟</strong> الإعلانات ما تظهرش للعموم قبل موافقة الإدارة. رقم الهاتف ما يظهرش في المنشور العام إلا إذا تختار صراحةً إظهار وسيلة الاتصال للناس. الصور المرفوعة تنجم تظهر مع الإعلان المقبول.</p>
    <p><strong>السيرة الذاتية (CV):</strong> المعلومات والصورة اللي تدخلهم في أداة CV يستعملهم المتصفح على جهازك لصناعة السيرة الذاتية، وما يلزمش تبعثهم في استمارات الإعلانات. حمّل نسخة قبل ما تسكّر الصفحة.</p>
@@ -1768,7 +1783,7 @@ main>section input[type="file"]::file-selector-button{
 </div>
 
 <p style="margin:18px 0 0">أحلى توانسة © 2026</p>
-<button type="button" id="ahla-analytics-settings" style="margin:8px auto;background:#eef4f1;color:#24483d;border:1px solid #cbd8d3">إعدادات الخصوصية</button>
+
 </footer>
 
 <script>
@@ -2065,7 +2080,7 @@ function saveSiteVisitConsent(choice){
 setupSiteVisitConsent();
 if(!document.documentElement.dataset.analyticsConsentReady){
  document.documentElement.dataset.analyticsConsentReady="1";
- document.addEventListener("click",event=>{const target=event.target instanceof Element?event.target:null;if(!target)return;if(target.closest("#ahla-analytics-accept"))saveSiteVisitConsent("yes");if(target.closest("#ahla-analytics-reject"))saveSiteVisitConsent("no");if(target.closest("#ahla-analytics-settings")){const banner=el("ahla-analytics-consent");if(banner)banner.style.display="block";}});
+ document.addEventListener("click",event=>{const target=event.target instanceof Element?event.target:null;if(!target)return;if(target.closest("#ahla-analytics-accept"))saveSiteVisitConsent("yes");if(target.closest("#ahla-analytics-reject"))saveSiteVisitConsent("no");if(target.closest("#ahla-analytics-change-choice")){event.preventDefault();const banner=el("ahla-analytics-consent");if(banner){banner.style.display="block";banner.scrollIntoView({block:"center",behavior:"smooth"});}}if(target.closest("#ahla-analytics-privacy-link")){const policy=document.querySelector('#site-policies details');if(policy)policy.open=true;}});
 }
 
 function connect(){
