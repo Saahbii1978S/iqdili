@@ -1702,7 +1702,7 @@ main>section input[type="file"]::file-selector-button{
   <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>👥 زوار اليوم</small><div id="stats-today" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
   <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>🔢 إجمالي الزيارات</small><div id="stats-total" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
  </div>
- <p id="stats-updated" class="muted" style="margin:8px 0 0">تبدأ الإحصائيات من تاريخ تفعيلها، وتتحدّث آلياً.</p>
+ <p id="stats-updated" class="muted" style="margin:8px 0 0">تتحدّث الإحصائيات آلياً. زيارات حسابات الإدارة لا تُحتسب حتى لا تختلط بالزيارات الحقيقية.</p>
 </div>
 <div id="admin-requests" style="margin-top:15px"></div>
 </div></div>
@@ -2652,7 +2652,7 @@ async function loadAdminVisitorStats(){
  el("stats-online").textContent=Number(stats.online_now||0).toLocaleString("ar-TN");
  el("stats-today").textContent=Number(stats.visitors_today||0).toLocaleString("ar-TN");
  el("stats-total").textContent=Number(stats.total_visits||0).toLocaleString("ar-TN");
- const note=el("stats-updated");if(note)note.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-TN")+" · الزائر يُحتسب زيارة جديدة بعد 30 دقيقة من الخمول.";
+ const note=el("stats-updated");if(note)note.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-TN")+" · تُحتسب الزيارة الجديدة بعد 30 دقيقة من الخمول، ولا تُحتسب جلسات الإدارة.";
 }
 async function loadAdminImagePreviews(scope){
  const placeholders=scope ? [...scope] : [...document.querySelectorAll("[data-admin-image]")];
