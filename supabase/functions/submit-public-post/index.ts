@@ -1,5 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { buildStorageCleanupJobs, scheduleStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, scheduleStorageCleanup, isValidStorageObjectPath } from "../_shared/storage-cleanup-queue.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
 
 const ALLOWED_ORIGIN = "https://saahbii1978s.github.io";
