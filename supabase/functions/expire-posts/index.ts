@@ -1,10 +1,10 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
-import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, isValidStorageObjectPath } from "../_shared/storage-cleanup-queue.ts";
 const TOKEN_HASH=Deno.env.get("EXPIRE_POSTS_TOKEN_HASH")||"";
 const tables:Record<string,{bucket:string,folder:string}>={service_requests:{bucket:"listing-images",folder:"services"},job_posts:{bucket:"listing-images",folder:"jobs"},real_estate_posts:{bucket:"listing-images",folder:"realty"},market_posts:{bucket:"market-images",folder:"market"}};
 async function sha(v:string){const d=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(v));return [...new Uint8Array(d)].map(x=>x.toString(16).padStart(2,"0")).join("");}
-function validPath(p:unknown,f:string):p is string{return typeof p==="string"&&p.startsWith(f+"/")&&/^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(p)&&!p.includes("..")&&!p.includes("//");}
+function validPath(p:unknown,f:string):p is string{return isValidStorageObjectPath(p)&&p.startsWith(f+"/");}
 async function sendAdminAlert(subject:string,textContent:string):Promise<void>{
  const apiKey=Deno.env.get("BREVO_API_KEY"),recipient=Deno.env.get("ADMIN_ALERT_EMAIL"),sender=Deno.env.get("BREVO_SENDER_EMAIL");
  if(!apiKey||!recipient||!sender){console.warn("Admin email alerts are not fully configured");return;}
