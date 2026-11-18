@@ -41,7 +41,7 @@ assert '["admins", "staff_roles"]' in account, "delete-account: admin/staff prot
 for name in ("submit-public-post", "upload-pending-image"):
     source = sources[name]
     assert "verification.success !== true" in source, f"{name}: Turnstile success check missing"
-    assert "verification.hostname !== NEW_HOST" in source, f"{name}: Turnstile hostname check missing"
+    assert f'verification.hostname !== "{NEW_HOST}"' in source, f"{name}: Turnstile hostname check missing"
 
 print(f"PASS: {len(FUNCTIONS)} Edge Function source files exist and use the new hostname.")
 print("PASS: admin authorization, user ownership, account deletion safeguards, and Turnstile checks remain present.")
