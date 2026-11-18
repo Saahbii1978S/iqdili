@@ -2062,6 +2062,7 @@ function saveSiteVisitConsent(choice){
  const banner=el("ahla-analytics-consent");if(banner)banner.style.display="none";
  if(choice==="yes"){startSiteVisitTracking();const active=document.querySelector("main section:not(.hidden)[id]");recordSitePageVisit(active?.id||"home");}else{siteVisitLastPage="";}
 }
+setupSiteVisitConsent();
 if(!document.documentElement.dataset.analyticsConsentReady){
  document.documentElement.dataset.analyticsConsentReady="1";
  document.addEventListener("click",event=>{const target=event.target instanceof Element?event.target:null;if(!target)return;if(target.closest("#ahla-analytics-accept"))saveSiteVisitConsent("yes");if(target.closest("#ahla-analytics-reject"))saveSiteVisitConsent("no");if(target.closest("#ahla-analytics-settings")){const banner=el("ahla-analytics-consent");if(banner)banner.style.display="block";}});
