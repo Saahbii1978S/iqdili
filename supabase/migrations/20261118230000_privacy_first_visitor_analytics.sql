@@ -21,6 +21,25 @@ create index if not exists site_page_events_visitor_created_at_idx
 
 revoke all on table private.site_page_events from public, anon, authenticated;
 
+-- Keep the 90-day retention promise even when no new visitor events arrive.
+do $setup$
+declare
+  v_job_id bigint;
+begin
+  select jobid into v_job_id
+  from cron.job
+  where jobname = 'ahla-tounsa-site-page-events-retention';
+  if v_job_id is not null then
+    perform cron.unschedule(v_job_id);
+  end if;
+  perform cron.schedule(
+    'ahla-tounsa-site-page-events-retention',
+    '17 3 * * *',
+    $cleanup$delete from private.site_page_events where created_at < now() - interval '90 days';$cleanup$
+  );
+end;
+$setup$;
+
 create or replace function public.record_site_page_visit(
   p_page_key text,
   p_referrer_host text default null
