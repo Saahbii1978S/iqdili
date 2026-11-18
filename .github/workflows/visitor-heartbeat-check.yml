@@ -31,7 +31,11 @@ jobs:
           assert 'ahla-analytics-consent-v1' in source
           assert 'setupSiteVisitConsent();' in source
           assert 'function notifyRecentConfirmedSignup(session)' in source
-          assert 'لا أوافق' in source and 'نوافق على الإحصائيات' in source
+          assert 'موافق' in source and 'لا، شكراً' in source
+          assert 'نحبّوا نطوّروا أحلى توانسة ونحسّنوا خدماتنا. توافق تعاونّا؟' in source
+          assert 'نستعملوا معرّفاً إحصائياً لربط الزيارات ببعضها.' in source
+          assert 'تفاصيل الأقسام ومصادر الدخول تُحذف آلياً بعد 90 يوماً.' in source
+          assert 'ahla-analytics-settings' not in source
           assert 'siteVisitConsentChoice!=="yes"' in source
           assert 'db.rpc("record_site_page_visit"' in source
           assert 'db.rpc("record_site_visit")' in source
