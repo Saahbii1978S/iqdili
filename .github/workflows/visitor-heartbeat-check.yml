@@ -29,6 +29,8 @@ jobs:
           sql = migration_path.read_text(encoding="utf-8")
 
           assert 'ahla-analytics-consent-v1' in source
+          assert 'setupSiteVisitConsent();' in source
+          assert 'function notifyRecentConfirmedSignup(session)' in source
           assert 'لا أوافق' in source and 'نوافق على الإحصائيات' in source
           assert 'siteVisitConsentChoice!=="yes"' in source
           assert 'db.rpc("record_site_page_visit"' in source
@@ -41,6 +43,8 @@ jobs:
           assert 'new URL(document.referrer)' in source
           assert 'searchParams' not in source[source.find('function recordSitePageVisit'):source.find('function startSiteVisitTracking')]
           assert '90 days' in sql
+          assert 'cron.schedule' in sql
+          assert 'revoke all on function public.record_site_visit(uuid)' in sql
           assert 'private.site_page_events' in sql
           assert 'extensions.digest' in sql
           assert 'insert into private.site_visitor_days' in sql
