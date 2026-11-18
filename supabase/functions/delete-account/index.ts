@@ -1,7 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { hasRecentAuthentication } from "../_shared/recent-auth.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
-import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { buildStorageCleanupJobs, enqueueStorageCleanup, isValidStorageObjectPath } from "../_shared/storage-cleanup-queue.ts";
 import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 
 const ORIGIN = "https://saahbii1978s.github.io";
@@ -25,12 +25,7 @@ const tables = [
 ] as const;
 
 function validPath(path: unknown, folder: string): path is string {
-  return typeof path === "string" &&
-    path.length <= 220 &&
-    path.startsWith(folder + "/") &&
-    /^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$/i.test(path) &&
-    !path.includes("..") &&
-    !path.includes("//");
+  return isValidStorageObjectPath(path) && path.startsWith(folder + "/");
 }
 
 async function api(
