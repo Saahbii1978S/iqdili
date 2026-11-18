@@ -24,6 +24,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check all Edge Functions
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r file; do
+            echo "::group::deno check $file"
+            deno check "$file"
+            echo "::endgroup::"
+          done < <(find supabase/functions -mindepth 2 -maxdepth 2 -type f -name index.ts | sort)
+      - name: Run all Edge Function tests
+        run: deno test supabase/functions
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Prepare public site
