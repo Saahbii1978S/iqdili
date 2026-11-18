@@ -1768,6 +1768,7 @@ main>section input[type="file"]::file-selector-button{
 </div>
 
 <p style="margin:18px 0 0">أحلى توانسة © 2026</p>
+<button type="button" id="ahla-analytics-settings" style="margin:8px auto;background:#eef4f1;color:#24483d;border:1px solid #cbd8d3">إعدادات الخصوصية</button>
 </footer>
 
 <script>
@@ -2050,7 +2051,7 @@ function saveSiteVisitConsent(choice){
 }
 if(!document.documentElement.dataset.analyticsConsentReady){
  document.documentElement.dataset.analyticsConsentReady="1";
- document.addEventListener("click",event=>{const target=event.target instanceof Element?event.target:null;if(!target)return;if(target.closest("#ahla-analytics-accept"))saveSiteVisitConsent("yes");if(target.closest("#ahla-analytics-reject"))saveSiteVisitConsent("no");});
+ document.addEventListener("click",event=>{const target=event.target instanceof Element?event.target:null;if(!target)return;if(target.closest("#ahla-analytics-accept"))saveSiteVisitConsent("yes");if(target.closest("#ahla-analytics-reject"))saveSiteVisitConsent("no");if(target.closest("#ahla-analytics-settings")){const banner=el("ahla-analytics-consent");if(banner)banner.style.display="block";}});
 }
 
 function connect(){
