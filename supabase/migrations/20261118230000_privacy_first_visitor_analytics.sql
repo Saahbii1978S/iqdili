@@ -142,7 +142,7 @@ begin
     coalesce(p.pages, array[]::text[]),
     coalesce(p.sources, array[]::text[])
   from visit_totals v
-  left join page_totals p on p.visitor_id = v.visitor_id
+  join page_totals p on p.visitor_id = v.visitor_id
   order by v.last_seen desc
   limit 200;
 end;
