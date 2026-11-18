@@ -33,7 +33,7 @@ jobs:
           assert 'function notifyRecentConfirmedSignup(session)' in source
           assert 'موافق' in source and 'لا، شكراً' in source
           assert 'نحبّوا نطوّروا أحلى توانسة ونحسّنوا خدماتنا. توافق تعاونّا؟' in source
-          assert 'نستعملوا معرّفاً إحصائياً لربط الزيارات ببعضها.' in source
+          assert 'نستعملوا معرّفاً إحصائياً يساعدنا نربطوا الزيارات ببعضها.' in source
           assert 'تفاصيل الأقسام ومصادر الدخول تُحذف آلياً بعد 90 يوماً.' in source
           assert 'ahla-analytics-settings' not in source
           assert 'siteVisitConsentChoice!=="yes"' in source
