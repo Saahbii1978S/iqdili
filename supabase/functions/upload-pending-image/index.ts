@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const ALLOWED_ORIGIN = "https://saahbii1978s.github.io";
+const ALLOWED_ORIGIN = "https://ahla-tounsa-project.github.io";
 const corsHeaders = {
   "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -52,7 +52,7 @@ Deno.serve(async (req: Request) => {
       body: new URLSearchParams({ secret: turnstileSecret, response: token }),
     });
     const verification = await verifyResponse.json().catch(() => ({}));
-    if (!verifyResponse.ok || verification.success !== true || verification.hostname !== "saahbii1978s.github.io") {
+    if (!verifyResponse.ok || verification.success !== true || verification.hostname !== "ahla-tounsa-project.github.io") {
       console.warn("Pending image Turnstile verification rejected", verification["error-codes"] || []);
       return reply({ error: "التحقق من Cloudflare ما نجحش. عاود المحاولة." }, 403);
     }
