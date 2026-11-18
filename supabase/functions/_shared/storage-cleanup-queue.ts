@@ -265,3 +265,14 @@ export async function deferClaimedStorageCleanup(
   if (!response.ok) return false;
   return await response.json().catch(() => false) === true;
 }
+
+export async function scheduleStorageCleanup(
+  url: string,
+  serviceKey: string,
+  jobs: readonly StorageCleanupJob[],
+): Promise<{ queued: boolean; activated: boolean }> {
+  const queued = await enqueueStorageCleanup(url, serviceKey, jobs);
+  if (!queued) return { queued: false, activated: false };
+  const activated = await activateStorageCleanup(url, serviceKey, jobs);
+  return { queued: true, activated };
+}

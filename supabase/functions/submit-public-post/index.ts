@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { buildStorageCleanupJobs, scheduleStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 
 const ALLOWED_ORIGIN = "https://saahbii1978s.github.io";
 const corsHeaders = {
@@ -243,22 +244,52 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const insertResponse = await fetch(supabaseUrl + "/rest/v1/" + table, {
-      method: "POST",
-      headers: { "apikey": serviceRoleKey, "Authorization": "Bearer " + serviceRoleKey, "Content-Type": "application/json", "Prefer": "return=minimal" },
-      body: JSON.stringify(row),
-    });
-    if (!insertResponse.ok) {
-      const dbError = await insertResponse.json().catch(() => ({}));
-      const message = typeof dbError.message === "string" ? dbError.message : "";
-      console.error("Protected post insert failed", table, insertResponse.status, message);
-      if (uploadedPath) {
-        await fetch(supabaseUrl + "/storage/v1/object/pending-images/" + uploadedPath.split("/").map(encodeURIComponent).join("/"), {
-          method: "DELETE", headers: { "apikey": serviceRoleKey, "Authorization": "Bearer " + serviceRoleKey },
-        }).catch(() => undefined);
+    let insertResponse: Response | null = null;
+    let insertTransportError = "";
+    try {
+      insertResponse = await fetch(supabaseUrl + "/rest/v1/" + table, {
+        method: "POST",
+        headers: { "apikey": serviceRoleKey, "Authorization": "Bearer " + serviceRoleKey, "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify(row),
+      });
+    } catch (error) {
+      insertTransportError = String(error);
+      console.error("Protected post insert transport error", table, insertTransportError);
+    }
+    if (!insertResponse || !insertResponse.ok) {
+      let message = "";
+      if (insertResponse) {
+        const dbError = await insertResponse.json().catch(() => ({}));
+        message = typeof dbError.message === "string" ? dbError.message : "";
+        console.error("Protected post insert failed", table, insertResponse.status, message);
       }
+
+      // The database may have accepted the insert even if the response was lost.
+      // Queue cleanup instead of deleting directly; the worker rechecks references
+      // before removal, so a successfully-created listing keeps its image.
+      if (uploadedPath) {
+        try {
+          const cleanupJobs = buildStorageCleanupJobs(["pending-images"], [uploadedPath]);
+          const { queued, activated } = await scheduleStorageCleanup(supabaseUrl, serviceRoleKey, cleanupJobs);
+          if (!queued || !activated) {
+            console.error("Failed to activate orphaned submission image cleanup", {
+              table,
+              path: uploadedPath,
+              queued,
+              activated,
+            });
+          }
+        } catch (cleanupError) {
+          console.error("Orphaned submission image cleanup scheduling error", uploadedPath, String(cleanupError));
+        }
+      }
+
       if (message.includes("ساعة") || message.includes("رقم الهاتف")) return reply({ error: message }, 429);
-      return reply({ error: "ما نجّمش نحفظ الإعلان حالياً. تثبّت من المعلومات وعاود المحاولة." }, 400);
+      return reply({
+        error: insertResponse
+          ? "ما نجّمش نحفظ الإعلان حالياً. تثبّت من المعلومات وعاود المحاولة."
+          : "ما تأكدش حفظ الإعلان بسبب انقطاع الاتصال. تثبّت من حسابك قبل ما تعاود الإرسال.",
+      }, insertResponse ? 400 : 503);
     }
     const categoryLabels: Record<string, string> = { service_requests: "الخدمات", job_posts: "فرص العمل", real_estate_posts: "العقارات", market_posts: "السوق" };
     await sendAdminAlert("إعلان جديد ينتظر المراجعة", `وصل إعلان جديد إلى أحلى توانسة.\nالقسم: ${categoryLabels[table] || "غير محدد"}\nالعنوان: ${title}\nالمدينة: ${city}\nالحالة: في انتظار المراجعة.`);
