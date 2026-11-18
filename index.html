@@ -689,6 +689,12 @@ main>section input[type="file"]::file-selector-button{
 <style id="source-reference-style">.source-reference{color:inherit;text-decoration:none;cursor:default}</style>
 </head>
 <body>
+<div id="ahla-analytics-consent" role="dialog" aria-live="polite" aria-label="اختيار الخصوصية" style="display:none;position:fixed;z-index:9999;left:12px;right:12px;bottom:12px;max-width:760px;margin:auto;padding:16px;border:1px solid #cbd8d3;border-radius:16px;background:#fff;color:#182a25;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+ <strong>اختيار الخصوصية والإحصائيات</strong>
+ <p style="margin:8px 0;font-size:14px;line-height:1.7">إذا توافق، نسجّلوا إحصائيات مجهولة: معرّف اتصال مشتقّ من IP ومشفّر، الأقسام اللي تزورها، واسم نطاق الموقع اللي جابك. ما نخزّنش IP الخام ولا البريد ولا محتوى الاستمارات، وما نحدّدوش الولاية. الأحداث تتحذف آلياً بعد 90 يوم. تنجم ترفض من غير ما يتعطّل عليك الموقع.</p>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="ahla-analytics-accept" style="background:#176b5c">نوافق على الإحصائيات</button><button type="button" id="ahla-analytics-reject" style="background:#5b6670">لا أوافق</button></div>
+</div>
+
 <header>
 <div class="topbar">
   <div class="topbar-brand">
@@ -1702,7 +1708,9 @@ main>section input[type="file"]::file-selector-button{
   <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>👥 زوار اليوم</small><div id="stats-today" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
   <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>🔢 إجمالي الزيارات</small><div id="stats-total" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
  </div>
- <p id="stats-updated" class="muted" style="margin:8px 0 0">تتحدّث الإحصائيات آلياً. زيارات حسابات الإدارة لا تُحتسب حتى لا تختلط بالزيارات الحقيقية.</p>
+ <p id="stats-updated" class="muted" style="margin:8px 0 0">تُعرض تفاصيل مجهولة للزيارات التي وافق أصحابها على الإحصائيات. لا نعرض IP الخام ولا الولاية.</p>
+  <h4 style="margin:14px 0 8px">تفاصيل الزيارات المجهولة (آخر 90 يوم)</h4>
+  <div id="admin-visitor-details"><p class="muted">جاري تحميل التفاصيل...</p></div>
 </div>
 <div id="admin-requests" style="margin-top:15px"></div>
 </div></div>
@@ -1798,6 +1806,7 @@ function show(id){
 const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
+if(siteVisitConsentChoice==="yes")recordSitePageVisit(id);
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
 const activeNavButton=document.querySelector('nav [data-page="'+id+'"]');
 if(activeNavButton)activeNavButton.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"});
@@ -1997,66 +2006,51 @@ if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textConten
 let authListenerInstalled=false;
 let adminSignupNotificationAttemptedFor="";
 let siteVisitHeartbeatStarted=false;
-let siteVisitTrackingId=null;
-function notifyRecentConfirmedSignup(session){
- const user=session?.user;
- if(!db||!user?.id||!user?.email_confirmed_at||!user?.created_at)return;
- const createdAt=Date.parse(user.created_at);
- if(!Number.isFinite(createdAt)||Date.now()-createdAt>7*24*60*60*1000)return;
- if(adminSignupNotificationAttemptedFor===user.id)return;
- adminSignupNotificationAttemptedFor=user.id;
- window.setTimeout(()=>{
-  db.functions.invoke("notify-admin-new-user").then(({error})=>{
-   if(error)console.warn("Admin signup notification:",error.message);
-  }).catch(error=>console.warn("Admin signup notification:",error));
- },0);
-}
-function getSiteVisitTrackingId(){
- if(siteVisitTrackingId)return siteVisitTrackingId;
- const key="ahla-visitor-id-v1";
- try{
-  const saved=window.localStorage.getItem(key);
-  if(saved&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(saved)){
-   siteVisitTrackingId=saved;return saved;
-  }
- }catch(error){}
- let generated="";
- try{
-  if(window.crypto&&typeof window.crypto.randomUUID==="function")generated=window.crypto.randomUUID();
-  else if(window.crypto&&typeof window.crypto.getRandomValues==="function"){
-   const bytes=window.crypto.getRandomValues(new Uint8Array(16));
-   bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
-   const hex=Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
-   generated=hex.slice(0,8)+"-"+hex.slice(8,12)+"-"+hex.slice(12,16)+"-"+hex.slice(16,20)+"-"+hex.slice(20);
-  }
- }catch(error){}
- if(!generated)return null;
- siteVisitTrackingId=generated;
- try{window.localStorage.setItem(key,generated);}catch(error){}
- return generated;
+let siteVisitConsentChoice=null;
+let siteVisitLastPage="";
+const SITE_VISIT_CONSENT_KEY="ahla-analytics-consent-v1";
+function getSiteVisitConsent(){try{return window.localStorage.getItem(SITE_VISIT_CONSENT_KEY)||"";}catch(error){return "";}}
+function recordSitePageVisit(pageId){
+ if(siteVisitConsentChoice!=="yes"||!db||!pageId||pageId==="admin"||pageId==="reset-password")return;
+ const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account"];
+ if(!allowed.includes(pageId)||siteVisitLastPage===pageId)return;
+ siteVisitLastPage=pageId;
+ let referrerHost=null;
+ try{const referrer=document.referrer?new URL(document.referrer):null;if(referrer&&referrer.hostname&&referrer.hostname!==window.location.hostname)referrerHost=referrer.hostname.toLowerCase().slice(0,253);}catch(error){}
+ db.rpc("record_site_page_visit",{p_page_key:pageId,p_referrer_host:referrerHost}).then(({error})=>{if(error)console.warn("Visitor page analytics:",error.message);}).catch(error=>console.warn("Visitor page analytics:",error));
 }
 function startSiteVisitTracking(){
- if(siteVisitHeartbeatStarted||!db)return;
+ if(siteVisitHeartbeatStarted||!db||siteVisitConsentChoice!=="yes")return;
  siteVisitHeartbeatStarted=true;
  const sendHeartbeat=async()=>{
-  if(!db)return;
+  if(!db||siteVisitConsentChoice!=="yes")return;
   try{
    const {data:sessionData,error:sessionError}=await db.auth.getSession();
    if(sessionError){console.warn("Visitor count session check:",sessionError.message);return;}
    const session=sessionData?.session||null;
-   if(session){
-    const {data:isAdmin,error:adminError}=await db.rpc("is_admin");
-    if(adminError){console.warn("Visitor count admin check:",adminError.message);return;}
-    if(isAdmin===true)return;
-   }
-   const visitorId=getSiteVisitTrackingId();
-   if(!visitorId){console.warn("Visitor count: browser ID unavailable");return;}
-   const {error}=await db.rpc("record_site_visit",{p_visitor_id:visitorId});
+   if(session){const {data:isAdmin,error:adminError}=await db.rpc("is_admin");if(adminError){console.warn("Visitor count admin check:",adminError.message);return;}if(isAdmin===true)return;}
+   const {error}=await db.rpc("record_site_visit");
    if(error)console.warn("Visitor count:",error.message);
   }catch(error){console.warn("Visitor count heartbeat:",error);}
  };
- sendHeartbeat();
- window.setInterval(sendHeartbeat,120000);
+ sendHeartbeat();window.setInterval(sendHeartbeat,120000);
+}
+function setupSiteVisitConsent(){
+ siteVisitConsentChoice=getSiteVisitConsent();
+ const banner=el("ahla-analytics-consent");
+ if(siteVisitConsentChoice!=="yes"&&siteVisitConsentChoice!=="no"){if(banner)banner.style.display="block";return;}
+ if(banner)banner.style.display="none";
+ if(siteVisitConsentChoice==="yes"){startSiteVisitTracking();const active=document.querySelector("main section:not(.hidden)[id]");recordSitePageVisit(active?.id||"home");}
+}
+function saveSiteVisitConsent(choice){
+ if(choice!=="yes"&&choice!=="no")return;
+ siteVisitConsentChoice=choice;try{window.localStorage.setItem(SITE_VISIT_CONSENT_KEY,choice);}catch(error){}
+ const banner=el("ahla-analytics-consent");if(banner)banner.style.display="none";
+ if(choice==="yes"){startSiteVisitTracking();const active=document.querySelector("main section:not(.hidden)[id]");recordSitePageVisit(active?.id||"home");}else{siteVisitLastPage="";}
+}
+if(!document.documentElement.dataset.analyticsConsentReady){
+ document.documentElement.dataset.analyticsConsentReady="1";
+ document.addEventListener("click",event=>{const target=event.target instanceof Element?event.target:null;if(!target)return;if(target.closest("#ahla-analytics-accept"))saveSiteVisitConsent("yes");if(target.closest("#ahla-analytics-reject"))saveSiteVisitConsent("no");});
 }
 
 function connect(){
@@ -2078,7 +2072,7 @@ db.auth.getSession().then(({data,error})=>{
  else notifyRecentConfirmedSignup(data?.session);
 }).catch(error=>console.warn("Signup notification session check:",error));
 }
-if(db)startSiteVisitTracking();
+if(db)setupSiteVisitConsent();
 }catch(error){console.error("Supabase connection setup:",error);}
 }
 connect();
@@ -2652,7 +2646,23 @@ async function loadAdminVisitorStats(){
  el("stats-online").textContent=Number(stats.online_now||0).toLocaleString("ar-TN");
  el("stats-today").textContent=Number(stats.visitors_today||0).toLocaleString("ar-TN");
  el("stats-total").textContent=Number(stats.total_visits||0).toLocaleString("ar-TN");
- const note=el("stats-updated");if(note)note.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-TN")+" · تُحتسب الزيارة الجديدة بعد 30 دقيقة من الخمول، ولا تُحتسب جلسات الإدارة.";
+ const note=el("stats-updated");if(note)note.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-TN")+" · تفاصيل مجهولة للزيارات بموافقة أصحابها، مع حذف آلي بعد 90 يوم.";
+ await loadAdminVisitorDetails();
+}
+async function loadAdminVisitorDetails(){
+ const host=el("admin-visitor-details");if(!host||!db)return;
+ host.textContent="جاري تحميل التفاصيل...";
+ const {data,error}=await db.rpc("get_site_visitor_details");
+ if(error){host.textContent="تعذّر تحميل تفاصيل الزيارات.";console.warn("Visitor details:",error.message);return;}
+ const rows=Array.isArray(data)?data:[];
+ if(!rows.length){host.textContent="ما فماش تفاصيل زيارات مسجّلة بموافقة أصحابها في آخر 90 يوم.";return;}
+ const table=document.createElement("div");table.style.cssText="overflow-x:auto";
+ const tbl=document.createElement("table");tbl.style.cssText="width:100%;border-collapse:collapse;font-size:13px;background:#fff";
+ const thead=document.createElement("thead"),trh=document.createElement("tr");
+ ["معرّف مجهول","عدد الزيارات","آخر نشاط","الأقسام","مصدر الدخول"].forEach(label=>{const th=document.createElement("th");th.textContent=label;th.style.cssText="padding:8px;border-bottom:1px solid #dce7e2;text-align:right";trh.appendChild(th);});
+ thead.appendChild(trh);tbl.appendChild(thead);const tbody=document.createElement("tbody");
+ rows.forEach(row=>{const tr=document.createElement("tr");const values=[String(row.visitor_label||"اتصال مجهول"),Number(row.total_visits||0).toLocaleString("ar-TN"),row.last_seen?new Date(row.last_seen).toLocaleString("ar-TN"):"—",Array.isArray(row.pages)&&row.pages.length?row.pages.join("، "):"—",Array.isArray(row.sources)&&row.sources.length?row.sources.join("، "):"دخول مباشر / غير معروف"];values.forEach(value=>{const td=document.createElement("td");td.textContent=value;td.style.cssText="padding:8px;border-bottom:1px solid #edf1ef;vertical-align:top";tr.appendChild(td);});tbody.appendChild(tr);});
+ tbl.appendChild(tbody);table.appendChild(tbl);host.replaceChildren(table);
 }
 async function loadAdminImagePreviews(scope){
  const placeholders=scope ? [...scope] : [...document.querySelectorAll("[data-admin-image]")];
