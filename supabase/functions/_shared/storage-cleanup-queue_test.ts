@@ -27,6 +27,14 @@ Deno.test("rejects dot segments even when the filename is otherwise valid", () =
   }
 });
 
+Deno.test("enforces the shared 220-character object path limit", () => {
+  const atLimit = "services/" + "a".repeat(207) + ".jpg";
+  const overLimit = "services/" + "a".repeat(208) + ".jpg";
+  assertEquals(atLimit.length, 220);
+  assertEquals(isValidStorageObjectPath(atLimit), true);
+  assertEquals(isValidStorageObjectPath(overLimit), false);
+});
+
 Deno.test("encodes object path segments without encoding folder separators", () => {
   assertEquals(encodeStorageObjectPath("services/photo-1.webp"), "services/photo-1.webp");
 });
