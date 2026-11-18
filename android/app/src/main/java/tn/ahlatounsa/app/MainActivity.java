@@ -23,7 +23,7 @@ import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
 public class MainActivity extends Activity {
-    private static final String HOME = "https://saahbii1978s.github.io/iqdili/";
+    private static final String HOME = "https://ahla-tounsa-project.github.io/iqdili/";
     private static final String HOST = "saahbii1978s.github.io";
     private static final int FILE_CHOOSER_REQUEST = 701;
     private static final int LOCATION_PERMISSION_REQUEST = 702;
