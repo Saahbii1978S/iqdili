@@ -38,7 +38,8 @@ jobs:
           assert 'ahla-analytics-settings' not in source
           assert 'siteVisitConsentChoice!=="yes"' in source
           assert 'db.rpc("record_site_page_visit"' in source
-          assert 'db.rpc("record_site_visit")' in source
+          assert 'db.rpc("record_site_visit")' not in source
+          assert 'function startSiteVisitTracking(){' in source
           assert 'db.rpc("get_site_visitor_details")' in source
           assert 'getSiteVisitTrackingId' not in source
           assert 'ahla-visitor-id-v1' not in source
