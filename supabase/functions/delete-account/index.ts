@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
-const ORIGIN = "https://saahbii1978s.github.io";
+const ORIGIN = "https://ahla-tounsa-project.github.io";
 const cors = {
   "Access-Control-Allow-Origin": ORIGIN,
   "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
