@@ -1,41 +1,52 @@
-name: Visitor heartbeat regression check
+name: Visitor analytics regression check
 
 on:
   pull_request:
     branches: ["main"]
     paths:
       - "index.html"
+      - "supabase/migrations/*privacy_first_visitor_analytics.sql"
       - ".github/workflows/visitor-heartbeat-check.yml"
-      - "docs/operations/VISITOR-COUNTER-PR50-VALIDATION.md"
 
 permissions:
   contents: read
 
 jobs:
-  heartbeat-invariants:
+  privacy-first-analytics:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Check visitor heartbeat invariants
+      - name: Check consent, tracking, and SQL privacy invariants
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
+
           source = Path("index.html").read_text(encoding="utf-8")
-          start = source.find("function startSiteVisitTracking()")
-          end = source.find("\nfunction connect()", start)
-          assert start >= 0 and end > start, "Visitor tracking function was not found"
-          fn = source[start:end]
-          assert "sendHeartbeat();" in fn, "Initial heartbeat must run immediately"
-          assert "window.setInterval(sendHeartbeat,120000)" in fn, "Expected a 120-second heartbeat interval"
-          assert fn.index("if(isAdmin===true)return;") < fn.index('db.rpc("record_site_visit"'), "Admins must be excluded before recording a visit"
-          assert 'db.rpc("record_site_visit",{p_visitor_id:visitorId})' in fn, "UUID visitor tracking RPC call is missing"
-          helper_start = source.find("function getSiteVisitTrackingId()")
-          helper_end = source.find("\nfunction startSiteVisitTracking()", helper_start)
-          assert helper_start >= 0 and helper_end > helper_start, "Visitor ID helper was not found"
-          helper = source[helper_start:helper_end]
-          assert 'localStorage.getItem("ahla-visitor-id-v1")' in helper or 'localStorage.getItem(key)' in helper, "Persistent anonymous visitor ID is missing"
-          assert "crypto.randomUUID()" in helper, "Random visitor UUID generation is missing"
-          print("PASS: immediate heartbeat, 120-second interval, admin exclusion, anonymous UUID, and visit RPC are present.")
+          migration_path = Path("supabase/migrations/20261118230000_privacy_first_visitor_analytics.sql")
+          sql = migration_path.read_text(encoding="utf-8")
+
+          assert 'ahla-analytics-consent-v1' in source
+          assert 'لا أوافق' in source and 'نوافق على الإحصائيات' in source
+          assert 'siteVisitConsentChoice!=="yes"' in source
+          assert 'db.rpc("record_site_page_visit"' in source
+          assert 'db.rpc("record_site_visit")' in source
+          assert 'db.rpc("get_site_visitor_details")' in source
+          assert 'getSiteVisitTrackingId' not in source
+          assert 'ahla-visitor-id-v1' not in source
+          assert 'record_site_visit",{p_visitor_id:' not in source
+          assert 'document.referrer' in source
+          assert 'new URL(document.referrer)' in source
+          assert 'searchParams' not in source[source.find('function recordSitePageVisit'):source.find('function startSiteVisitTracking')]
+          assert '90 days' in sql
+          assert 'private.site_page_events' in sql
+          assert 'extensions.digest' in sql
+          assert 'insert into private.site_visitor_days' in sql
+          assert 'p_page_key not in' in sql
+          assert 'public.admins' in sql
+          assert 'visitor_label text' in sql
+          assert 'inet' in sql
+          assert 'create table if not exists private.site_page_events' in sql
+          assert 'grant execute on function public.get_site_visitor_details() to authenticated' in sql
+          print("PASS: consent gate, decline path, section-only page tracking, hashed IP, admin-only visitor details, and 90-day event retention.")
           PY
