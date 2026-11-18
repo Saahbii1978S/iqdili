@@ -2009,6 +2009,19 @@ let adminSignupNotificationAttemptedFor="";
 let siteVisitHeartbeatStarted=false;
 let siteVisitConsentChoice=null;
 let siteVisitLastPage="";
+function notifyRecentConfirmedSignup(session){
+ const user=session?.user;
+ if(!db||!user?.id||!user?.email_confirmed_at||!user?.created_at)return;
+ const createdAt=Date.parse(user.created_at);
+ if(!Number.isFinite(createdAt)||Date.now()-createdAt>7*24*60*60*1000)return;
+ if(adminSignupNotificationAttemptedFor===user.id)return;
+ adminSignupNotificationAttemptedFor=user.id;
+ window.setTimeout(()=>{
+  db.functions.invoke("notify-admin-new-user").then(({error})=>{
+   if(error)console.warn("Admin signup notification:",error.message);
+  }).catch(error=>console.warn("Admin signup notification:",error));
+ },0);
+}
 const SITE_VISIT_CONSENT_KEY="ahla-analytics-consent-v1";
 function getSiteVisitConsent(){try{return window.localStorage.getItem(SITE_VISIT_CONSENT_KEY)||"";}catch(error){return "";}}
 function recordSitePageVisit(pageId){
