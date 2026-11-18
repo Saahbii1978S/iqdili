@@ -31,3 +31,22 @@ Deno.test("preserves request headers while removing stale length metadata", asyn
   if (limited.headers.get("x-check") !== "ok") throw new Error("custom headers must be preserved");
   if (limited.headers.has("content-length")) throw new Error("stale content-length must be removed");
 });
+
+Deno.test("rejects an oversized streamed body when Content-Length is absent", async () => {
+  const request = new Request("https://example.test/upload", {
+    method: "POST",
+    body: "123456",
+  });
+  if (request.headers.has("content-length")) {
+    throw new Error("test request should not rely on Content-Length");
+  }
+  const limited = await readLimitedRequest(request, 5);
+  if (limited !== null) throw new Error("oversized body without Content-Length should be rejected");
+});
+
+Deno.test("accepts an empty request body", async () => {
+  const request = new Request("https://example.test/upload", { method: "POST" });
+  const limited = await readLimitedRequest(request, 0);
+  if (!limited) throw new Error("bodyless request should be accepted");
+  if (limited.body !== null) throw new Error("bodyless request must remain bodyless");
+});
