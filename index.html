@@ -2049,9 +2049,20 @@ function recordSitePageVisit(pageId){
  db.rpc("record_site_page_visit",{p_page_key:pageId,p_referrer_host:referrerHost}).then(({error})=>{if(error)console.warn("Visitor page analytics:",error.message);}).catch(error=>console.warn("Visitor page analytics:",error));
 }
 function startSiteVisitTracking(){
- if(!db||siteVisitConsentChoice!=="yes")return;
- const active=document.querySelector("main section:not(.hidden)[id]");
- recordSitePageVisit(active?.id||"home");
+ if(siteVisitHeartbeatStarted||!db||siteVisitConsentChoice!=="yes")return;
+ siteVisitHeartbeatStarted=true;
+ const sendHeartbeat=async()=>{
+  if(!db||siteVisitConsentChoice!=="yes")return;
+  try{
+   const {data:sessionData,error:sessionError}=await db.auth.getSession();
+   if(sessionError){console.warn("Visitor count session check:",sessionError.message);return;}
+   const session=sessionData?.session||null;
+   if(session){const {data:isAdmin,error:adminError}=await db.rpc("is_admin");if(adminError){console.warn("Visitor count admin check:",adminError.message);return;}if(isAdmin===true)return;}
+   const {error}=await db.rpc("record_site_visit");
+   if(error)console.warn("Visitor count:",error.message);
+  }catch(error){console.warn("Visitor count heartbeat:",error);}
+ };
+ sendHeartbeat();window.setInterval(sendHeartbeat,120000);
 }
 function setupSiteVisitConsent(){
  siteVisitConsentChoice=getSiteVisitConsent();
