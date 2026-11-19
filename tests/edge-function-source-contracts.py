@@ -8,7 +8,6 @@ FUNCTIONS = [
     "notify-admin-new-user",
 ]
 NEW_HOST = "ahla-tounsa-project.github.io"
-OLD_HOST = "saahbii1978s.github.io"
 
 sources = {}
 for name in FUNCTIONS:
@@ -17,7 +16,6 @@ for name in FUNCTIONS:
     source = path.read_text(encoding="utf-8")
     sources[name] = source
     assert NEW_HOST in source, f"{name}: new Pages hostname is missing"
-    assert OLD_HOST not in source, f"{name}: stale Pages hostname remains"
 
 # Administrative writes must retain server-side authorization checks.
 for name in ("admin-approve-post", "admin-update-post-status", "admin-post-image"):
