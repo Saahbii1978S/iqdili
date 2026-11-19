@@ -1,4 +1,4 @@
-name: Build and publish Ahla Tounsa Android APK
+name: Build Ahla Tounsa Android APK
 
 on:
   push:
@@ -53,7 +53,7 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK"
           echo "Verified APK size: $(stat -c%s "$APK") bytes"
 
-      - name: Prepare direct-download APK
+      - name: Prepare APK artifact
         run: |
           mkdir -p dist
           cp android/app/build/outputs/apk/debug/app-debug.apk dist/ahla-tounsa.apk
