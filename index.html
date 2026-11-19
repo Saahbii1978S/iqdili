@@ -1807,6 +1807,7 @@ function show(id){
 const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
+renderTurnstileForPage(id);
 recordSitePageView(id);
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
 const activeNavButton=document.querySelector('nav [data-page="'+id+'"]');
@@ -1956,12 +1957,13 @@ if(serviceForm&&serviceFormToggle){
   serviceForm.classList.toggle("hidden",!opening);
   serviceFormToggle.setAttribute("aria-expanded",String(opening));
   serviceFormToggle.textContent=opening?"إخفاء استمارة طلب الخدمة":"اطلب خدمة جديدة";
-  if(opening)serviceForm.scrollIntoView({behavior:"smooth",block:"start"});
+  if(opening){renderTurnstile("services");serviceForm.scrollIntoView({behavior:"smooth",block:"start"});}else{resetTurnstile("services");}
  });
 }
 if(serviceForm&&serviceFormClose){
  serviceFormClose.addEventListener("click",()=>{
   serviceForm.classList.add("hidden");
+  resetTurnstile("services");
   if(serviceFormToggle){
    serviceFormToggle.setAttribute("aria-expanded","false");
    serviceFormToggle.textContent="اطلب خدمة جديدة";
@@ -1998,8 +2000,8 @@ if(shareGoodButton){
 document.addEventListener("click",function(event){
 const clicked=event.target instanceof Element ? event.target : event.target?.parentElement;
 if(!clicked)return;
-const toggle=clicked.closest("[data-toggle-form]");if(toggle){const form=el(toggle.dataset.toggleForm);if(form){const opening=form.classList.contains("hidden");form.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"إخفاء الاستمارة":toggle.dataset.label;if(opening)form.scrollIntoView({behavior:"smooth",block:"start"});}return;}
-const closer=clicked.closest("[data-close-form]");if(closer){const form=el(closer.dataset.closeForm);if(form){form.classList.add("hidden");const opener=document.querySelector('[data-toggle-form="'+closer.dataset.closeForm+'"]');if(opener){opener.setAttribute("aria-expanded","false");opener.textContent=opener.dataset.label;opener.focus();}}return;}
+const toggle=clicked.closest("[data-toggle-form]");if(toggle){const form=el(toggle.dataset.toggleForm);if(form){const opening=form.classList.contains("hidden");form.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"إخفاء الاستمارة":toggle.dataset.label;if(opening){const tableByForm={"job-form":"jobs","realty-form":"realty-form","market-form":"market"};const table=tableByForm[form.id];if(table)renderTurnstile(table==="realty-form"?"realty":table);form.scrollIntoView({behavior:"smooth",block:"start"});}else{const tableByForm={"job-form":"jobs","realty-form":"realty","market-form":"market"};const table=tableByForm[form.id];if(table)resetTurnstile(table);}}return;}
+const closer=clicked.closest("[data-close-form]");if(closer){const form=el(closer.dataset.closeForm);if(form){form.classList.add("hidden");const tableByForm={"job-form":"jobs","realty-form":"realty","market-form":"market"};const table=tableByForm[form.id];if(table)resetTurnstile(table);const opener=document.querySelector('[data-toggle-form="'+closer.dataset.closeForm+'"]');if(opener){opener.setAttribute("aria-expanded","false");opener.textContent=opener.dataset.label;opener.focus();}}return;}
 const sendButton=clicked.closest("[data-table]");
 if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textContent;sendButton.disabled=true;sendButton.textContent="جاري الحفظ...";sendData(sendButton.dataset.table).finally(()=>{sendButton.disabled=false;sendButton.textContent=oldText;});}
 });
@@ -2136,30 +2138,73 @@ el("save-new-password").addEventListener("click",async()=>{
 const TURNSTILE_SITE_KEY="0x4AAAAAAF2q6MEJsGM3QGT8";
 const turnstileWidgetIds={};
 const turnstileTokens={};
+const turnstileOpenTables={};
+let turnstileLoadHooksInstalled=false;
+function installTurnstileLoadHooks(){
+ if(turnstileLoadHooksInstalled)return;
+ const script=document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
+ if(!script)return;
+ turnstileLoadHooksInstalled=true;
+ script.addEventListener("load",()=>{
+  Object.keys(turnstileOpenTables).forEach(table=>{
+   const slot=el("turnstile-"+table);
+   if(slot&&!slot.closest(".hidden"))renderTurnstile(table);
+  });
+ },{once:true});
+ script.addEventListener("error",()=>{
+  Object.keys(turnstileOpenTables).forEach(table=>{
+   const slot=el("turnstile-"+table);
+   if(slot)slot.textContent="تعذّر تحميل حماية Cloudflare. تثبّت من الاتصال بالإنترنت وحدّث الصفحة.";
+  });
+ },{once:true});
+}
+function renderTurnstile(table){
+ const slot=el("turnstile-"+table);
+ if(!slot){console.error("Missing Turnstile slot:",table);return false;}
+ turnstileOpenTables[table]=true;
+ if(turnstileWidgetIds[table]!==undefined)return true;
+ if(!window.turnstile||typeof window.turnstile.render!=="function"){
+  slot.textContent="جاري تحميل التحقق الأمني...";
+  installTurnstileLoadHooks();
+  return false;
+ }
+ try{
+  slot.textContent="";
+  turnstileWidgetIds[table]=window.turnstile.render(slot,{
+   sitekey:TURNSTILE_SITE_KEY,
+   callback:(token)=>{turnstileTokens[table]=token;},
+   "expired-callback":()=>{turnstileTokens[table]="";},
+   "error-callback":()=>{turnstileTokens[table]="";}
+  });
+  return true;
+ }catch(error){
+  console.error("Turnstile render error:",error);
+  slot.textContent="تعذّر تشغيل التحقق الأمني. حدّث الصفحة وعاود.";
+  return false;
+ }
+}
+function renderTurnstileForPage(page){
+ const forms={services:["service-form","services"],jobs:["job-form","jobs"],realty:["realty-form","realty"],market:["market-form","market"]};
+ const config=forms[page];
+ if(!config)return;
+ const form=el(config[0]);
+ if(form&&!form.classList.contains("hidden"))renderTurnstile(config[1]);
+}
 function ensureTurnstile(table){
  const slot=el("turnstile-"+table);
  if(!slot){alert("تعذّر فتح خانة التحقق. حدّث الصفحة وعاود.");return false;}
  if(turnstileTokens[table])return true;
  if(!window.turnstile||typeof window.turnstile.render!=="function"){
-  alert("حماية الموقع مازالت تتحمّل. استنّى ثواني وعاود اضغط.");
+  renderTurnstile(table);
+  alert("حماية الموقع مازالت تتحمّل. استنّى حتى يظهر التحقق وعاود.");
   return false;
  }
- if(turnstileWidgetIds[table]===undefined){
-  try{
-   turnstileWidgetIds[table]=window.turnstile.render(slot,{
-    sitekey:TURNSTILE_SITE_KEY,
-    callback:(token)=>{turnstileTokens[table]=token;},
-    "expired-callback":()=>{turnstileTokens[table]="";},
-    "error-callback":()=>{turnstileTokens[table]="";}
-   });
-  }catch(error){
-   console.error("Turnstile render error:",error);
-   alert("تعذّر تشغيل التحقق. حدّث الصفحة وعاود.");
-   return false;
-  }
+ if(turnstileWidgetIds[table]===undefined)renderTurnstile(table);
+ if(!turnstileTokens[table]){
+  alert("كمّل التحقق من Cloudflare في الخانة، وبعد اضغط على زر الإرسال مرة أخرى.");
+  return false;
  }
- alert("كمّل التحقق من Cloudflare في الخانة، وبعد اضغط على زر الإرسال مرة أخرى.");
- return false;
+ return true;
 }
 function resetTurnstile(table){
  turnstileTokens[table]="";
