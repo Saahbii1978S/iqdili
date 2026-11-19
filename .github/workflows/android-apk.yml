@@ -7,12 +7,6 @@ on:
       - 'android/**'
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
-    inputs:
-      publish_release:
-        description: 'Publish the APK as the stable public download (otherwise artifact only)'
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -71,29 +65,3 @@ jobs:
           path: dist/ahla-tounsa.apk
           if-no-files-found: error
           retention-days: 30
-
-
-  publish:
-    if: github.event_name == 'workflow_dispatch' && inputs.publish_release == true
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download verified APK artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ahla-tounsa-debug-apk
-          path: dist
-
-      - name: Publish stable direct-download release
-        uses: softprops/action-gh-release@v2
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag_name: android-latest
-          name: Ahla Tounsa Android APK
-          target_commitish: main
-          files: dist/ahla-tounsa.apk
-          overwrite_files: true
-          make_latest: true
-          generate_release_notes: false
