@@ -7,6 +7,7 @@ FUNCTIONS = [
     "delete-my-post", "delete-account", "my-posts", "admin-delete-post",
     "notify-admin-new-user",
 ]
+OLD_HOST = "saahbii1978s.github.io"
 NEW_HOST = "ahla-tounsa-project.github.io"
 
 sources = {}
@@ -15,7 +16,8 @@ for name in FUNCTIONS:
     assert path.is_file(), f"Missing Edge Function source: {path}"
     source = path.read_text(encoding="utf-8")
     sources[name] = source
-    assert NEW_HOST in source, f"{name}: new Pages hostname is missing"
+    assert OLD_HOST in source and NEW_HOST in source, f"{name}: both approved Pages hostnames must remain supported"
+    assert 'ALLOWED_ORIGINS.has(req.headers.get("origin") || "")' in source, f"{name}: origin allowlist check is missing"
 
 # Administrative writes must retain server-side authorization checks.
 for name in ("admin-approve-post", "admin-update-post-status", "admin-post-image"):
@@ -39,7 +41,7 @@ assert '["admins", "staff_roles"]' in account, "delete-account: admin/staff prot
 for name in ("submit-public-post", "upload-pending-image"):
     source = sources[name]
     assert "verification.success !== true" in source, f"{name}: Turnstile success check missing"
-    assert f'verification.hostname !== "{NEW_HOST}"' in source, f"{name}: Turnstile hostname check missing"
+    assert f'!["{OLD_HOST}", "{NEW_HOST}"].includes(verification.hostname)' in source, f"{name}: Turnstile must accept only the two approved hostnames"
 
 print(f"PASS: {len(FUNCTIONS)} Edge Function source files exist and use the new hostname.")
 print("PASS: admin authorization, user ownership, account deletion safeguards, and Turnstile checks remain present.")
