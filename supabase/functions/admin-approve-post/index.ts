@@ -8,6 +8,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { readLimitedRequest } from "../_shared/request-size.ts";
 import { classifyStorageHeadStatus } from "../_shared/storage-head.ts";
 import { buildStorageCleanupJobs, enqueueStorageCleanup, isValidStorageObjectPath } from "../_shared/storage-cleanup-queue.ts";
+import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 const ALLOWED_ORIGINS = new Set(["https://saahbii1978s.github.io", "https://ahla-tounsa-project.github.io"]);
 const cors = {"Access-Control-Allow-Origin": "*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
@@ -87,9 +88,7 @@ Deno.serve(async(req:Request)=>{
   if(!rowResponse.ok)return reply({error:"تعذّر تحميل الإعلان."},502);
   const rows=await rowResponse.json();if(!Array.isArray(rows)||rows.length!==1)return reply({error:"الإعلان غير موجود."},404);
   const row=rows[0];if(row.status!=="pending")return reply({error:"الإعلان لم يعد في قائمة الانتظار."},409);
-  const text=(String(row.title||"")+" "+String(row.description||"")).toLowerCase();
-  const protectedDemoIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
-  if((protectedDemoIds[table]||[]).includes(String(id)) || /(تجر(?:ي)?ب|اختبار|test|demo|مثال)/i.test(text)){
+  if(isProtectedDemoPost(table,id,row.title,row.description)){
    return reply({error:"هذا إعلان تجريبي محمي، لا يمكن نشره."},403);
   }
 
