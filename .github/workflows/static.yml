@@ -55,14 +55,14 @@ jobs:
               if not icon or icon.get("sizes") != size or icon.get("type") != "image/png":
                   raise SystemExit(f"Invalid manifest entry for {filename}")
               data = (Path("_site") / filename).read_bytes()
-              if data[:8] != b"\\x89PNG\\r\\n\\x1a\\n":
+              if data[:8] != bytes([137, 80, 78, 71, 13, 10, 26, 10]):
                   raise SystemExit(f"Invalid PNG signature: {filename}")
               width, height = struct.unpack(">II", data[16:24])
               if (width, height) != tuple(map(int, size.split("x"))):
                   raise SystemExit(f"Incorrect dimensions for {filename}: {width}x{height}")
 
           html = Path("index.html").read_text(encoding="utf-8")
-          match = re.search(r'<link[^>]+rel=["\\']apple-touch-icon["\\'][^>]+href=["\\']([^"\\']+)', html)
+          match = re.search(r"""<link[^>]+rel=["']apple-touch-icon["'][^>]+href=["']([^"']+)""", html)
           if not match:
               raise SystemExit("Missing apple-touch-icon link")
           apple_icon = Path("_site") / Path(match.group(1)).name
