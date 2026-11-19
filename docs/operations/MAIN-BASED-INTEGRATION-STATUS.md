@@ -24,12 +24,11 @@ The seven overlapping Edge Function sources requiring substantive integration ha
 Other overlapping paths were reconciled without replacing newer current-main behavior: `ask-iqdili` and `upload-pending-image` match the imported source; `admin-post-image` and `my-posts` differ only in formatting; `privacy.html` remains the newer current-main version. PR60's Android activity and download page match current main; its older index page was not copied.
 
 ## CI evidence
-For head `3380829e022e63749f86d4adaede5f558be39724`:
-- Edge Function type-check and source-contract checks: success.
-- Shared Edge Function helper tests: success.
-- PostgreSQL cleanup queue, Storage policy, and concurrent attachment/cleanup regression tests: success.
+For current PR head `995e2d03052bd6c845bb96ae4ee2b8255e82db65`:
+- [Edge Function source contract checks, run #48](https://github.com/ahla-tounsa-project/iqdili/actions/runs/44520501405): TypeScript integration type-check and source-contract checks passed.
+- [Supabase reliability regression tests, run #82](https://github.com/ahla-tounsa-project/iqdili/actions/runs/44520501395): shared helper tests, PostgreSQL queue/permissions/Storage policy tests, and concurrent attachment/cleanup race tests passed.
 
-The preceding head had a Deno type-check failure caused by a literal backslash being passed as a file argument. The workflow command was corrected and the latest head passed. The earlier failure is retained here for traceability.
+The immediately preceding migration test failure exposed a duplicated SQL tail and invalid syntax in the candidate migration. The duplicate tail was removed on this PR branch; the current head above passed both workflows.
 
 ## Review findings and remaining validation
 - The candidate source and SQL were reviewed for the intended authorization, ownership, protected-demo, queue leasing, object-path validation, attachment/detachment locking, and retry invariants.
