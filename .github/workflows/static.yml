@@ -35,6 +35,11 @@ jobs:
           rsvg-convert -w 180 -h 180 app-icon.svg -o _site/app-icon-180.png
           rsvg-convert -w 192 -h 192 app-icon.svg -o _site/app-icon-192.png
           rsvg-convert -w 512 -h 512 app-icon.svg -o _site/app-icon-512.png
+          test -s _site/app-icon-180.png
+          test -s _site/app-icon-192.png
+          test -s _site/app-icon-512.png
+          grep -q 'app-icon-192.png' manifest.webmanifest
+          grep -q 'app-icon-512.png' manifest.webmanifest
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
