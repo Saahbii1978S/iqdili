@@ -1,8 +1,8 @@
-# PR48 Staging Validation Runbook
+# Storage Cleanup Staging Validation Runbook
 
 ## Purpose and safety boundary
 
-This runbook defines the pre-production validation required for the storage-cleanup outbox and worker integrated by PR48.
+This runbook defines the pre-production validation required for the storage-cleanup outbox and worker integrated by the main-based candidate.
 
 **This document does not authorize or perform any deployment.** Do not merge PR48, create a staging Supabase project, apply migrations, deploy Edge Functions, configure a scheduler, create secrets, or modify production resources without explicit owner approval.
 
@@ -23,7 +23,7 @@ If any item is missing, stop. Do not substitute production for staging.
 
 ## Migration-history integration blocker
 
-A read-only check of the connected production project's migration history on 2026-11-19 found that the latest applied version is `20261119093408` (`cleanup_stale_site_presence`). None of the five PR48 candidate migration versions below are present in production, and their current filenames are older (`20261115`–`20261116`) than the latest applied production version. Before PR48 can be merged or its migrations can be tested against a staging clone of the current production schema, re-version these five unapplied migrations to unique timestamps later than `20261119093408`, update every filename reference in this runbook, and verify the final order. Do not attempt to apply the old-version files after the newer production migrations. This is a repository integration requirement only; no production migration was applied during the audit.
+A read-only check of the connected production project's migration history on 2026-11-19 found that the latest applied version is `20261119093408` (`cleanup_stale_site_presence`). None of the five candidate migration versions below are present in production, and their current filenames are older (`20261115`–`20261116`) than the latest applied production version. Before the candidate can be merged or its migrations can be tested against a staging clone of the current production schema, re-version these five unapplied migrations to unique timestamps later than `20261119093408`, update every filename reference in this runbook, and verify the final order. Do not attempt to apply the old-version files after the newer production migrations. This is a repository integration requirement only; no production migration was applied during the audit.
 
 ## Candidate migration order
 
@@ -39,7 +39,7 @@ Record the migration result and resulting schema version after each step. Stop o
 
 ## Deployment order in staging
 
-1. Deploy the candidate Edge Function sources from the PR48 head, including `process-storage-cleanup` and all functions changed by the integrated candidate.
+1. Deploy the candidate Edge Function sources from the main-based candidate head, including `process-storage-cleanup` and all functions changed by the integrated candidate.
 2. Set the staging service-role secret only in the protected Edge Function/scheduler secret store. Never print its value.
 3. Configure a trusted staging-only scheduler with a conservative cadence and a small batch. The worker currently claims up to five jobs per invocation.
 4. Verify the scheduler targets only the staging function URL and sends the service-role JWT in both `apikey` and `Authorization: Bearer` headers.
@@ -131,4 +131,4 @@ Passing CI alone is not production approval. The current CI concurrency harness 
 
 ## Production release gate
 
-Production rollout requires a separate explicit approval after staging sign-off. The rollout plan must include a reviewed migration window, backup/rollback strategy, scheduler activation procedure, monitoring coverage, and a post-deployment verification window. Until then, keep PR48 as a draft and leave production unchanged.
+Production rollout requires a separate explicit approval after staging sign-off. The rollout plan must include a reviewed migration window, backup/rollback strategy, scheduler activation procedure, monitoring coverage, and a post-deployment verification window. Until then, keep the integration pull request as a draft and leave production unchanged.
