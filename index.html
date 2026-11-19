@@ -2602,7 +2602,9 @@ if(!document.documentElement.dataset.adminPaginationReady){
 
 async function loadAggregateSiteAnalytics(){
  const host=el("admin-aggregate-analytics");
- if(!host||!db)return;
+ if(!host)return;
+ host.classList.toggle("hidden",!currentAdminIsOwner);
+ if(!currentAdminIsOwner||!db)return;
  const {data,error}=await db.rpc("get_aggregate_site_analytics");
  if(error){
   const note=el("aggregate-updated");if(note)note.textContent="تعذّر تحميل الإحصائيات.";
