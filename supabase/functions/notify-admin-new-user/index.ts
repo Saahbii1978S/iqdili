@@ -31,6 +31,24 @@ Deno.serve(async (req: Request) => {
     return reply({ error: "Admin email alerts are not configured" }, 503);
   }
 
+  let notificationUserId: string | null = null;
+  let notificationEventInserted = false;
+
+  const clearPendingNotification = async () => {
+    if (!notificationUserId || !notificationEventInserted) return;
+    const deleteUrl = new URL(supabaseUrl + "/rest/v1/admin_notification_events");
+    deleteUrl.searchParams.set("user_id", "eq." + notificationUserId);
+    deleteUrl.searchParams.set("event_type", "eq.signup_confirmed");
+    const cleanupResponse = await fetch(deleteUrl, {
+      method: "DELETE",
+      headers: { apikey: serviceRoleKey, Authorization: "Bearer " + serviceRoleKey },
+    });
+    if (!cleanupResponse.ok) {
+      console.error("Could not release signup notification deduplication event", cleanupResponse.status);
+    }
+    notificationEventInserted = false;
+  };
+
   try {
     const authResponse = await fetch(supabaseUrl + "/auth/v1/user", {
       headers: { apikey: serviceRoleKey, Authorization: authorization },
@@ -41,6 +59,7 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "A confirmed email account is required" }, 403);
     }
 
+    notificationUserId = user.id;
     const eventUrl = new URL(supabaseUrl + "/rest/v1/admin_notification_events");
     eventUrl.searchParams.set("on_conflict", "user_id,event_type");
     const insertResponse = await fetch(eventUrl, {
@@ -61,6 +80,7 @@ Deno.serve(async (req: Request) => {
     if (!Array.isArray(inserted) || inserted.length === 0) {
       return reply({ ok: true, alreadyNotified: true });
     }
+    notificationEventInserted = true;
 
     const confirmedAt = new Date(user.email_confirmed_at).toLocaleString("ar-TN", { timeZone: "Africa/Tunis" });
     const createdAt = user.created_at
@@ -90,19 +110,18 @@ Deno.serve(async (req: Request) => {
     if (!emailResponse.ok) {
       const details = await emailResponse.text().catch(() => "");
       console.error("Brevo signup alert failed", emailResponse.status, details.slice(0, 300));
-      const deleteUrl = new URL(supabaseUrl + "/rest/v1/admin_notification_events");
-      deleteUrl.searchParams.set("user_id", "eq." + user.id);
-      deleteUrl.searchParams.set("event_type", "eq.signup_confirmed");
-      await fetch(deleteUrl, {
-        method: "DELETE",
-        headers: { apikey: serviceRoleKey, Authorization: "Bearer " + serviceRoleKey },
-      }).catch(() => undefined);
+      await clearPendingNotification().catch((cleanupError) => {
+        console.error("Could not release signup notification event", String(cleanupError));
+      });
       return reply({ error: "Could not send admin notification" }, 502);
     }
 
     return reply({ ok: true, notified: true });
   } catch (error) {
     console.error("notify-admin-new-user error", String(error));
+    await clearPendingNotification().catch((cleanupError) => {
+      console.error("Could not release signup notification event after exception", String(cleanupError));
+    });
     return reply({ error: "Notification service failed" }, 500);
   }
 });
