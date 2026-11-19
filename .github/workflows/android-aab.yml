@@ -1,4 +1,4 @@
-name: Build Ahla Tounsa Play App Bundle
+name: Build Ahla Tounsa Signed Android Release
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  bundle:
+  release:
     runs-on: ubuntu-latest
     env:
       ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -21,6 +21,7 @@ jobs:
       - name: Check signing secrets
         shell: bash
         run: |
+          set -euo pipefail
           missing=0
           for name in ANDROID_KEYSTORE_BASE64 RELEASE_STORE_PASSWORD RELEASE_KEY_ALIAS RELEASE_KEY_PASSWORD; do
             if [ -z "${!name}" ]; then
@@ -56,19 +57,39 @@ jobs:
       - name: Prepare private upload key
         shell: bash
         run: |
+          set -euo pipefail
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
           chmod 600 "$RUNNER_TEMP/upload-key.jks"
           keytool -list -keystore "$RUNNER_TEMP/upload-key.jks" -storepass "$RELEASE_STORE_PASSWORD" -alias "$RELEASE_KEY_ALIAS" >/dev/null
           echo "RELEASE_STORE_FILE=$RUNNER_TEMP/upload-key.jks" >> "$GITHUB_ENV"
 
-      - name: Build signed release AAB
+      - name: Build signed release APK and Play AAB
         working-directory: android
-        run: gradle --no-daemon bundleRelease
+        run: gradle --no-daemon assembleRelease bundleRelease
 
-      - name: Upload signed AAB
+      - name: Verify signed APK and AAB
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+          AAB="android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$APK"
+          test -s "$AAB"
+          unzip -t "$APK"
+          unzip -t "$AAB"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -F "package: name='tn.ahlatounsa.app'"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -v 4 "$APK"
+          keytool -printcert -jarfile "$APK"
+          echo "Verified APK size: $(stat -c%s "$APK") bytes"
+          echo "Verified AAB size: $(stat -c%s "$AAB") bytes"
+
+      - name: Upload signed release files
         uses: actions/upload-artifact@v6
         with:
-          name: ahla-tounsa-play-release-aab
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          name: ahla-tounsa-signed-release
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
           retention-days: 30
