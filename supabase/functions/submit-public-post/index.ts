@@ -48,6 +48,30 @@ async function sha256(value: string): Promise<string> {
 }
 
 
+async function enqueuePendingImageCleanup(url: string, key: string, path: string, reason: string): Promise<boolean> {
+  const response = await fetch(url + "/rest/v1/storage_cleanup_queue?on_conflict=bucket_id,object_path", {
+    method: "POST",
+    headers: {
+      "apikey": key,
+      "Authorization": "Bearer " + key,
+      "Content-Type": "application/json",
+      "Prefer": "resolution=ignore-duplicates,return=minimal",
+    },
+    body: JSON.stringify([{
+      bucket_id: "pending-images",
+      object_path: path,
+      attempts: 0,
+      next_attempt_at: new Date().toISOString(),
+      last_error: reason.slice(0, 1000),
+    }]),
+  });
+  if (!response.ok) {
+    console.error("Pending image cleanup queue insert failed", response.status);
+    return false;
+  }
+  return true;
+}
+
 async function sendAdminAlert(subject: string, textContent: string): Promise<void> {
   const apiKey = Deno.env.get("BREVO_API_KEY");
   const recipient = Deno.env.get("ADMIN_ALERT_EMAIL");
@@ -253,9 +277,16 @@ Deno.serve(async (req: Request) => {
       const message = typeof dbError.message === "string" ? dbError.message : "";
       console.error("Protected post insert failed", table, insertResponse.status, message);
       if (uploadedPath) {
-        await fetch(supabaseUrl + "/storage/v1/object/pending-images/" + uploadedPath.split("/").map(encodeURIComponent).join("/"), {
+        const cleanupResponse = await fetch(supabaseUrl + "/storage/v1/object/pending-images/" + uploadedPath.split("/").map(encodeURIComponent).join("/"), {
           method: "DELETE", headers: { "apikey": serviceRoleKey, "Authorization": "Bearer " + serviceRoleKey },
-        }).catch(() => undefined);
+        }).catch(() => null);
+        if (!cleanupResponse?.ok) {
+          const queued = await enqueuePendingImageCleanup(supabaseUrl, serviceRoleKey, uploadedPath, "Post submission failed after image upload");
+          if (!queued) {
+            console.error("Uploaded image may need manual cleanup", uploadedPath);
+            await sendAdminAlert("تنبيه صورة يتيمة في أحلى توانسة", "فشل حفظ إعلان بعد رفع صورته، كما تعذّر حذف الصورة أو تسجيلها في قائمة التنظيف. يلزم فحص مخزن الصور.");
+          }
+        }
       }
       if (message.includes("ساعة") || message.includes("رقم الهاتف")) return reply({ error: message }, 429);
       return reply({ error: "ما نجّمش نحفظ الإعلان حالياً. تثبّت من المعلومات وعاود المحاولة." }, 400);
