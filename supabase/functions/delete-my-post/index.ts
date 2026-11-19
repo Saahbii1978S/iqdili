@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-const ORIGIN="https://saahbii1978s.github.io";
-const cors={"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
+const ALLOWED_ORIGINS = new Set(["https://saahbii1978s.github.io", "https://ahla-tounsa-project.github.io"]);
+const cors={"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
 const cfg:Record<string,{bucket:string,folder:string}>={
  service_requests:{bucket:"listing-images",folder:"services"},
@@ -12,7 +12,7 @@ const protectedIds:Record<string,string[]>={service_requests:["13"],job_posts:["
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST")return reply({error:"طريقة الطلب غير مدعومة."},405);
- if(req.headers.get("origin")!==ORIGIN)return reply({error:"مصدر الطلب غير مسموح."},403);
+ if(!ALLOWED_ORIGINS.has(req.headers.get("origin") || ""))return reply({error:"مصدر الطلب غير مسموح."},403);
  try{
   const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const auth=req.headers.get("authorization")||"";
