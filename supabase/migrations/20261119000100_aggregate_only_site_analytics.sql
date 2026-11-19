@@ -37,6 +37,11 @@ begin
 end;
 $function$;
 
+-- Disable the legacy per-browser and connection-derived visit endpoints.
+-- Existing historical rows are left untouched; the application no longer reads or writes them.
+revoke all on function public.record_site_visit(uuid) from public, anon, authenticated;
+revoke all on function public.record_site_visit() from public, anon, authenticated;
+
 revoke all on function public.record_site_page_view(text) from public;
 grant execute on function public.record_site_page_view(text) to anon, authenticated;
 
