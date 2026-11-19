@@ -37,6 +37,10 @@ jobs:
             echo "Obsolete database-connection wording found in public HTML."
             exit 1
           fi
+          if grep -nF 'اقضيلي' _site/*.html; then
+            echo "Legacy Arabic project name found in public HTML."
+            exit 1
+          fi
           rsvg-convert -w 180 -h 180 app-icon.svg -o _site/app-icon-180.png
           rsvg-convert -w 192 -h 192 app-icon.svg -o _site/app-icon-192.png
           rsvg-convert -w 512 -h 512 app-icon.svg -o _site/app-icon-512.png
