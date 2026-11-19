@@ -94,7 +94,12 @@ jobs:
               "404.html",
           )
           for filename in shell_files:
-              if f'APP_ROOT + "{filename}"' not in shell:
+              escaped = re.escape(filename)
+              cache_reference = re.search(
+                  r"""APP_ROOT\s*\+\s*["']""" + escaped + r"""(?:\?[^"']*)?["']""",
+                  shell,
+              )
+              if not cache_reference:
                   raise SystemExit(f"Service worker does not cache required shell asset: {filename}")
               if not (Path("_site") / filename).is_file():
                   raise SystemExit(f"Offline shell asset is absent from Pages artifact: {filename}")
