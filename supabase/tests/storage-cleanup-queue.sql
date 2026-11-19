@@ -66,6 +66,14 @@ $admin_stub$;
 \ir ../migrations/20261120091500_storage_cleanup_atomic_defer.sql
 \ir ../migrations/20261120092000_account_deletion_limits.sql
 
+-- Match the TypeScript path validator: image extensions are case-insensitive.
+insert into public.storage_cleanup_jobs(bucket, object_path, status)
+values ('listing-images', 'services/uppercase-extension.PNG', 'staged');
+delete from public.storage_cleanup_jobs
+where bucket = 'listing-images'
+  and object_path = 'services/uppercase-extension.PNG';
+
+
 -- Reproduce the verified production access shape for the four modern listing
 -- tables: authenticated direct reads/updates are admin-only; anon has no table
 -- grant. The public approved-listing RPCs are not reconstructed in this harness.
