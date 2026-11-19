@@ -1,9 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { buildStorageCleanupJobs, scheduleStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 
-const ALLOWED_ORIGIN = "https://ahla-tounsa-project.github.io";
+const ALLOWED_ORIGINS = new Set(["https://saahbii1978s.github.io", "https://ahla-tounsa-project.github.io"]);
 const corsHeaders = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Max-Age": "86400",
@@ -84,7 +84,7 @@ async function sendAdminAlert(subject: string, textContent: string): Promise<voi
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (req.method !== "POST") return reply({ error: "طريقة الطلب غير مدعومة." }, 405);
-  if (req.headers.get("origin") !== ALLOWED_ORIGIN) return reply({ error: "مصدر الطلب غير مسموح." }, 403);
+  if (!ALLOWED_ORIGINS.has(req.headers.get("origin") || "")) return reply({ error: "مصدر الطلب غير مسموح." }, 403);
 
   try {
     const contentType = req.headers.get("content-type") || "";
@@ -147,7 +147,7 @@ Deno.serve(async (req: Request) => {
       body: new URLSearchParams({ secret: turnstileSecret, response: token }),
     });
     const verification = await verificationResponse.json().catch(() => ({}));
-    if (!verificationResponse.ok || verification.success !== true || verification.hostname !== "ahla-tounsa-project.github.io") {
+    if (!verificationResponse.ok || verification.success !== true || !["saahbii1978s.github.io", "ahla-tounsa-project.github.io"].includes(verification.hostname)) {
       console.warn("Turnstile verification rejected", verification["error-codes"] || []);
       return reply({ error: "التحقق ما نجحش. عاود التحقق من Cloudflare." }, 403);
     }
