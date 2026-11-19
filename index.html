@@ -1956,7 +1956,7 @@ if(serviceForm&&serviceFormToggle){
   serviceForm.classList.toggle("hidden",!opening);
   serviceFormToggle.setAttribute("aria-expanded",String(opening));
   serviceFormToggle.textContent=opening?"إخفاء استمارة طلب الخدمة":"اطلب خدمة جديدة";
-  if(opening)serviceForm.scrollIntoView({behavior:"smooth",block:"start"});
+  if(opening){renderTurnstile("services");serviceForm.scrollIntoView({behavior:"smooth",block:"start"});}
  });
 }
 if(serviceForm&&serviceFormClose){
@@ -1998,7 +1998,7 @@ if(shareGoodButton){
 document.addEventListener("click",function(event){
 const clicked=event.target instanceof Element ? event.target : event.target?.parentElement;
 if(!clicked)return;
-const toggle=clicked.closest("[data-toggle-form]");if(toggle){const form=el(toggle.dataset.toggleForm);if(form){const opening=form.classList.contains("hidden");form.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"إخفاء الاستمارة":toggle.dataset.label;if(opening)form.scrollIntoView({behavior:"smooth",block:"start"});}return;}
+const toggle=clicked.closest("[data-toggle-form]");if(toggle){const form=el(toggle.dataset.toggleForm);if(form){const opening=form.classList.contains("hidden");form.classList.toggle("hidden",!opening);toggle.setAttribute("aria-expanded",String(opening));toggle.textContent=opening?"إخفاء الاستمارة":toggle.dataset.label;if(opening){const tableByForm={"job-form":"jobs","realty-form":"realty","market-form":"market"};const table=tableByForm[toggle.dataset.toggleForm];if(table)renderTurnstile(table);form.scrollIntoView({behavior:"smooth",block:"start"});}}return;}
 const closer=clicked.closest("[data-close-form]");if(closer){const form=el(closer.dataset.closeForm);if(form){form.classList.add("hidden");const opener=document.querySelector('[data-toggle-form="'+closer.dataset.closeForm+'"]');if(opener){opener.setAttribute("aria-expanded","false");opener.textContent=opener.dataset.label;opener.focus();}}return;}
 const sendButton=clicked.closest("[data-table]");
 if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textContent;sendButton.disabled=true;sendButton.textContent="جاري الحفظ...";sendData(sendButton.dataset.table).finally(()=>{sendButton.disabled=false;sendButton.textContent=oldText;});}
@@ -2136,28 +2136,37 @@ el("save-new-password").addEventListener("click",async()=>{
 const TURNSTILE_SITE_KEY="0x4AAAAAAF2q6MEJsGM3QGT8";
 const turnstileWidgetIds={};
 const turnstileTokens={};
+function renderTurnstile(table,attempt=0){
+ const slot=el("turnstile-"+table);
+ if(!slot)return;
+ if(turnstileWidgetIds[table]!==undefined)return;
+ if(!window.turnstile||typeof window.turnstile.render!=="function"){
+  if(attempt<20){
+   window.setTimeout(()=>{
+    const form=slot.closest("form,[id$='-form']");
+    if(slot.isConnected&&(!form||!form.classList.contains("hidden")))renderTurnstile(table,attempt+1);
+   },250);
+  }else{
+   console.warn("Cloudflare Turnstile did not become ready:",table);
+  }
+  return;
+ }
+ try{
+  turnstileWidgetIds[table]=window.turnstile.render(slot,{
+   sitekey:TURNSTILE_SITE_KEY,
+   callback:(token)=>{turnstileTokens[table]=token;},
+   "expired-callback":()=>{turnstileTokens[table]="";},
+   "error-callback":()=>{turnstileTokens[table]="";}
+  });
+ }catch(error){
+  console.error("Turnstile render error:",error);
+  alert("تعذّر تشغيل التحقق. حدّث الصفحة وعاود.");
+ }
+}
 function ensureTurnstile(table){
  const slot=el("turnstile-"+table);
  if(!slot){alert("تعذّر فتح خانة التحقق. حدّث الصفحة وعاود.");return false;}
  if(turnstileTokens[table])return true;
- if(!window.turnstile||typeof window.turnstile.render!=="function"){
-  alert("حماية الموقع مازالت تتحمّل. استنّى ثواني وعاود اضغط.");
-  return false;
- }
- if(turnstileWidgetIds[table]===undefined){
-  try{
-   turnstileWidgetIds[table]=window.turnstile.render(slot,{
-    sitekey:TURNSTILE_SITE_KEY,
-    callback:(token)=>{turnstileTokens[table]=token;},
-    "expired-callback":()=>{turnstileTokens[table]="";},
-    "error-callback":()=>{turnstileTokens[table]="";}
-   });
-  }catch(error){
-   console.error("Turnstile render error:",error);
-   alert("تعذّر تشغيل التحقق. حدّث الصفحة وعاود.");
-   return false;
-  }
- }
  alert("كمّل التحقق من Cloudflare في الخانة، وبعد اضغط على زر الإرسال مرة أخرى.");
  return false;
 }
