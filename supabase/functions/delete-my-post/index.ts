@@ -9,6 +9,13 @@ const cfg:Record<string,{bucket:string,folder:string}>={
  market_posts:{bucket:"market-images",folder:"market"}
 };
 const protectedIds:Record<string,string[]>={service_requests:["13"],job_posts:["7"],market_posts:["2","3","7","8","9"],real_estate_posts:["1","2","6"]};
+async function enqueueCleanup(url:string,key:string,bucket:string,paths:string[],reason:string):Promise<boolean>{
+ if(!paths.length)return true;
+ const rows=paths.map(object_path=>({bucket_id:bucket,object_path,attempts:0,next_attempt_at:new Date().toISOString(),last_error:reason.slice(0,1000)}));
+ const r=await fetch(url+"/rest/v1/storage_cleanup_queue?on_conflict=bucket_id,object_path",{method:"POST",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(rows)});
+ if(!r.ok){console.error("Storage cleanup queue insert failed",bucket,r.status);return false;}
+ return true;
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST")return reply({error:"طريقة الطلب غير مدعومة."},405);
@@ -49,11 +56,11 @@ Deno.serve(async(req:Request)=>{
      const encoded=path.split("/").map(encodeURIComponent).join("/");
      const check=await fetch(url+"/storage/v1/object/info/"+bucket+"/"+encoded,{method:"HEAD",headers:{apikey:key,Authorization:"Bearer "+key}});
      if(check.ok)existing.push(path);
-     else if(check.status!==404){console.error("Post deleted but image preflight failed",bucket,check.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان من قاعدة البيانات، لكن تعذّر التثبت من بعض الصور وتنظيفها. تواصل مع الإدارة لإتمام التنظيف."});}
+     else if(check.status!==404){console.error("Post deleted but image preflight failed",bucket,check.status);const queued=await enqueueCleanup(url,key,bucket,[path],"Post image preflight failed");if(!queued)return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تسجيل صورة للتنظيف. يلزم تدخل الإدارة."});}
     }
     if(existing.length){
      const rm=await fetch(url+"/storage/v1/object/"+bucket,{method:"DELETE",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json"},body:JSON.stringify({prefixes:existing})});
-     if(!rm.ok){console.error("Post deleted but image cleanup failed",bucket,rm.status);return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تنظيف بعض الصور. تم تسجيل المشكلة للإدارة."});}
+     if(!rm.ok){console.error("Post deleted but image cleanup failed",bucket,rm.status);const queued=await enqueueCleanup(url,key,bucket,existing,"Post image cleanup failed");if(!queued)return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تسجيل الصور المتبقية للتنظيف. يلزم تدخل الإدارة."});return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، وجدولنا تنظيف الصور المتبقية تلقائياً."});}
     }
    }
   }
