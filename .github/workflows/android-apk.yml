@@ -7,6 +7,12 @@ on:
       - 'android/**'
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Publish the APK as the stable public download (otherwise artifact only)'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -67,6 +73,7 @@ jobs:
           retention-days: 30
 
       - name: Publish stable direct-download release
+        if: github.event_name == 'workflow_dispatch' && inputs.publish_release == true
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
