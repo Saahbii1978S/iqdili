@@ -23,15 +23,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Prepare public site
         run: |
           mkdir -p _site
           cp index.html curated-posts.json privacy.html terms.html delete-account.html download.html 404.html manifest.webmanifest service-worker.js app-icon.svg home-youthful-palette.css _site/
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: _site
       - name: Deploy to GitHub Pages
