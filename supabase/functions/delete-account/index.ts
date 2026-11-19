@@ -4,7 +4,7 @@ import { readLimitedRequest } from "../_shared/request-size.ts";
 import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 
-const ORIGIN = "https://saahbii1978s.github.io";
+const ORIGIN = "https://ahla-tounsa-project.github.io";
 const cors = {
   "Access-Control-Allow-Origin": ORIGIN,
   "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
