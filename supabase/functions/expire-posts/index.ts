@@ -104,7 +104,8 @@ Deno.serve(async(req:Request)=>{
   }
   result[table]=count;
  }
- const queueResult=await processCleanupQueue(url,key);\n const totalDeleted = Object.values(result).reduce((sum, count) => sum + Math.max(count, 0), 0);
+ const queueResult=await processCleanupQueue(url,key);
+ const totalDeleted = Object.values(result).reduce((sum, count) => sum + Math.max(count, 0), 0);
  const hadErrors = Object.values(result).some((count) => count < 0);
  if(cleanupFailures.length)await sendAdminAlert("تنبيه تنظيف صور الإعلانات المنتهية","تم حذف الإعلانات من قاعدة البيانات، لكن بقيت صور تحتاج تنظيفاً:\n"+cleanupFailures.join("\n"));
  if (totalDeleted > 0) await sendAdminAlert("ملخّص الحذف الآلي في أحلى توانسة", "تم حذف إعلانات انتهت مدتها بعد 3 أشهر.\n" + Object.entries(result).map(([table, count]) => table + ": " + count).join("\n"));
