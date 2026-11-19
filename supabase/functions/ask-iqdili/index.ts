@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const cors = {
-  "Access-Control-Allow-Origin": "https://saahbii1978s.github.io",
+  "Access-Control-Allow-Origin": "https://ahla-tounsa-project.github.io",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Max-Age": "86400",
@@ -59,7 +59,7 @@ Deno.serve(async (req: Request) => {
       body: new URLSearchParams({ secret: turnstileSecret, response: turnstileToken }),
     });
     const verification = await verifyResponse.json().catch(() => ({}));
-    if (!verifyResponse.ok || verification.success !== true || verification.hostname !== "saahbii1978s.github.io") {
+    if (!verifyResponse.ok || verification.success !== true || verification.hostname !== "ahla-tounsa-project.github.io") {
       return reply({ error: "التحقق الأمني ما نجحش. عاود التحقق وحاول من جديد." }, 403);
     }
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
