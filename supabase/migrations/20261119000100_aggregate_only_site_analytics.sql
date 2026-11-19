@@ -10,6 +10,7 @@ create table if not exists private.site_page_daily_counts (
     check (page_key in ('__all__','home','services','jobs','realty','market','good','guide','cv','ask','saved','account'))
 );
 
+alter table private.site_page_daily_counts enable row level security;
 revoke all on table private.site_page_daily_counts from public, anon, authenticated;
 
 create or replace function public.record_site_page_view(p_page_key text)
