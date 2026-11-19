@@ -28,8 +28,13 @@ jobs:
         uses: actions/configure-pages@v6
       - name: Prepare public site
         run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
           mkdir -p _site
           cp index.html curated-posts.json privacy.html terms.html delete-account.html download.html 404.html manifest.webmanifest service-worker.js app-icon.svg home-youthful-palette.css _site/
+          rsvg-convert -w 180 -h 180 app-icon.svg -o _site/app-icon-180.png
+          rsvg-convert -w 192 -h 192 app-icon.svg -o _site/app-icon-192.png
+          rsvg-convert -w 512 -h 512 app-icon.svg -o _site/app-icon-512.png
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
