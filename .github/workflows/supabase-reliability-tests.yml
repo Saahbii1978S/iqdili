@@ -1,0 +1,63 @@
+name: Supabase reliability regression tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/supabase-reliability-tests.yml"
+  push:
+    branches:
+      - main
+      - integration/storage-cleanup-with-restored-sources-2026-11-17
+    paths:
+      - "supabase/**"
+      - ".github/workflows/supabase-reliability-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  edge-function-unit-tests:
+    name: Edge Function helper tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Run shared helper tests
+        run: deno test --allow-env --allow-read --allow-net supabase/functions/_shared/
+
+  postgres-regression-tests:
+    name: PostgreSQL cleanup and policy regression tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cleanup_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d cleanup_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+      - name: Run queue, permissions, and Storage policy regression tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cleanup_test
+        run: |
+          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/storage-cleanup-queue.sql
+          psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f supabase/tests/storage-policies.sql
+      - name: Run concurrent attachment and cleanup race tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/cleanup_test
+        run: bash supabase/tests/storage-cleanup-concurrency.sh

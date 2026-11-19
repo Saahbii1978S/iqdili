@@ -1,0 +1,28 @@
+name: Edge Function source contract checks
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "supabase/functions/**"
+      - "tests/edge-function-source-contracts.py"
+      - ".github/workflows/edge-function-source-check.yml"
+
+  push:
+    branches: ["integration/storage-cleanup-with-restored-sources-2026-11-17"]
+    paths:
+      - "supabase/functions/**"
+      - "tests/edge-function-source-contracts.py"
+      - ".github/workflows/edge-function-source-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  source-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check Edge Function source contracts
+        run: python3 tests/edge-function-source-contracts.py
