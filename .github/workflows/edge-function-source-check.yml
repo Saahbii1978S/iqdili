@@ -30,11 +30,17 @@ jobs:
           deno-version: v2.x
       - name: Type-check integrated Edge Functions
         run: >-
-          deno check supabase/functions/admin-approve-post/index.ts supabase/functions/admin-delete-post/index.ts
-          supabase/functions/admin-update-post-status/index.ts supabase/functions/delete-account/index.ts
-          supabase/functions/delete-my-post/index.ts supabase/functions/expire-posts/index.ts
-          supabase/functions/notify-admin-new-user/index.ts supabase/functions/process-storage-cleanup/index.ts
-          supabase/functions/submit-public-post/index.ts supabase/functions/ask-iqdili/index.ts
+          deno check
+          supabase/functions/admin-approve-post/index.ts
+          supabase/functions/admin-delete-post/index.ts
+          supabase/functions/admin-update-post-status/index.ts
+          supabase/functions/delete-account/index.ts
+          supabase/functions/delete-my-post/index.ts
+          supabase/functions/expire-posts/index.ts
+          supabase/functions/notify-admin-new-user/index.ts
+          supabase/functions/process-storage-cleanup/index.ts
+          supabase/functions/submit-public-post/index.ts
+          supabase/functions/ask-iqdili/index.ts
           supabase/functions/upload-pending-image/index.ts
       - name: Check Edge Function source contracts
         run: python3 tests/edge-function-source-contracts.py
