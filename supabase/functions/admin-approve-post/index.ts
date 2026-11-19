@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-const ORIGIN = "https://ahla-tounsa-project.github.io";
-const cors = {"Access-Control-Allow-Origin":ORIGIN,"Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
+const ALLOWED_ORIGINS = new Set(["https://saahbii1978s.github.io", "https://ahla-tounsa-project.github.io"]);
+const cors = {"Access-Control-Allow-Origin": "*","Access-Control-Allow-Headers":"authorization, x-client-info, apikey, content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin"};
 const reply=(v:unknown,s=200)=>new Response(JSON.stringify(v),{status:s,headers:{...cors,"Content-Type":"application/json"}});
 
 async function sendAdminAlert(subject: string, textContent: string): Promise<void> {
@@ -59,7 +59,7 @@ function storageHeaders(key:string){return {apikey:key,Authorization:"Bearer "+k
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST")return reply({error:"طريقة الطلب غير مدعومة."},405);
- if(req.headers.get("origin")!==ORIGIN)return reply({error:"مصدر الطلب غير مسموح."},403);
+ if(!ALLOWED_ORIGINS.has(req.headers.get("origin") || ""))return reply({error:"مصدر الطلب غير مسموح."},403);
  try{
   const auth=await admin(req);if(!auth.ok)return reply({error:"الدخول للإدارة غير مصرح."},401);
   const body=await req.json();const table=body?.table,id=body?.id;
