@@ -1,11 +1,11 @@
 # Storage cleanup worker — deployment and verification runbook
 
-Status: candidate implementation on `audit/safe-fixes-2026-11-15`. Nothing in this document has been applied to the live Supabase project.
+Status: candidate implementation in PR #69 on `integration/main-based-storage-cleanup-2026-11-19`. The five migrations listed below and the worker remain un-deployed; nothing in this document has been applied to the live Supabase project.
 
 ## Components
 
 - `public.storage_cleanup_jobs`: durable queue. Rows begin as `staged`, become `pending` only after the corresponding listing rows are deleted, and then move through `processing` to `completed` or `dead_letter`.
-- `public.claim_storage_cleanup_jobs(integer)`: atomically claims a small batch using row locks and `SKIP LOCKED`; expired leases can be retried.
+- `public.claim_storage_cleanup_jobs(integer)`: atomically claims a small batch by taking the per-object advisory lock before the queue-row lock, then rechecking eligibility; expired leases can be retried without racing attachment or detachment.
 - `process-storage-cleanup`: server-only Edge Function. It checks that no live listing references the path, uses HEAD to distinguish 404 from other errors, deletes only the exact object endpoint (not the bulk prefix-delete endpoint), and records completion or a retry.
 - Admin post deletion, user post deletion, and account deletion enqueue image paths first, then use database RPCs to delete rows and activate only unreferenced paths transactionally. Shared images stay staged until their final listing reference is removed.
 
