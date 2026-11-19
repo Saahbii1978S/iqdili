@@ -25,8 +25,10 @@ begin
   end if;
 
   -- Do not count authenticated administrators or the owner.
-  if auth.uid() is not null and public.is_admin() then
-    return;
+  if auth.uid() is not null then
+    if public.is_admin() or public.is_owner() then
+      return;
+    end if;
   end if;
 
   delete from private.active_site_presence
