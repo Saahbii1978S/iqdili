@@ -21,6 +21,10 @@ Before starting:
 
 If any item is missing, stop. Do not substitute production for staging.
 
+## Migration-history integration blocker
+
+A read-only check of the connected production project's migration history on 2026-11-19 found that the latest applied version is `20261119093408` (`cleanup_stale_site_presence`). None of the five PR48 candidate migration versions below are present in production, and their current filenames are older (`20261115`–`20261116`) than the latest applied production version. Before PR48 can be merged or its migrations can be tested against a staging clone of the current production schema, re-version these five unapplied migrations to unique timestamps later than `20261119093408`, update every filename reference in this runbook, and verify the final order. Do not attempt to apply the old-version files after the newer production migrations. This is a repository integration requirement only; no production migration was applied during the audit.
+
 ## Candidate migration order
 
 Apply only to the disposable staging project, in this exact order, after owner approval:
