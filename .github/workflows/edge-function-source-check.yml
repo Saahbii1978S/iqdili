@@ -9,7 +9,7 @@ on:
       - ".github/workflows/edge-function-source-check.yml"
 
   push:
-    branches: ["integration/storage-cleanup-with-restored-sources-2026-11-17"]
+    branches: ["integration/main-based-storage-cleanup-2026-11-19"]
     paths:
       - "supabase/functions/**"
       - "tests/edge-function-source-contracts.py"
