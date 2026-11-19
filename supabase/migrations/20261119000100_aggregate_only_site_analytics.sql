@@ -56,9 +56,7 @@ declare
   v_today date := (now() at time zone 'Africa/Tunis')::date;
   v_result jsonb;
 begin
-  if auth.uid() is null or not exists (
-    select 1 from public.admins a where a.user_id = auth.uid()
-  ) then
+  if auth.uid() is null or not public.is_admin() then
     raise exception 'not authorized' using errcode = '42501';
   end if;
 
