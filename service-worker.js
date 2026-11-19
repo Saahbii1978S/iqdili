@@ -1,4 +1,4 @@
-const CACHE_NAME = "ahla-tounsa-shell-v159";
+const CACHE_NAME = "ahla-tounsa-shell-v160";
 const APP_ROOT = "/iqdili/";
 const INDEX_URL = APP_ROOT + "index.html";
 const APP_SHELL = [APP_ROOT, INDEX_URL, APP_ROOT + "app-icon.svg", APP_ROOT + "home-youthful-palette.css?v=2", APP_ROOT + "manifest.webmanifest", APP_ROOT + "privacy.html", APP_ROOT + "delete-account.html", APP_ROOT + "terms.html", APP_ROOT + "404.html"];
@@ -26,12 +26,12 @@ self.addEventListener("fetch", event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || !url.pathname.startsWith(APP_ROOT)) return;
 
-  const isAppDocument =
-    request.mode === "navigate" ||
+  const isHomeDocument =
     url.pathname === APP_ROOT ||
     url.pathname === INDEX_URL;
+  const isNavigation = request.mode === "navigate" || isHomeDocument;
 
-  if (isAppDocument) {
+  if (isNavigation) {
     event.respondWith(
       fetch(request)
         .then(response => {
@@ -39,8 +39,12 @@ self.addEventListener("fetch", event => {
             const copy = response.clone();
             event.waitUntil(
               caches.open(CACHE_NAME).then(async cache => {
-                await cache.put(APP_ROOT, copy.clone());
-                await cache.put(INDEX_URL, copy);
+                if (isHomeDocument) {
+                  await cache.put(APP_ROOT, copy.clone());
+                  await cache.put(INDEX_URL, copy);
+                } else {
+                  await cache.put(request, copy);
+                }
               })
             );
           }
