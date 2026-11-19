@@ -4,7 +4,7 @@
 
 This runbook defines the pre-production validation required for the storage-cleanup outbox and worker integrated by the main-based candidate.
 
-**This document does not authorize or perform any deployment.** Do not merge PR48, create a staging Supabase project, apply migrations, deploy Edge Functions, configure a scheduler, create secrets, or modify production resources without explicit owner approval.
+**This document does not authorize or perform any deployment.** Do not merge PR #69, create a staging Supabase project, apply migrations, deploy Edge Functions, configure a scheduler, create secrets, or modify production resources without explicit owner approval.
 
 All destructive tests must use a separate disposable staging project and objects created solely for this test. Never point a test worker at production Storage. Never use real user uploads or production listing rows.
 
