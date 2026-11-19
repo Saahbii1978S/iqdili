@@ -24,7 +24,7 @@ The seven overlapping Edge Function sources requiring substantive integration ha
 Other overlapping paths were reconciled without replacing newer current-main behavior: `ask-iqdili` and `upload-pending-image` match the imported source; `admin-post-image` and `my-posts` differ only in formatting; `privacy.html` remains the newer current-main version. PR60's Android activity and download page match current main; its older index page was not copied.
 
 ## CI evidence
-For current PR head `995e2d03052bd6c845bb96ae4ee2b8255e82db65`:
+For code-bearing PR commit `995e2d03052bd6c845bb96ae4ee2b8255e82db65` (the three later commits changed only these two operations documents; no application, Edge Function, migration, or test source changed):
 - [Edge Function source contract checks, run #48](https://github.com/ahla-tounsa-project/iqdili/actions/runs/44520501405): TypeScript integration type-check and source-contract checks passed.
 - [Supabase reliability regression tests, run #82](https://github.com/ahla-tounsa-project/iqdili/actions/runs/44520501395): shared helper tests, PostgreSQL queue/permissions/Storage policy tests, and concurrent attachment/cleanup race tests passed.
 
