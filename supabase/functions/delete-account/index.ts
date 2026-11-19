@@ -182,7 +182,8 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    let queuedImageCount = 0;\n    // Storage cleanup starts only after all database row deletions succeeded.
+    let queuedImageCount = 0;
+    // Storage cleanup starts only after all database row deletions succeeded.
     // A database failure above therefore cannot leave a live post without its image.
     for (const table of tables) {
       const paths = pathsByTable[table.name] || [];
