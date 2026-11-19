@@ -15,8 +15,14 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.GeolocationPermissions;
-import android.webkit.JavascriptInterface;
 import android.widget.Toast;
+import androidx.webkit.JavaScriptReplyProxy;
+import androidx.webkit.WebMessageCompat;
+import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebViewFeature;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.util.Collections;
 import android.view.WindowInsets;
 import android.graphics.Insets;
 import android.window.OnBackInvokedCallback;
@@ -33,48 +39,43 @@ public class MainActivity extends Activity {
     private String pendingGeoOrigin;
     private OnBackInvokedCallback backInvokedCallback;
 
-    public class ShareBridge {
-        @JavascriptInterface
-        public void share(String title, String message, String url) {
-            runOnUiThread(() -> {
-                Uri currentPage = webView == null || webView.getUrl() == null
-                        ? null : Uri.parse(webView.getUrl());
-                boolean trustedPage = currentPage != null
-                        && "https".equalsIgnoreCase(currentPage.getScheme())
-                        && HOST.equalsIgnoreCase(currentPage.getHost())
-                        && ("/iqdili".equals(currentPage.getPath())
-                                || currentPage.getPath().startsWith("/iqdili/"));
-                if (!trustedPage) return;
+    private void launchShare(String title, String message, String url) {
+        Uri currentPage = webView == null || webView.getUrl() == null
+                ? null : Uri.parse(webView.getUrl());
+        boolean trustedPage = currentPage != null
+                && "https".equalsIgnoreCase(currentPage.getScheme())
+                && HOST.equalsIgnoreCase(currentPage.getHost())
+                && ("/iqdili".equals(currentPage.getPath())
+                        || currentPage.getPath().startsWith("/iqdili/"));
+        if (!trustedPage) return;
 
-                String safeTitle = title == null ? "" : title.trim();
-                if (safeTitle.length() > 80) safeTitle = safeTitle.substring(0, 80);
-                String content = message == null ? "" : message.trim();
-                if (content.length() > 2000) content = content.substring(0, 2000);
+        String safeTitle = title == null ? "" : title.trim();
+        if (safeTitle.length() > 80) safeTitle = safeTitle.substring(0, 80);
+        String content = message == null ? "" : message.trim();
+        if (content.length() > 2000) content = content.substring(0, 2000);
 
-                String safeUrl = "";
-                if (url != null && !url.trim().isEmpty()) {
-                    Uri candidate = Uri.parse(url.trim());
-                    boolean trustedUrl = "https".equalsIgnoreCase(candidate.getScheme())
-                            && HOST.equalsIgnoreCase(candidate.getHost())
-                            && ("/iqdili".equals(candidate.getPath())
-                                    || candidate.getPath().startsWith("/iqdili/"));
-                    if (trustedUrl) safeUrl = candidate.toString();
-                }
-                if (!safeUrl.isEmpty() && !content.contains(safeUrl)) {
-                    content = content.isEmpty() ? safeUrl : content + "\n" + safeUrl;
-                }
-                if (content.isEmpty()) return;
+        String safeUrl = "";
+        if (url != null && !url.trim().isEmpty()) {
+            Uri candidate = Uri.parse(url.trim());
+            boolean trustedUrl = "https".equalsIgnoreCase(candidate.getScheme())
+                    && HOST.equalsIgnoreCase(candidate.getHost())
+                    && ("/iqdili".equals(candidate.getPath())
+                            || candidate.getPath().startsWith("/iqdili/"));
+            if (trustedUrl) safeUrl = candidate.toString();
+        }
+        if (!safeUrl.isEmpty() && !content.contains(safeUrl)) {
+            content = content.isEmpty() ? safeUrl : content + "\\n" + safeUrl;
+        }
+        if (content.isEmpty()) return;
 
-                Intent sendIntent = new Intent(Intent.ACTION_SEND);
-                sendIntent.setType("text/plain");
-                sendIntent.putExtra(Intent.EXTRA_TEXT, content);
-                try {
-                    startActivity(Intent.createChooser(sendIntent,
-                            safeTitle.isEmpty() ? "مشاركة أحلى توانسة" : safeTitle));
-                } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "ما نجّمش نفتح قائمة المشاركة", Toast.LENGTH_SHORT).show();
-                }
-            });
+        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+        sendIntent.setType("text/plain");
+        sendIntent.putExtra(Intent.EXTRA_TEXT, content);
+        try {
+            startActivity(Intent.createChooser(sendIntent,
+                    safeTitle.isEmpty() ? "مشاركة أحلى توانسة" : safeTitle));
+        } catch (Exception e) {
+            Toast.makeText(MainActivity.this, "ما نجّمش نفتح قائمة المشاركة", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -134,7 +135,25 @@ public class MainActivity extends Activity {
             settings.setSafeBrowsingEnabled(true);
         }
 
-        webView.addJavascriptInterface(new ShareBridge(), "AndroidShare");
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            WebViewCompat.addWebMessageListener(webView, "AndroidShare",
+                    Collections.singleton("https://" + HOST),
+                    (view, message, sourceOrigin, isMainFrame, replyProxy) -> {
+                        if (!isMainFrame || sourceOrigin == null
+                                || !"https".equalsIgnoreCase(sourceOrigin.getScheme())
+                                || !HOST.equalsIgnoreCase(sourceOrigin.getHost())) {
+                            return;
+                        }
+                        try {
+                            JSONObject payload = new JSONObject(message.getData());
+                            launchShare(payload.optString("title", ""),
+                                    payload.optString("message", ""),
+                                    payload.optString("url", ""));
+                        } catch (JSONException ignored) {
+                            // Ignore malformed messages from the web page.
+                        }
+                    });
+        }
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
 
