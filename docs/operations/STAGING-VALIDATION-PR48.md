@@ -29,11 +29,11 @@ A read-only check of the connected production project's migration history on 202
 
 Apply only to the disposable staging project, in this exact order, after owner approval:
 
-1. `20261115090000_storage_cleanup_jobs.sql`
-2. `20261115120000_storage_cleanup_attachment_lock.sql`
-3. `20261115150000_storage_cleanup_detachment_lock.sql`
-4. `20261116100000_storage_cleanup_atomic_defer.sql`
-5. `20261116130000_account_deletion_limits.sql`
+1. `20261120090000_storage_cleanup_jobs.sql`
+2. `20261120090500_storage_cleanup_attachment_lock.sql`
+3. `20261120091000_storage_cleanup_detachment_lock.sql`
+4. `20261120091500_storage_cleanup_atomic_defer.sql`
+5. `20261120092000_account_deletion_limits.sql`
 
 Record the migration result and resulting schema version after each step. Stop on the first error; do not skip or reorder migrations.
 
