@@ -28,7 +28,7 @@ begin
   end if;
 
   if auth.uid() is not null then
-    if public.is_admin() then
+    if public.is_admin() or public.is_owner() then
       return;
     end if;
   end if;
