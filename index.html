@@ -1699,13 +1699,14 @@ main>section input[type="file"]::file-selector-button{
 <div id="admin-aggregate-analytics" style="margin:16px 0;padding:16px;border:1px solid #dce7e2;border-radius:15px;background:#f8fcfb">
  <h3 style="margin:0 0 10px">📊 إحصائيات استعمال الموقع</h3>
  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>المتواجدون توا (جلسات نشطة)</small><div id="aggregate-live" style="font-size:26px;font-weight:900;color:#087f78">—</div></div>
   <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>مشاهدات اليوم</small><div id="aggregate-today" style="font-size:26px;font-weight:900;color:#087f78">—</div></div>
   <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>مشاهدات الشهر</small><div id="aggregate-month" style="font-size:26px;font-weight:900;color:#087f78">—</div></div>
   <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>إجمالي المشاهدات</small><div id="aggregate-total" style="font-size:26px;font-weight:900;color:#087f78">—</div></div>
  </div>
  <h4 style="margin:14px 0 8px">الأقسام الأكثر مشاهدة</h4>
  <div id="aggregate-top-pages" class="muted">جاري تحميل الإحصائيات...</div>
- <p id="aggregate-updated" class="muted" style="margin:8px 0 0">إحصائيات مجمّعة فقط، من غير تتبّع زوار أو أجهزة.</p>
+ <p id="aggregate-updated" class="muted" style="margin:8px 0 0">عدد المتواجدين تقريبي حسب جلسات مؤقتة مجهولة تنتهي بعد دقيقتين من انقطاع الاتصال. لا نسجّل IP أو أسماء أو سجلّ تصفّح.</p>
 </div></div><div id="admin-requests" style="margin-top:15px"></div>
 </div></div>
 </section>
@@ -2025,12 +2026,44 @@ function recordSitePageView(pageId){
  db.rpc("record_site_page_view",{p_page_key:pageId}).then(({error})=>{if(error)console.warn("Aggregate page analytics:",error.message);}).catch(error=>console.warn("Aggregate page analytics:",error));
 }
 
+let sitePresenceStarted=false;
+function getSitePresenceSessionId(){
+ try{
+  let token=sessionStorage.getItem("ahla-site-presence-session");
+  if(token&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(token))return token;
+  if(!window.crypto||typeof window.crypto.randomUUID!=="function")return "";
+  token=window.crypto.randomUUID();
+  sessionStorage.setItem("ahla-site-presence-session",token);
+  return token;
+ }catch(error){return "";}
+}
+function startSitePresence(){
+ if(!db||sitePresenceStarted)return;
+ const token=getSitePresenceSessionId();
+ if(!token)return;
+ sitePresenceStarted=true;
+ const heartbeat=()=>{
+  if(!db)return;
+  db.rpc("heartbeat_site_presence",{p_session_id:token}).then(({error})=>{
+   if(error)console.warn("Temporary site presence:",error.message);
+  }).catch(error=>console.warn("Temporary site presence:",error));
+ };
+ heartbeat();
+ window.setInterval(heartbeat,45000);
+}
+if(!window.sitePresenceRefreshTimer){
+ window.sitePresenceRefreshTimer=window.setInterval(()=>{
+  const admin=el("admin");
+  if(currentAdminIsOwner&&admin&&!admin.classList.contains("hidden"))loadAggregateSiteAnalytics();
+ },30000);
+}
 
 function connect(){
 try{
 if(!db && window.supabase && typeof window.supabase.createClient==="function"){
 db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }
+if(db)startSitePresence();
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
@@ -2605,12 +2638,17 @@ async function loadAggregateSiteAnalytics(){
  if(!host)return;
  host.classList.toggle("hidden",!currentAdminIsOwner);
  if(!currentAdminIsOwner||!db)return;
- const {data,error}=await db.rpc("get_aggregate_site_analytics");
+ const [{data,error},{data:liveCount,error:liveError}]=await Promise.all([
+  db.rpc("get_aggregate_site_analytics"),
+  db.rpc("get_active_site_presence_count")
+ ]);
  if(error){
   const note=el("aggregate-updated");if(note)note.textContent="تعذّر تحميل الإحصائيات.";
   console.warn("Aggregate site analytics:",error.message);return;
  }
  if(!data)return;
+ const live=el("aggregate-live");
+ if(live)live.textContent=liveError?"—":Number(liveCount||0).toLocaleString("ar-TN");
  el("aggregate-today").textContent=Number(data.today_views||0).toLocaleString("ar-TN");
  el("aggregate-month").textContent=Number(data.month_views||0).toLocaleString("ar-TN");
  el("aggregate-total").textContent=Number(data.total_views||0).toLocaleString("ar-TN");
