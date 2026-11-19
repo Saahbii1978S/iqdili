@@ -78,7 +78,29 @@ jobs:
           for filename in ("app-icon-180.png", "app-icon-192.png", "app-icon-512.png"):
               if filename not in shell or not (Path("_site") / filename).is_file():
                   raise SystemExit(f"Service worker icon missing: {filename}")
-          print("Manifest, PNG signatures/dimensions, Apple icon and service-worker icon references verified.")
+
+          # Every named offline-shell asset must both be cached and included in the Pages artifact.
+          shell_files = (
+              "app-icon.svg",
+              "app-icon-180.png",
+              "app-icon-192.png",
+              "app-icon-512.png",
+              "home-youthful-palette.css",
+              "manifest.webmanifest",
+              "privacy.html",
+              "delete-account.html",
+              "terms.html",
+              "download.html",
+              "404.html",
+          )
+          for filename in shell_files:
+              if f'APP_ROOT + "{filename}"' not in shell:
+                  raise SystemExit(f"Service worker does not cache required shell asset: {filename}")
+              if not (Path("_site") / filename).is_file():
+                  raise SystemExit(f"Offline shell asset is absent from Pages artifact: {filename}")
+          if "APP_ROOT, INDEX_URL" not in shell:
+              raise SystemExit("Service worker home and index entries are missing.")
+          print("Manifest, PNG dimensions, Apple icon and all offline-shell assets verified.")
           PY
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
