@@ -45,6 +45,13 @@ async function api(
   });
 }
 
+async function enqueueCleanup(url:string,key:string,bucket:string,paths:string[],reason:string):Promise<boolean>{
+ if(!paths.length)return true;
+ const rows=paths.map(object_path=>({bucket_id:bucket,object_path,attempts:0,next_attempt_at:new Date().toISOString(),last_error:reason.slice(0,1000)}));
+ const r=await fetch(url+"/rest/v1/storage_cleanup_queue?on_conflict=bucket_id,object_path",{method:"POST",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(rows)});
+ if(!r.ok){console.error("Storage cleanup queue insert failed",bucket,r.status);return false;}
+ return true;
+}
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   if (req.method !== "POST") return reply({ error: "طريقة الطلب غير مدعومة." }, 405);
@@ -175,7 +182,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Storage cleanup starts only after all database row deletions succeeded.
+    let queuedImageCount = 0;\n    // Storage cleanup starts only after all database row deletions succeeded.
     // A database failure above therefore cannot leave a live post without its image.
     for (const table of tables) {
       const paths = pathsByTable[table.name] || [];
@@ -189,7 +196,11 @@ Deno.serve(async (req: Request) => {
           });
           if (!remove.ok) {
             console.error("Account image cleanup failed after database deletion", bucket, remove.status);
-            return reply({ error: "تم حذف الإعلانات، لكن تعذّر تنظيف بعض الصور. الحساب مازال موجوداً؛ تواصل مع الإدارة لإتمام التنظيف." }, 502);
+            const queued = await enqueueCleanup(url, serviceKey, bucket, batch, "Account image cleanup failed");
+            if (!queued) {
+              return reply({ error: "تم حذف الإعلانات، لكن تعذّر تنظيف الصور أو تسجيلها لإعادة المحاولة. الحساب مازال موجوداً؛ تواصل مع الإدارة." }, 502);
+            }
+            queuedImageCount += batch.length;
           }
         }
       }
@@ -205,7 +216,7 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "تم تنظيف الإعلانات، لكن تعذّر إكمال حذف الحساب. عاود المحاولة أو تواصل مع الإدارة." }, 502);
     }
 
-    return reply({ ok: true, message: "تم حذف الحساب والإعلانات والصور المرتبطة به." });
+    return reply({ ok: true, cleanupPending: queuedImageCount > 0, message: queuedImageCount > 0 ? "تم حذف الحساب والإعلانات، وجدولنا تنظيف الصور المتبقية تلقائياً." : "تم حذف الحساب والإعلانات والصور المرتبطة به." });
   } catch (error) {
     console.error("delete-account error", String(error));
     return reply({ error: "صار خطأ غير متوقع. لم نتمكن من تأكيد اكتمال حذف الحساب." }, 500);
