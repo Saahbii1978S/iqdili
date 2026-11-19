@@ -4,9 +4,9 @@ import { readLimitedRequest } from "../_shared/request-size.ts";
 import { buildStorageCleanupJobs, enqueueStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
 import { isProtectedDemoPost } from "../_shared/protected-demo.ts";
 
-const ORIGIN = "https://ahla-tounsa-project.github.io";
+const ALLOWED_ORIGINS = new Set(["https://saahbii1978s.github.io", "https://ahla-tounsa-project.github.io"]);
 const cors = {
-  "Access-Control-Allow-Origin": ORIGIN,
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Vary": "Origin",
@@ -52,7 +52,7 @@ async function api(
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   if (req.method !== "POST") return reply({ error: "طريقة الطلب غير مدعومة." }, 405);
-  if (req.headers.get("origin") !== ORIGIN) return reply({ error: "مصدر الطلب غير مسموح." }, 403);
+  if (!ALLOWED_ORIGINS.has(req.headers.get("origin") || "")) return reply({ error: "مصدر الطلب غير مسموح." }, 403);
 
   try {
     const url = Deno.env.get("SUPABASE_URL");
