@@ -16,7 +16,7 @@ This worker is part of the review branch only. It is not deployed and the candid
 
 ## Required rollout order
 
-1. Review all five candidate migrations: `20261115090000_storage_cleanup_jobs.sql`, `20261115120000_storage_cleanup_attachment_lock.sql`, `20261115150000_storage_cleanup_detachment_lock.sql`, `20261116100000_storage_cleanup_atomic_defer.sql`, and `20261116130000_account_deletion_limits.sql`.
+1. Review all five candidate migrations: `20261120090000_storage_cleanup_jobs.sql`, `20261120090500_storage_cleanup_attachment_lock.sql`, `20261120091000_storage_cleanup_detachment_lock.sql`, `20261120091500_storage_cleanup_atomic_defer.sql`, and `20261120092000_account_deletion_limits.sql`.
 2. Apply the migrations to a separate staging Supabase project in timestamp order, then run `supabase/tests/storage-cleanup-queue.sql` and `supabase/tests/storage-cleanup-concurrency.sh` against disposable test data.
 3. Deploy the Edge Function `process-storage-cleanup` to staging with normal JWT verification enabled.
 4. Invoke it only from a trusted server-side scheduler using the project's service-role JWT in both `apikey` and `Authorization: Bearer ...` headers. Never put the service-role key in browser code, Git, Actions logs, or a public URL.
