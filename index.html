@@ -1695,16 +1695,19 @@ main>section input[type="file"]::file-selector-button{
 <button type="button" id="admin-refresh">تحديث الطلبات</button>
 <button type="button" id="admin-logout" style="background:#647875">خروج</button>
 <div style="margin-top:15px"><label for="admin-search">🔎 البحث في الطلبات</label><input id="admin-search" type="search" maxlength="120" placeholder="فتّش بالعنوان أو الوصف أو المنطقة أو الرقم..." autocomplete="off"><div class="row" style="gap:10px;flex-wrap:wrap;margin-top:10px"><div style="flex:1;min-width:145px"><label for="admin-category-filter">القسم</label><select id="admin-category-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الأقسام</option><option value="service_requests">الخدمات</option><option value="job_posts">فرص العمل</option><option value="real_estate_posts">العقارات</option><option value="market_posts">السوق</option></select></div><div style="flex:1;min-width:145px"><label for="admin-status-filter">الحالة</label><select id="admin-status-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الحالات</option><option value="pending">في انتظار المراجعة</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option><option value="unpublished">ملغى النشر</option></select></div></div><p class="muted">التنبيه «يحتمل تجريبي» آلي حسب كلمات في الإعلان، ويلزم مراجعة بشرية قبل أي قرار.</p>
-<p class="muted" id="admin-search-scope">البحث يشمل الإعلانات المحمّلة حالياً فقط. لتحرّي الإعلانات الأقدم، حمّل الدفعات الإضافية من أسفل كل قسم ثم عاود البحث.</p></div><div id="admin-visitor-stats" style="margin:16px 0;padding:16px;border:1px solid #dce7e2;border-radius:15px;background:#f8fcfb">
- <h3 style="margin:0 0 10px">📊 إحصائيات زوار أحلى توانسة</h3>
+<p class="muted" id="admin-search-scope">البحث يشمل الإعلانات المحمّلة حالياً فقط. لتحرّي الإعلانات الأقدم، حمّل الدفعات الإضافية من أسفل كل قسم ثم عاود البحث.</p>
+<div id="admin-aggregate-analytics" style="margin:16px 0;padding:16px;border:1px solid #dce7e2;border-radius:15px;background:#f8fcfb">
+ <h3 style="margin:0 0 10px">📊 إحصائيات استعمال الموقع</h3>
  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
-  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>🟢 المتواجدون الآن</small><div id="stats-online" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
-  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>👥 زوار اليوم</small><div id="stats-today" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
-  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>🔢 إجمالي الزيارات</small><div id="stats-total" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
+  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>المتواجدون توا (جلسات نشطة)</small><div id="aggregate-live" style="font-size:26px;font-weight:900;color:#087f78">—</div></div>
+  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>مشاهدات اليوم</small><div id="aggregate-today" style="font-size:26px;font-weight:900;color:#087f78">—</div></div>
+  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>مشاهدات الشهر</small><div id="aggregate-month" style="font-size:26px;font-weight:900;color:#087f78">—</div></div>
+  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>إجمالي المشاهدات</small><div id="aggregate-total" style="font-size:26px;font-weight:900;color:#087f78">—</div></div>
  </div>
- <p id="stats-updated" class="muted" style="margin:8px 0 0">تتحدّث الإحصائيات آلياً. زيارات حسابات الإدارة لا تُحتسب حتى لا تختلط بالزيارات الحقيقية.</p>
-</div>
-<div id="admin-requests" style="margin-top:15px"></div>
+ <h4 style="margin:14px 0 8px">الأقسام الأكثر مشاهدة</h4>
+ <div id="aggregate-top-pages" class="muted">جاري تحميل الإحصائيات...</div>
+ <p id="aggregate-updated" class="muted" style="margin:8px 0 0">عدد المتواجدين تقريبي حسب جلسات مؤقتة مجهولة تنتهي بعد دقيقتين من انقطاع الاتصال. لا نسجّل IP أو أسماء أو سجلّ تصفّح.</p>
+</div></div><div id="admin-requests" style="margin-top:15px"></div>
 </div></div>
 </section>
 </main>
@@ -1723,7 +1726,12 @@ main>section input[type="file"]::file-selector-button{
  <details style="background:#fff;border:1px solid #dce7e2;border-radius:12px;padding:12px;margin:10px 0">
   <summary style="cursor:pointer;font-weight:700;color:#14564f">سياسة الخصوصية وحماية البيانات</summary>
   <div id="site-privacy" style="line-height:1.9;padding-top:10px">
-   <p><strong>شنوة المعلومات اللي نجمعوها؟</strong> كي تبعث طلب خدمة أو إعلان، المنصة تستقبل المعلومات اللي تختار تعمّرها، كيف العنوان والوصف والمدينة ورقم الهاتف والصور الاختيارية، وتحفظها في قاعدة بياناتها السحابية لمراجعتها وإدارتها.</p>
+   <section style="padding:10px 12px;margin:0 0 14px;border:1px solid #e2ece8;border-radius:10px;background:#fbfdfc">
+     <h4 style="margin:0 0 8px;color:#14564f">إحصائيات استعمال الموقع</h4>
+     <p>نستعملوا أرقاماً إجمالية ومجمّعة لعدد مشاهدات صفحات الموقع والأقسام حسب اليوم والشهر، بهدف تحسين الخدمات.</p>
+     <p>ما نربطوش المشاهدات بأشخاص أو أجهزة، وما نسجّلوش عناوين IP أو معرّفات زوار أو مصادر الدخول ضمن إحصائيات التصفّح.</p>
+    </section>
+    <p><strong>شنوة المعلومات اللي نجمعوها؟</strong> كي تبعث طلب خدمة أو إعلان، المنصة تستقبل المعلومات اللي تختار تعمّرها، كيف العنوان والوصف والمدينة ورقم الهاتف والصور الاختيارية، وتحفظها في قاعدة بياناتها السحابية لمراجعتها وإدارتها.</p>
    <p><strong>وقتاش يظهر الإعلان؟</strong> الإعلانات ما تظهرش للعموم قبل موافقة الإدارة. رقم الهاتف ما يظهرش في المنشور العام إلا إذا تختار صراحةً إظهار وسيلة الاتصال للناس. الصور المرفوعة تنجم تظهر مع الإعلان المقبول.</p>
    <p><strong>السيرة الذاتية (CV):</strong> المعلومات والصورة اللي تدخلهم في أداة CV يستعملهم المتصفح على جهازك لصناعة السيرة الذاتية، وما يلزمش تبعثهم في استمارات الإعلانات. حمّل نسخة قبل ما تسكّر الصفحة.</p>
    <p><strong>قسم اسأل أحلى توانسة:</strong> السؤال تتم معالجته داخل خادم المنصة لإرجاع إجابة من المعلومات المهيّأة، وما يتبعثش إلى مزوّد ذكاء اصطناعي خارجي. ما تكتبش كلمات سر أو أرقام بطاقات أو وثائق شخصية أو معلومات صحية حساسة.</p>
@@ -1760,6 +1768,7 @@ main>section input[type="file"]::file-selector-button{
 </div>
 
 <p style="margin:18px 0 0">أحلى توانسة © 2026</p>
+
 </footer>
 
 <script>
@@ -1798,6 +1807,7 @@ function show(id){
 const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
+recordSitePageView(id);
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
 const activeNavButton=document.querySelector('nav [data-page="'+id+'"]');
 if(activeNavButton)activeNavButton.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"});
@@ -1996,8 +2006,6 @@ if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textConten
 
 let authListenerInstalled=false;
 let adminSignupNotificationAttemptedFor="";
-let siteVisitHeartbeatStarted=false;
-let siteVisitTrackingId=null;
 function notifyRecentConfirmedSignup(session){
  const user=session?.user;
  if(!db||!user?.id||!user?.email_confirmed_at||!user?.created_at)return;
@@ -2011,52 +2019,59 @@ function notifyRecentConfirmedSignup(session){
   }).catch(error=>console.warn("Admin signup notification:",error));
  },0);
 }
-function getSiteVisitTrackingId(){
- if(siteVisitTrackingId)return siteVisitTrackingId;
- const key="ahla-visitor-id-v1";
- try{
-  const saved=window.localStorage.getItem(key);
-  if(saved&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(saved)){
-   siteVisitTrackingId=saved;return saved;
-  }
- }catch(error){}
- let generated="";
- try{
-  if(window.crypto&&typeof window.crypto.randomUUID==="function")generated=window.crypto.randomUUID();
-  else if(window.crypto&&typeof window.crypto.getRandomValues==="function"){
-   const bytes=window.crypto.getRandomValues(new Uint8Array(16));
-   bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
-   const hex=Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");
-   generated=hex.slice(0,8)+"-"+hex.slice(8,12)+"-"+hex.slice(12,16)+"-"+hex.slice(16,20)+"-"+hex.slice(20);
-  }
- }catch(error){}
- if(!generated)return null;
- siteVisitTrackingId=generated;
- try{window.localStorage.setItem(key,generated);}catch(error){}
- return generated;
+function recordSitePageView(pageId){
+ if(!db||!pageId||pageId==="admin"||pageId==="reset-password")return;
+ const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account"];
+ if(!allowed.includes(pageId))return;
+ db.rpc("record_site_page_view",{p_page_key:pageId}).then(({error})=>{if(error)console.warn("Aggregate page analytics:",error.message);}).catch(error=>console.warn("Aggregate page analytics:",error));
 }
-function startSiteVisitTracking(){
- if(siteVisitHeartbeatStarted||!db)return;
- siteVisitHeartbeatStarted=true;
- const sendHeartbeat=async()=>{
+
+let sitePresenceStarted=false;
+function getSitePresenceSessionId(){
+ try{
+  let token=sessionStorage.getItem("ahla-site-presence-session");
+  if(token&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(token))return token;
+  if(!window.crypto||typeof window.crypto.randomUUID!=="function")return "";
+  token=window.crypto.randomUUID();
+  sessionStorage.setItem("ahla-site-presence-session",token);
+  return token;
+ }catch(error){return "";}
+}
+async function startSitePresence(){
+ if(!db||sitePresenceStarted)return;
+ sitePresenceStarted=true;
+ try{
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(sessionData?.session){
+   const [{data:isAdmin,error:adminError},{data:isOwner,error:ownerError}]=await Promise.all([
+    db.rpc("is_admin"),
+    db.rpc("is_owner")
+   ]);
+   if(adminError)throw adminError;
+   if(ownerError)throw ownerError;
+   if(isAdmin===true||isOwner===true)return;
+  }
+ }catch(error){
+  console.warn("Temporary site presence authorization:",error);
+  return;
+ }
+ const token=getSitePresenceSessionId();
+ if(!token)return;
+ const heartbeat=()=>{
   if(!db)return;
-  try{
-   const {data:sessionData,error:sessionError}=await db.auth.getSession();
-   if(sessionError){console.warn("Visitor count session check:",sessionError.message);return;}
-   const session=sessionData?.session||null;
-   if(session){
-    const {data:isAdmin,error:adminError}=await db.rpc("is_admin");
-    if(adminError){console.warn("Visitor count admin check:",adminError.message);return;}
-    if(isAdmin===true)return;
-   }
-   const visitorId=getSiteVisitTrackingId();
-   if(!visitorId){console.warn("Visitor count: browser ID unavailable");return;}
-   const {error}=await db.rpc("record_site_visit",{p_visitor_id:visitorId});
-   if(error)console.warn("Visitor count:",error.message);
-  }catch(error){console.warn("Visitor count heartbeat:",error);}
+  db.rpc("heartbeat_site_presence",{p_session_id:token}).then(({error})=>{
+   if(error)console.warn("Temporary site presence:",error.message);
+  }).catch(error=>console.warn("Temporary site presence:",error));
  };
- sendHeartbeat();
- window.setInterval(sendHeartbeat,120000);
+ heartbeat();
+ window.setInterval(heartbeat,45000);
+}
+if(!window.sitePresenceRefreshTimer){
+ window.sitePresenceRefreshTimer=window.setInterval(()=>{
+  const admin=el("admin");
+  if(currentAdminIsOwner&&admin&&!admin.classList.contains("hidden"))loadAggregateSiteAnalytics();
+ },30000);
 }
 
 function connect(){
@@ -2064,6 +2079,7 @@ try{
 if(!db && window.supabase && typeof window.supabase.createClient==="function"){
 db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }
+if(db)startSitePresence();
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
@@ -2078,7 +2094,7 @@ db.auth.getSession().then(({data,error})=>{
  else notifyRecentConfirmedSignup(data?.session);
 }).catch(error=>console.warn("Signup notification session check:",error));
 }
-if(db)startSiteVisitTracking();
+
 }catch(error){console.error("Supabase connection setup:",error);}
 }
 connect();
@@ -2623,13 +2639,7 @@ async function renderAdmin(){
  applyAdminSearch();
  await loadAdminImagePreviews();
  host.querySelectorAll("[data-admin-image]").forEach(node=>node.dataset.previewLoaded="1");
- await loadAdminVisitorStats();
- if(!window.ahlaVisitorStatsTimer){
-  window.ahlaVisitorStatsTimer=window.setInterval(()=>{
-   const panel=el("admin-panel");
-   if(panel&&!panel.classList.contains("hidden"))loadAdminVisitorStats();
-  },30000);
- }
+ await loadAggregateSiteAnalytics();
 }
 if(!document.documentElement.dataset.adminPaginationReady){
  document.documentElement.dataset.adminPaginationReady="1";
@@ -2639,20 +2649,43 @@ if(!document.documentElement.dataset.adminPaginationReady){
  });
 }
 
-async function loadAdminVisitorStats(){
- const host=el("admin-visitor-stats");
- if(!host||!db)return;
- const {data,error}=await db.rpc("get_site_visitor_stats");
+async function loadAggregateSiteAnalytics(){
+ const host=el("admin-aggregate-analytics");
+ if(!host)return;
+ host.classList.toggle("hidden",!currentAdminIsOwner);
+ if(!currentAdminIsOwner||!db)return;
+ const [{data,error},{data:liveCount,error:liveError}]=await Promise.all([
+  db.rpc("get_aggregate_site_analytics"),
+  db.rpc("get_active_site_presence_count")
+ ]);
  if(error){
-  const note=el("stats-updated");if(note)note.textContent="تعذّر تحميل الإحصائيات. عاود تحديث الصفحة أو الدخول.";
-  console.warn("Visitor stats:",error.message);return;
+  const note=el("aggregate-updated");if(note)note.textContent="تعذّر تحميل الإحصائيات.";
+  console.warn("Aggregate site analytics:",error.message);return;
  }
- const stats=Array.isArray(data)?data[0]:data;
- if(!stats)return;
- el("stats-online").textContent=Number(stats.online_now||0).toLocaleString("ar-TN");
- el("stats-today").textContent=Number(stats.visitors_today||0).toLocaleString("ar-TN");
- el("stats-total").textContent=Number(stats.total_visits||0).toLocaleString("ar-TN");
- const note=el("stats-updated");if(note)note.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-TN")+" · تُحتسب الزيارة الجديدة بعد 30 دقيقة من الخمول، ولا تُحتسب جلسات الإدارة.";
+ if(!data)return;
+ const live=el("aggregate-live");
+ if(live)live.textContent=liveError?"—":Number(liveCount||0).toLocaleString("ar-TN");
+ el("aggregate-today").textContent=Number(data.today_views||0).toLocaleString("ar-TN");
+ el("aggregate-month").textContent=Number(data.month_views||0).toLocaleString("ar-TN");
+ el("aggregate-total").textContent=Number(data.total_views||0).toLocaleString("ar-TN");
+ const pages=Array.isArray(data.top_pages)?data.top_pages:[];
+ const labels={home:"الرئيسية",services:"الخدمات",jobs:"فرص العمل",realty:"العقارات",market:"السوق",good:"باب الخير",guide:"الدليل",cv:"السيرة الذاتية",ask:"اسأل أحلى توانسة",saved:"المحفوظات",account:"الحساب"};
+ const list=el("aggregate-top-pages");
+ if(list){
+  if(!pages.length)list.textContent="ما فماش مشاهدات مسجّلة بعد.";
+  else{
+   const table=document.createElement("div");
+   pages.forEach(item=>{
+    const row=document.createElement("div");
+    row.style.cssText="display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid #e8efec";
+    const name=document.createElement("span");name.textContent=labels[item.page_key]||"قسم";
+    const count=document.createElement("strong");count.textContent=Number(item.views||0).toLocaleString("ar-TN");
+    row.append(name,count);table.appendChild(row);
+   });
+   list.replaceChildren(table);
+  }
+ }
+ const note=el("aggregate-updated");if(note)note.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-TN")+" · أرقام مجمّعة فقط.";
 }
 async function loadAdminImagePreviews(scope){
  const placeholders=scope ? [...scope] : [...document.querySelectorAll("[data-admin-image]")];
