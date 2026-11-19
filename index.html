@@ -689,11 +689,6 @@ main>section input[type="file"]::file-selector-button{
 <style id="source-reference-style">.source-reference{color:inherit;text-decoration:none;cursor:default}</style>
 </head>
 <body>
-<div id="ahla-analytics-consent" role="dialog" aria-live="polite" aria-label="اختيار المشاركة" style="display:none;position:fixed;z-index:9999;left:12px;right:12px;bottom:12px;max-width:560px;margin:auto;padding:14px;border:1px solid #dce7e2;border-radius:14px;background:#fff;color:#182a25;box-shadow:0 6px 22px rgba(0,0,0,.12)">
- <p style="margin:0 0 10px;font-size:15px;line-height:1.7">نحبّوا نطوّروا أحلى توانسة ونحسّنوا خدماتنا. توافق تعاونّا؟</p>
- <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><button type="button" id="ahla-analytics-accept" style="background:#176b5c">موافق</button><button type="button" id="ahla-analytics-reject" style="background:#5b6670">لا، شكراً</button><a href="#site-privacy-details" id="ahla-analytics-privacy-link" style="margin-inline-start:auto;color:#245c54;font-size:13px;font-weight:700">الخصوصية</a></div>
-</div>
-
 <header>
 <div class="topbar">
   <div class="topbar-brand">
@@ -1700,18 +1695,7 @@ main>section input[type="file"]::file-selector-button{
 <button type="button" id="admin-refresh">تحديث الطلبات</button>
 <button type="button" id="admin-logout" style="background:#647875">خروج</button>
 <div style="margin-top:15px"><label for="admin-search">🔎 البحث في الطلبات</label><input id="admin-search" type="search" maxlength="120" placeholder="فتّش بالعنوان أو الوصف أو المنطقة أو الرقم..." autocomplete="off"><div class="row" style="gap:10px;flex-wrap:wrap;margin-top:10px"><div style="flex:1;min-width:145px"><label for="admin-category-filter">القسم</label><select id="admin-category-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الأقسام</option><option value="service_requests">الخدمات</option><option value="job_posts">فرص العمل</option><option value="real_estate_posts">العقارات</option><option value="market_posts">السوق</option></select></div><div style="flex:1;min-width:145px"><label for="admin-status-filter">الحالة</label><select id="admin-status-filter" style="width:100%;padding:11px;border:1px solid #ccd7d3;border-radius:10px"><option value="all">كل الحالات</option><option value="pending">في انتظار المراجعة</option><option value="approved">مقبول</option><option value="rejected">مرفوض</option><option value="unpublished">ملغى النشر</option></select></div></div><p class="muted">التنبيه «يحتمل تجريبي» آلي حسب كلمات في الإعلان، ويلزم مراجعة بشرية قبل أي قرار.</p>
-<p class="muted" id="admin-search-scope">البحث يشمل الإعلانات المحمّلة حالياً فقط. لتحرّي الإعلانات الأقدم، حمّل الدفعات الإضافية من أسفل كل قسم ثم عاود البحث.</p></div><div id="admin-visitor-stats" style="margin:16px 0;padding:16px;border:1px solid #dce7e2;border-radius:15px;background:#f8fcfb">
- <h3 style="margin:0 0 10px">📊 إحصائيات زوار أحلى توانسة</h3>
- <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
-  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>🟢 المتواجدون الآن</small><div id="stats-online" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
-  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>👥 زوار اليوم</small><div id="stats-today" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
-  <div style="padding:12px;border-radius:12px;background:#fff;border:1px solid #e3ece9"><small>🔢 إجمالي الزيارات</small><div id="stats-total" style="font-size:28px;font-weight:900;color:#087f78">—</div></div>
- </div>
- <p id="stats-updated" class="muted" style="margin:8px 0 0">تُعرض تفاصيل مجهولة للزيارات التي وافق أصحابها على الإحصائيات. لا نعرض IP الخام ولا الولاية.</p>
-  <h4 style="margin:14px 0 8px">تفاصيل الزيارات المجهولة (آخر 90 يوم)</h4>
-  <div id="admin-visitor-details"><p class="muted">جاري تحميل التفاصيل...</p></div>
-</div>
-<div id="admin-requests" style="margin-top:15px"></div>
+<p class="muted" id="admin-search-scope">البحث يشمل الإعلانات المحمّلة حالياً فقط. لتحرّي الإعلانات الأقدم، حمّل الدفعات الإضافية من أسفل كل قسم ثم عاود البحث.</p></div><div id="admin-requests" style="margin-top:15px"></div>
 </div></div>
 </section>
 </main>
@@ -1730,23 +1714,12 @@ main>section input[type="file"]::file-selector-button{
  <details style="background:#fff;border:1px solid #dce7e2;border-radius:12px;padding:12px;margin:10px 0">
   <summary style="cursor:pointer;font-weight:700;color:#14564f">سياسة الخصوصية وحماية البيانات</summary>
   <div id="site-privacy" style="line-height:1.9;padding-top:10px">
-   <section id="site-privacy-details" style="padding:10px 12px;margin:0 0 14px;border:1px solid #e2ece8;border-radius:10px;background:#fbfdfc">
-    <h4 style="margin:0 0 8px;color:#14564f">إحصائيات استعمال الموقع</h4>
-    <p>1. نستعملوا إحصائيات استعمال الموقع لتحسين خدمات أحلى توانسة.</p>
-    <p>2. نستعملوا معرّفاً إحصائياً يساعدنا نربطوا الزيارات ببعضها.</p>
-    <p>3. نسجّلوا الأقسام وأوقات الزيارة.</p>
-    <details style="margin-top:8px">
-     <summary style="cursor:pointer;font-weight:700;color:#14564f">مزيد من المعلومات</summary>
-     <div style="padding-top:8px">
-      <p>المعرّف الإحصائي يتكوّن باستعمال عنوان الاتصال بعد تشفيره بمفتاح سرّي، وما نخزّنوش عنوان IP الخام. ينجم نفس الاتصال يمثّل أكثر من شخص، وينجم المعرّف يتبدّل كي يتبدّل اتصال الإنترنت.</p>
-      <p>نسجّلوا القسم المفتوح ووقت الزيارة واسم نطاق الموقع المُحيل إذا توفّر. ما نسجّلوش عناوين الصفحات الكاملة أو كلمات البحث أو محتوى الاستمارات ضمن إحصائيات التصفّح.</p>
-      <p>تفاصيل الأقسام ومصادر الدخول تُحذف آلياً بعد 90 يوماً. ونستعملوا أرقام الزيارات المجمّعة في لوحة الإحصائيات العامة.</p>
-      <p>المشاركة اختيارية. إذا تختار «لا، شكراً»، ما يبدأش تسجيل تفاصيل التصفّح. وتنجم تبدّل اختيارك من الرابط الموجود هنا.</p>
-      <p><a href="#ahla-analytics-consent" id="ahla-analytics-change-choice">تغيير اختياري في الإحصائيات</a></p>
-     </div>
-    </details>
-   </section>
-   <p><strong>شنوة المعلومات اللي نجمعوها؟</strong> كي تبعث طلب خدمة أو إعلان، المنصة تستقبل المعلومات اللي تختار تعمّرها، كيف العنوان والوصف والمدينة ورقم الهاتف والصور الاختيارية، وتحفظها في قاعدة بياناتها السحابية لمراجعتها وإدارتها.</p>
+   <section style="padding:10px 12px;margin:0 0 14px;border:1px solid #e2ece8;border-radius:10px;background:#fbfdfc">
+     <h4 style="margin:0 0 8px;color:#14564f">إحصائيات استعمال الموقع</h4>
+     <p>نستعملوا أرقاماً إجمالية ومجمّعة لعدد مشاهدات صفحات الموقع والأقسام حسب اليوم والشهر، بهدف تحسين الخدمات.</p>
+     <p>ما نربطوش المشاهدات بأشخاص أو أجهزة، وما نسجّلوش عناوين IP أو معرّفات زوار أو مصادر الدخول ضمن إحصائيات التصفّح.</p>
+    </section>
+    <p><strong>شنوة المعلومات اللي نجمعوها؟</strong> كي تبعث طلب خدمة أو إعلان، المنصة تستقبل المعلومات اللي تختار تعمّرها، كيف العنوان والوصف والمدينة ورقم الهاتف والصور الاختيارية، وتحفظها في قاعدة بياناتها السحابية لمراجعتها وإدارتها.</p>
    <p><strong>وقتاش يظهر الإعلان؟</strong> الإعلانات ما تظهرش للعموم قبل موافقة الإدارة. رقم الهاتف ما يظهرش في المنشور العام إلا إذا تختار صراحةً إظهار وسيلة الاتصال للناس. الصور المرفوعة تنجم تظهر مع الإعلان المقبول.</p>
    <p><strong>السيرة الذاتية (CV):</strong> المعلومات والصورة اللي تدخلهم في أداة CV يستعملهم المتصفح على جهازك لصناعة السيرة الذاتية، وما يلزمش تبعثهم في استمارات الإعلانات. حمّل نسخة قبل ما تسكّر الصفحة.</p>
    <p><strong>قسم اسأل أحلى توانسة:</strong> السؤال تتم معالجته داخل خادم المنصة لإرجاع إجابة من المعلومات المهيّأة، وما يتبعثش إلى مزوّد ذكاء اصطناعي خارجي. ما تكتبش كلمات سر أو أرقام بطاقات أو وثائق شخصية أو معلومات صحية حساسة.</p>
@@ -1822,7 +1795,7 @@ function show(id){
 const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account","admin","reset-password"];
 if(!allowed.includes(id)) return;
 allowed.forEach(name=>{const section=el(name);if(section)section.classList.toggle("hidden",name!==id)});
-if(siteVisitConsentChoice==="yes")recordSitePageVisit(id);
+recordSitePageView(id);
 document.querySelectorAll("[data-page]").forEach(button=>{const active=button.dataset.page===id;button.classList.toggle("active",active);if(active)button.setAttribute("aria-current","page");else button.removeAttribute("aria-current");});
 const activeNavButton=document.querySelector('nav [data-page="'+id+'"]');
 if(activeNavButton)activeNavButton.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"});
@@ -2021,9 +1994,6 @@ if(sendButton){if(sendButton.disabled)return;const oldText=sendButton.textConten
 
 let authListenerInstalled=false;
 let adminSignupNotificationAttemptedFor="";
-let siteVisitHeartbeatStarted=false;
-let siteVisitConsentChoice=null;
-let siteVisitLastPage="";
 function notifyRecentConfirmedSignup(session){
  const user=session?.user;
  if(!db||!user?.id||!user?.email_confirmed_at||!user?.created_at)return;
@@ -2037,51 +2007,13 @@ function notifyRecentConfirmedSignup(session){
   }).catch(error=>console.warn("Admin signup notification:",error));
  },0);
 }
-const SITE_VISIT_CONSENT_KEY="ahla-analytics-consent-v1";
-function getSiteVisitConsent(){try{return window.localStorage.getItem(SITE_VISIT_CONSENT_KEY)||"";}catch(error){return "";}}
-function recordSitePageVisit(pageId){
- if(siteVisitConsentChoice!=="yes"||!db||!pageId||pageId==="admin"||pageId==="reset-password")return;
+function recordSitePageView(pageId){
+ if(!db||!pageId||pageId==="admin"||pageId==="reset-password")return;
  const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account"];
- if(!allowed.includes(pageId)||siteVisitLastPage===pageId)return;
- siteVisitLastPage=pageId;
- let referrerHost=null;
- try{const referrer=document.referrer?new URL(document.referrer):null;if(referrer&&referrer.hostname&&referrer.hostname!==window.location.hostname)referrerHost=referrer.hostname.toLowerCase().slice(0,253);}catch(error){}
- db.rpc("record_site_page_visit",{p_page_key:pageId,p_referrer_host:referrerHost}).then(({error})=>{if(error)console.warn("Visitor page analytics:",error.message);}).catch(error=>console.warn("Visitor page analytics:",error));
+ if(!allowed.includes(pageId))return;
+ db.rpc("record_site_page_view",{p_page_key:pageId}).then(({error})=>{if(error)console.warn("Aggregate page analytics:",error.message);}).catch(error=>console.warn("Aggregate page analytics:",error));
 }
-function startSiteVisitTracking(){
- if(siteVisitHeartbeatStarted||!db||siteVisitConsentChoice!=="yes")return;
- siteVisitHeartbeatStarted=true;
- const sendHeartbeat=async()=>{
-  if(!db||siteVisitConsentChoice!=="yes")return;
-  try{
-   const {data:sessionData,error:sessionError}=await db.auth.getSession();
-   if(sessionError){console.warn("Visitor count session check:",sessionError.message);return;}
-   const session=sessionData?.session||null;
-   if(session){const {data:isAdmin,error:adminError}=await db.rpc("is_admin");if(adminError){console.warn("Visitor count admin check:",adminError.message);return;}if(isAdmin===true)return;}
-   const {error}=await db.rpc("record_site_visit");
-   if(error)console.warn("Visitor count:",error.message);
-  }catch(error){console.warn("Visitor count heartbeat:",error);}
- };
- sendHeartbeat();window.setInterval(sendHeartbeat,120000);
-}
-function setupSiteVisitConsent(){
- siteVisitConsentChoice=getSiteVisitConsent();
- const banner=el("ahla-analytics-consent");
- if(siteVisitConsentChoice!=="yes"&&siteVisitConsentChoice!=="no"){if(banner)banner.style.display="block";return;}
- if(banner)banner.style.display="none";
- if(siteVisitConsentChoice==="yes"){startSiteVisitTracking();const active=document.querySelector("main section:not(.hidden)[id]");recordSitePageVisit(active?.id||"home");}
-}
-function saveSiteVisitConsent(choice){
- if(choice!=="yes"&&choice!=="no")return;
- siteVisitConsentChoice=choice;try{window.localStorage.setItem(SITE_VISIT_CONSENT_KEY,choice);}catch(error){}
- const banner=el("ahla-analytics-consent");if(banner)banner.style.display="none";
- if(choice==="yes"){startSiteVisitTracking();const active=document.querySelector("main section:not(.hidden)[id]");recordSitePageVisit(active?.id||"home");}else{siteVisitLastPage="";}
-}
-setupSiteVisitConsent();
-if(!document.documentElement.dataset.analyticsConsentReady){
- document.documentElement.dataset.analyticsConsentReady="1";
- document.addEventListener("click",event=>{const target=event.target instanceof Element?event.target:null;if(!target)return;if(target.closest("#ahla-analytics-accept"))saveSiteVisitConsent("yes");if(target.closest("#ahla-analytics-reject"))saveSiteVisitConsent("no");if(target.closest("#ahla-analytics-change-choice")){event.preventDefault();const banner=el("ahla-analytics-consent");if(banner){banner.style.display="block";banner.scrollIntoView({block:"center",behavior:"smooth"});}}if(target.closest("#ahla-analytics-privacy-link")){const policy=document.querySelector('#site-policies details');if(policy)policy.open=true;}});
-}
+
 
 function connect(){
 try{
@@ -2102,7 +2034,7 @@ db.auth.getSession().then(({data,error})=>{
  else notifyRecentConfirmedSignup(data?.session);
 }).catch(error=>console.warn("Signup notification session check:",error));
 }
-if(db)setupSiteVisitConsent();
+
 }catch(error){console.error("Supabase connection setup:",error);}
 }
 connect();
@@ -2647,13 +2579,6 @@ async function renderAdmin(){
  applyAdminSearch();
  await loadAdminImagePreviews();
  host.querySelectorAll("[data-admin-image]").forEach(node=>node.dataset.previewLoaded="1");
- await loadAdminVisitorStats();
- if(!window.ahlaVisitorStatsTimer){
-  window.ahlaVisitorStatsTimer=window.setInterval(()=>{
-   const panel=el("admin-panel");
-   if(panel&&!panel.classList.contains("hidden"))loadAdminVisitorStats();
-  },30000);
- }
 }
 if(!document.documentElement.dataset.adminPaginationReady){
  document.documentElement.dataset.adminPaginationReady="1";
@@ -2663,37 +2588,6 @@ if(!document.documentElement.dataset.adminPaginationReady){
  });
 }
 
-async function loadAdminVisitorStats(){
- const host=el("admin-visitor-stats");
- if(!host||!db)return;
- const {data,error}=await db.rpc("get_site_visitor_stats");
- if(error){
-  const note=el("stats-updated");if(note)note.textContent="تعذّر تحميل الإحصائيات. عاود تحديث الصفحة أو الدخول.";
-  console.warn("Visitor stats:",error.message);return;
- }
- const stats=Array.isArray(data)?data[0]:data;
- if(!stats)return;
- el("stats-online").textContent=Number(stats.online_now||0).toLocaleString("ar-TN");
- el("stats-today").textContent=Number(stats.visitors_today||0).toLocaleString("ar-TN");
- el("stats-total").textContent=Number(stats.total_visits||0).toLocaleString("ar-TN");
- const note=el("stats-updated");if(note)note.textContent="آخر تحديث: "+new Date().toLocaleTimeString("ar-TN")+" · تفاصيل مجهولة للزيارات بموافقة أصحابها، مع حذف آلي بعد 90 يوم.";
- await loadAdminVisitorDetails();
-}
-async function loadAdminVisitorDetails(){
- const host=el("admin-visitor-details");if(!host||!db)return;
- host.textContent="جاري تحميل التفاصيل...";
- const {data,error}=await db.rpc("get_site_visitor_details");
- if(error){host.textContent="تعذّر تحميل تفاصيل الزيارات.";console.warn("Visitor details:",error.message);return;}
- const rows=Array.isArray(data)?data:[];
- if(!rows.length){host.textContent="ما فماش تفاصيل زيارات مسجّلة بموافقة أصحابها في آخر 90 يوم.";return;}
- const table=document.createElement("div");table.style.cssText="overflow-x:auto";
- const tbl=document.createElement("table");tbl.style.cssText="width:100%;border-collapse:collapse;font-size:13px;background:#fff";
- const thead=document.createElement("thead"),trh=document.createElement("tr");
- ["معرّف مجهول","عدد الزيارات","آخر نشاط","الأقسام","مصدر الدخول"].forEach(label=>{const th=document.createElement("th");th.textContent=label;th.style.cssText="padding:8px;border-bottom:1px solid #dce7e2;text-align:right";trh.appendChild(th);});
- thead.appendChild(trh);tbl.appendChild(thead);const tbody=document.createElement("tbody");
- rows.forEach(row=>{const tr=document.createElement("tr");const values=[String(row.visitor_label||"اتصال مجهول"),Number(row.total_visits||0).toLocaleString("ar-TN"),row.last_seen?new Date(row.last_seen).toLocaleString("ar-TN"):"—",Array.isArray(row.pages)&&row.pages.length?row.pages.join("، "):"—",Array.isArray(row.sources)&&row.sources.length?row.sources.join("، "):"دخول مباشر / غير معروف"];values.forEach(value=>{const td=document.createElement("td");td.textContent=value;td.style.cssText="padding:8px;border-bottom:1px solid #edf1ef;vertical-align:top";tr.appendChild(td);});tbody.appendChild(tr);});
- tbl.appendChild(tbody);table.appendChild(tbl);host.replaceChildren(table);
-}
 async function loadAdminImagePreviews(scope){
  const placeholders=scope ? [...scope] : [...document.querySelectorAll("[data-admin-image]")];
  if(!placeholders.length||!db)return;
