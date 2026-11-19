@@ -8,7 +8,7 @@ on:
   push:
     branches:
       - main
-      - integration/storage-cleanup-with-restored-sources-2026-11-17
+      - integration/main-based-storage-cleanup-2026-11-19
     paths:
       - "supabase/**"
       - ".github/workflows/supabase-reliability-tests.yml"
