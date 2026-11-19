@@ -27,8 +27,10 @@ begin
     raise exception 'invalid page key' using errcode = '22023';
   end if;
 
-  if auth.uid() is not null and public.is_admin() then
-    return;
+  if auth.uid() is not null then
+    if public.is_admin() then
+      return;
+    end if;
   end if;
 
   insert into private.site_page_daily_counts (visit_day, page_key, view_count)
