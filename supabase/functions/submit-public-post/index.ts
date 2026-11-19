@@ -1,4 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { buildStorageCleanupJobs, scheduleStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
 
 const ALLOWED_ORIGINS = new Set(["https://saahbii1978s.github.io", "https://ahla-tounsa-project.github.io"]);
 const corsHeaders = {
@@ -87,18 +89,17 @@ Deno.serve(async (req: Request) => {
 
   try {
     const contentType = req.headers.get("content-type") || "";
-    const contentLength = Number(req.headers.get("content-length") || "0");
     const isMultipart = contentType.toLowerCase().includes("multipart/form-data");
-    if (Number.isFinite(contentLength) && contentLength > (isMultipart ? 4000000 : 20000)) {
-      return reply({ error: "حجم الطلب كبير أكثر من اللازم." }, 413);
-    }
+    // Enforce the body limit while streaming, even when Content-Length is absent.
+    const boundedRequest = await readLimitedRequest(req, isMultipart ? 4000000 : 20000);
+    if (!boundedRequest) return reply({ error: "حجم الطلب كبير أكثر من اللازم." }, 413);
 
     let table: unknown;
     let data: unknown;
     let token = "";
     let file: File | null = null;
     if (isMultipart) {
-      const form = await req.formData();
+      const form = await boundedRequest.formData();
       table = form.get("table");
       token = typeof form.get("turnstileToken") === "string" ? String(form.get("turnstileToken")) : "";
       const rawData = form.get("data");
@@ -110,7 +111,7 @@ Deno.serve(async (req: Request) => {
         file = uploaded;
       }
     } else {
-      const body = await req.json();
+      const body = await boundedRequest.json();
       if (!isRecord(body)) return reply({ error: "المعلومات المرسلة غير صحيحة." }, 400);
       table = body.table;
       data = body.data;
@@ -243,22 +244,52 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const insertResponse = await fetch(supabaseUrl + "/rest/v1/" + table, {
-      method: "POST",
-      headers: { "apikey": serviceRoleKey, "Authorization": "Bearer " + serviceRoleKey, "Content-Type": "application/json", "Prefer": "return=minimal" },
-      body: JSON.stringify(row),
-    });
-    if (!insertResponse.ok) {
-      const dbError = await insertResponse.json().catch(() => ({}));
-      const message = typeof dbError.message === "string" ? dbError.message : "";
-      console.error("Protected post insert failed", table, insertResponse.status, message);
-      if (uploadedPath) {
-        await fetch(supabaseUrl + "/storage/v1/object/pending-images/" + uploadedPath.split("/").map(encodeURIComponent).join("/"), {
-          method: "DELETE", headers: { "apikey": serviceRoleKey, "Authorization": "Bearer " + serviceRoleKey },
-        }).catch(() => undefined);
+    let insertResponse: Response | null = null;
+    let insertTransportError = "";
+    try {
+      insertResponse = await fetch(supabaseUrl + "/rest/v1/" + table, {
+        method: "POST",
+        headers: { "apikey": serviceRoleKey, "Authorization": "Bearer " + serviceRoleKey, "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify(row),
+      });
+    } catch (error) {
+      insertTransportError = String(error);
+      console.error("Protected post insert transport error", table, insertTransportError);
+    }
+    if (!insertResponse || !insertResponse.ok) {
+      let message = "";
+      if (insertResponse) {
+        const dbError = await insertResponse.json().catch(() => ({}));
+        message = typeof dbError.message === "string" ? dbError.message : "";
+        console.error("Protected post insert failed", table, insertResponse.status, message);
       }
+
+      // The database may have accepted the insert even if the response was lost.
+      // Queue cleanup instead of deleting directly; the worker rechecks references
+      // before removal, so a successfully-created listing keeps its image.
+      if (uploadedPath) {
+        try {
+          const cleanupJobs = buildStorageCleanupJobs(["pending-images"], [uploadedPath]);
+          const { queued, activated } = await scheduleStorageCleanup(supabaseUrl, serviceRoleKey, cleanupJobs);
+          if (!queued || !activated) {
+            console.error("Failed to activate orphaned submission image cleanup", {
+              table,
+              path: uploadedPath,
+              queued,
+              activated,
+            });
+          }
+        } catch (cleanupError) {
+          console.error("Orphaned submission image cleanup scheduling error", uploadedPath, String(cleanupError));
+        }
+      }
+
       if (message.includes("ساعة") || message.includes("رقم الهاتف")) return reply({ error: message }, 429);
-      return reply({ error: "ما نجّمش نحفظ الإعلان حالياً. تثبّت من المعلومات وعاود المحاولة." }, 400);
+      return reply({
+        error: insertResponse
+          ? "ما نجّمش نحفظ الإعلان حالياً. تثبّت من المعلومات وعاود المحاولة."
+          : "ما تأكدش حفظ الإعلان بسبب انقطاع الاتصال. تثبّت من حسابك قبل ما تعاود الإرسال.",
+      }, insertResponse ? 400 : 503);
     }
     const categoryLabels: Record<string, string> = { service_requests: "الخدمات", job_posts: "فرص العمل", real_estate_posts: "العقارات", market_posts: "السوق" };
     await sendAdminAlert("إعلان جديد ينتظر المراجعة", `وصل إعلان جديد إلى أحلى توانسة.\nالقسم: ${categoryLabels[table] || "غير محدد"}\nالعنوان: ${title}\nالمدينة: ${city}\nالحالة: في انتظار المراجعة.`);
