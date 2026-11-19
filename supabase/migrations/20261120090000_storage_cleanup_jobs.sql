@@ -76,6 +76,7 @@ create table if not exists public.storage_cleanup_jobs (
     and object_path !~ '(^|/)\.(/|$)'
     and object_path !~ '//'
     and object_path ~* '^[a-zA-Z0-9_./-]+\.(jpg|jpeg|png|webp)$'
+  ),
   status text not null default 'staged' check (status in ('staged','pending','processing','completed','dead_letter')),
   attempts integer not null default 0 check (attempts >= 0),
   last_error text,
