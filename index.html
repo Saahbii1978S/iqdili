@@ -2037,11 +2037,27 @@ function getSitePresenceSessionId(){
   return token;
  }catch(error){return "";}
 }
-function startSitePresence(){
+async function startSitePresence(){
  if(!db||sitePresenceStarted)return;
+ sitePresenceStarted=true;
+ try{
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(sessionData?.session){
+   const [{data:isAdmin,error:adminError},{data:isOwner,error:ownerError}]=await Promise.all([
+    db.rpc("is_admin"),
+    db.rpc("is_owner")
+   ]);
+   if(adminError)throw adminError;
+   if(ownerError)throw ownerError;
+   if(isAdmin===true||isOwner===true)return;
+  }
+ }catch(error){
+  console.warn("Temporary site presence authorization:",error);
+  return;
+ }
  const token=getSitePresenceSessionId();
  if(!token)return;
- sitePresenceStarted=true;
  const heartbeat=()=>{
   if(!db)return;
   db.rpc("heartbeat_site_presence",{p_session_id:token}).then(({error})=>{
