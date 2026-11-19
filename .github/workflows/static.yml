@@ -41,6 +41,40 @@ jobs:
           grep -q 'app-icon-180.png' index.html
           grep -q 'app-icon-192.png' manifest.webmanifest
           grep -q 'app-icon-512.png' manifest.webmanifest
+          python3 - <<'PY'
+          import json
+          import re
+          import struct
+          from pathlib import Path
+
+          manifest = json.loads(Path("manifest.webmanifest").read_text(encoding="utf-8"))
+          icons = manifest.get("icons", [])
+          expected = {"192x192": "app-icon-192.png", "512x512": "app-icon-512.png"}
+          for size, filename in expected.items():
+              icon = next((item for item in icons if item.get("src", "").endswith(filename)), None)
+              if not icon or icon.get("sizes") != size or icon.get("type") != "image/png":
+                  raise SystemExit(f"Invalid manifest entry for {filename}")
+              data = (Path("_site") / filename).read_bytes()
+              if data[:8] != b"\\x89PNG\\r\\n\\x1a\\n":
+                  raise SystemExit(f"Invalid PNG signature: {filename}")
+              width, height = struct.unpack(">II", data[16:24])
+              if (width, height) != tuple(map(int, size.split("x"))):
+                  raise SystemExit(f"Incorrect dimensions for {filename}: {width}x{height}")
+
+          html = Path("index.html").read_text(encoding="utf-8")
+          match = re.search(r'<link[^>]+rel=["\\']apple-touch-icon["\\'][^>]+href=["\\']([^"\\']+)', html)
+          if not match:
+              raise SystemExit("Missing apple-touch-icon link")
+          apple_icon = Path("_site") / Path(match.group(1)).name
+          if not apple_icon.is_file() or apple_icon.stat().st_size == 0:
+              raise SystemExit("Apple touch icon is missing from deployment")
+
+          shell = Path("service-worker.js").read_text(encoding="utf-8")
+          for filename in ("app-icon-180.png", "app-icon-192.png", "app-icon-512.png"):
+              if filename not in shell or not (Path("_site") / filename).is_file():
+                  raise SystemExit(f"Service worker icon missing: {filename}")
+          print("Manifest, PNG signatures/dimensions, Apple icon and service-worker icon references verified.")
+          PY
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
