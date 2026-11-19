@@ -44,6 +44,7 @@ $function$;
 -- Existing historical rows are left untouched; the application no longer reads or writes them.
 revoke all on function public.record_site_visit(uuid) from public, anon, authenticated;
 revoke all on function public.record_site_visit() from public, anon, authenticated;
+revoke all on function public.get_site_visitor_stats() from public, anon, authenticated;
 
 revoke all on function public.record_site_page_view(text) from public;
 grant execute on function public.record_site_page_view(text) to anon, authenticated;
@@ -58,7 +59,7 @@ declare
   v_today date := (now() at time zone 'Africa/Tunis')::date;
   v_result jsonb;
 begin
-  if auth.uid() is null or not public.is_admin() then
+  if auth.uid() is null or not public.is_owner() then
     raise exception 'not authorized' using errcode = '42501';
   end if;
 
