@@ -60,11 +60,11 @@ as $admin_stub$
   select auth.uid() = '11111111-1111-4111-8111-111111111111'::uuid;
 $admin_stub$;
 
-\ir ../migrations/20261115090000_storage_cleanup_jobs.sql
-\ir ../migrations/20261115120000_storage_cleanup_attachment_lock.sql
-\ir ../migrations/20261115150000_storage_cleanup_detachment_lock.sql
-\ir ../migrations/20261116100000_storage_cleanup_atomic_defer.sql
-\ir ../migrations/20261116130000_account_deletion_limits.sql
+\ir ../migrations/20261120090000_storage_cleanup_jobs.sql
+\ir ../migrations/20261120090500_storage_cleanup_attachment_lock.sql
+\ir ../migrations/20261120091000_storage_cleanup_detachment_lock.sql
+\ir ../migrations/20261120091500_storage_cleanup_atomic_defer.sql
+\ir ../migrations/20261120092000_account_deletion_limits.sql
 
 -- Reproduce the verified production access shape for the four modern listing
 -- tables: authenticated direct reads/updates are admin-only; anon has no table
