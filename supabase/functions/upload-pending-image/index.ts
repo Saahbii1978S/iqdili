@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
 
 const ALLOWED_ORIGINS = new Set(["https://saahbii1978s.github.io", "https://ahla-tounsa-project.github.io"]);
 const corsHeaders = {
@@ -27,12 +28,11 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (req.method !== "POST") return reply({ error: "طريقة الطلب غير مدعومة." }, 405);
   if (!ALLOWED_ORIGINS.has(req.headers.get("origin") || "")) return reply({ error: "مصدر الطلب غير مسموح." }, 403);
-  const contentLength = Number(req.headers.get("content-length") || "0");
-  if (Number.isFinite(contentLength) && contentLength > 4000000) {
-    return reply({ error: "حجم الطلب كبير أكثر من اللازم." }, 413);
-  }
-
   try {
+    // Enforce the multipart limit while streaming, including requests without Content-Length.
+    const boundedRequest = await readLimitedRequest(req, 4000000);
+    if (!boundedRequest) return reply({ error: "حجم الطلب كبير أكثر من اللازم." }, 413);
+
     const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -41,7 +41,7 @@ Deno.serve(async (req: Request) => {
       return reply({ error: "خدمة رفع الصور غير مهيّأة حالياً." }, 503);
     }
 
-    const form = await req.formData();
+    const form = await boundedRequest.formData();
     const token = form.get("turnstileToken");
     if (typeof token !== "string" || !token || token.length > 2048) {
       return reply({ error: "كمّل التحقق من Cloudflare قبل رفع الصورة." }, 400);
