@@ -1,8 +1,7 @@
--- Restore the migration record for the security hardening already applied
--- to production on 2026-11-19 (version 20261119081823).
--- This migration enables RLS and removes direct client-role table privileges
--- from private rate-limit / legacy analytics storage and audit-event tables.
--- It deliberately preserves postgres and service_role access.
+-- Reconstructed idempotent migration record for version 20261119081823.
+-- Production catalog inspection confirms RLS is enabled and direct client-role
+-- privileges are absent on these private rate-limit and legacy analytics tables.
+-- Keep this migration aligned with that applied production state.
 
 do $migration$
 declare
@@ -11,10 +10,7 @@ declare
     'private.ask_rate_limits',
     'private.pending_image_rate_limits',
     'private.site_visit_config',
-    'private.site_visitor_days',
-    'public.admin_notification_events',
-    'public.admin_role_events',
-    'public.admin_status_audit'
+    'private.site_visitor_days'
   ];
 begin
   foreach v_table in array v_tables loop
