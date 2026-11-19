@@ -2391,8 +2391,8 @@ document.addEventListener("click",async event=>{
  const original=button.textContent;
  button.disabled=true;
  try{
-  if(window.AndroidShare&&typeof window.AndroidShare.share==="function"){
-   window.AndroidShare.share(title,payload.text,url);
+  if(window.AndroidShare&&typeof window.AndroidShare.postMessage==="function"){
+   window.AndroidShare.postMessage(JSON.stringify({title:title,message:payload.text,url:url}));
    button.textContent="اختار تطبيق المشاركة ❤️";
   }else if(navigator.share){await navigator.share(payload);button.textContent="تم فتح المشاركة ✓";}
   else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(payload.text);button.textContent="تم نسخ الإعلان ✓";}
@@ -3768,8 +3768,8 @@ if ("serviceWorker" in navigator) {
   try{
    const shareTitle="أحلى توانسة – AHLA TOUNSA";
    const shareMessage="خدماتك وفرصتك وعقارك في بلاصة وحدة. اكتشف منصة أحلى توانسة وشاركها مع أصحابك.";
-   if(window.AndroidShare&&typeof window.AndroidShare.share==="function"){
-    window.AndroidShare.share(shareTitle,shareMessage,projectUrl);
+   if(window.AndroidShare&&typeof window.AndroidShare.postMessage==="function"){
+    window.AndroidShare.postMessage(JSON.stringify({title:shareTitle,message:shareMessage,url:projectUrl}));
     if(status)status.textContent="اختار واتساب أو ماسنجر أو أي تطبيق من قائمة المشاركة ❤️";
    }else if(navigator.share){await navigator.share({title:shareTitle,text:shareMessage,url:projectUrl});if(status)status.textContent="اختار التطبيق اللي تحب تشارك معاه ❤️";}
    else{const ok=await copyText(projectUrl);if(status)status.textContent=ok?"المشاركة غير متاحة هنا؛ نسخنالك الرابط باش تبعثه لأصحابك.":"المشاركة غير متاحة؛ انسخ الرابط من شريط العنوان.";}
