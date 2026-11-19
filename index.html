@@ -1978,8 +1978,8 @@ if(shareGoodButton){
   const status=el("share-good-status");
   shareGoodButton.disabled=true;
   try{
-   if(window.AndroidShare&&typeof window.AndroidShare.share==="function"){
-    window.AndroidShare.share("باب الخير – أحلى توانسة",shareText,window.location.href);
+   if(window.AndroidShare&&typeof window.AndroidShare.postMessage==="function"){
+    window.AndroidShare.postMessage(JSON.stringify({title:"باب الخير – أحلى توانسة",message:shareText,url:window.location.href}));
     status.textContent="اختار واتساب أو ماسنجر أو أي تطبيق من قائمة المشاركة ❤️";
    }else if(navigator.share){
     await navigator.share({title:"باب الخير – أحلى توانسة",text:shareText,url:window.location.href});
