@@ -109,6 +109,9 @@ Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return reply({ error: "طريقة الطلب غير مدعومة." }, 405);
   if (!ALLOWED_ORIGINS.has(req.headers.get("origin") || "")) return reply({ error: "مصدر الطلب غير مسموح." }, 403);
 
+  let uploadedPath = "";
+  let cleanupUrl = "";
+  let cleanupKey = "";
   try {
     const contentType = req.headers.get("content-type") || "";
     const contentLength = Number(req.headers.get("content-length") || "0");
@@ -149,6 +152,8 @@ Deno.serve(async (req: Request) => {
       console.error("Submission environment is incomplete");
       return reply({ error: "خدمة الحماية والحفظ غير مهيّأة حالياً." }, 503);
     }
+    cleanupUrl = supabaseUrl;
+    cleanupKey = serviceRoleKey;
     let memberUserId: string | null = null;
     const authorization = req.headers.get("authorization") || "";
     if (authorization) {
@@ -220,7 +225,6 @@ Deno.serve(async (req: Request) => {
       row.category = category; row.listing_type = listingType; row.price = price;
     }
 
-    let uploadedPath = "";
     if (file) {
       if (file.size < 1 || file.size > 3145728) return reply({ error: "حجم الصورة لازم ما يفوتش 3 ميغابايت." }, 413);
       if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return reply({ error: "الصورة لازم تكون JPG أو PNG أو WebP." }, 415);
@@ -295,6 +299,19 @@ Deno.serve(async (req: Request) => {
     await sendAdminAlert("إعلان جديد ينتظر المراجعة", `وصل إعلان جديد إلى أحلى توانسة.\nالقسم: ${categoryLabels[table] || "غير محدد"}\nالعنوان: ${title}\nالمدينة: ${city}\nالحالة: في انتظار المراجعة.`);
     return reply({ ok: true, message: "وصل الإعلان للإدارة للمراجعة." });
   } catch (error) {
+    if (uploadedPath && cleanupUrl && cleanupKey) {
+      const cleanupResponse = await fetch(cleanupUrl + "/storage/v1/object/pending-images/" + uploadedPath.split("/").map(encodeURIComponent).join("/"), {
+        method: "DELETE",
+        headers: { "apikey": cleanupKey, "Authorization": "Bearer " + cleanupKey },
+      }).catch(() => null);
+      if (!cleanupResponse?.ok) {
+        const queued = await enqueuePendingImageCleanup(cleanupUrl, cleanupKey, uploadedPath, "Submission handler failed after image upload");
+        if (!queued) {
+          console.error("Uploaded image may need manual cleanup after handler exception", uploadedPath);
+          await sendAdminAlert("تنبيه صورة يتيمة في أحلى توانسة", "تعطّل استقبال إعلان بعد رفع صورته، كما تعذّر حذف الصورة أو تسجيلها في قائمة التنظيف. يلزم فحص مخزن الصور.");
+        }
+      }
+    }
     await sendAdminAlert("خطأ تقني في استقبال الإعلانات", "تعذّر إكمال طلب إرسال إعلان. راجع سجلات Supabase لمعرفة التفاصيل.");
     console.error("submit-public-post error", String(error));
     return reply({ error: "صار خطأ في الاتصال. عاود المحاولة بعد قليل." }, 500);
