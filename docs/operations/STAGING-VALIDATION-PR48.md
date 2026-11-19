@@ -1,4 +1,4 @@
-# Storage Cleanup Staging Validation Runbook
+# Storage Cleanup Staging Validation Runbook — PR #69
 
 ## Purpose and safety boundary
 
@@ -21,9 +21,9 @@ Before starting:
 
 If any item is missing, stop. Do not substitute production for staging.
 
-## Migration-history integration blocker
+## Migration-history check
 
-A read-only check of the connected production project's migration history on 2026-11-19 found that the latest applied version is `20261119093408` (`cleanup_stale_site_presence`). None of the five candidate migration versions below are present in production, and their current filenames are older (`20261115`–`20261116`) than the latest applied production version. Before the candidate can be merged or its migrations can be tested against a staging clone of the current production schema, re-version these five unapplied migrations to unique timestamps later than `20261119093408`, update every filename reference in this runbook, and verify the final order. Do not attempt to apply the old-version files after the newer production migrations. This is a repository integration requirement only; no production migration was applied during the audit.
+A read-only check of the connected production project's migration history on 2026-11-19 found the latest applied version is `20261119093408` (`cleanup_stale_site_presence`). The five candidate migrations in this PR are now versioned with unique timestamps later than that baseline, in the order listed below. They are not present in production. Confirm the same baseline and migration ordering in the isolated staging project before applying them. Do not apply any candidate migration to production as part of this validation. No production migration was applied during the audit.
 
 ## Candidate migration order
 
