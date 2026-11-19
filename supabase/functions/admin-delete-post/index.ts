@@ -36,6 +36,13 @@ async function sendAdminAlert(subject: string, textContent: string): Promise<voi
 }
 
 const cfg:Record<string,{bucket:string,folder:string}>={service_requests:{bucket:"listing-images",folder:"services"},job_posts:{bucket:"listing-images",folder:"jobs"},real_estate_posts:{bucket:"listing-images",folder:"realty"},market_posts:{bucket:"market-images",folder:"market"}};
+async function enqueueCleanup(url:string,key:string,bucket:string,paths:string[],reason:string):Promise<boolean>{
+ if(!paths.length)return true;
+ const rows=paths.map(object_path=>({bucket_id:bucket,object_path,attempts:0,next_attempt_at:new Date().toISOString(),last_error:reason.slice(0,1000)}));
+ const r=await fetch(url+"/rest/v1/storage_cleanup_queue?on_conflict=bucket_id,object_path",{method:"POST",headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json","Prefer":"resolution=ignore-duplicates,return=minimal"},body:JSON.stringify(rows)});
+ if(!r.ok){console.error("Storage cleanup queue insert failed",bucket,r.status);return false;}
+ return true;
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
  if(req.method!=="POST")return reply({error:"طريقة الطلب غير مدعومة."},405);
@@ -75,7 +82,7 @@ Deno.serve(async(req:Request)=>{
    if(!rm.ok){
     console.error("Admin post deleted but image cleanup is pending",bucket,rm.status);
     await sendAdminAlert("تنبيه تنظيف صور إعلان محذوف","تم حذف سجل الإعلان من قاعدة البيانات، لكن بقيت صور تحتاج تنظيفاً.\nالقسم: "+table+"\nرقم الإعلان: "+id+"\nالمخزن: "+bucket);
-    return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن بقيت صور تحتاج تنظيفاً. تم إعلام الإدارة."});
+    const queued=await enqueueCleanup(url,key,bucket,paths,"Admin post image cleanup failed");if(!queued)return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، لكن تعذّر تسجيل الصور المتبقية للتنظيف. يلزم تدخل الإدارة."});return reply({ok:true,cleanupPending:true,message:"تم حذف الإعلان، وجدولنا تنظيف الصور المتبقية تلقائياً."});
    }
   }
   await sendAdminAlert("تم حذف إعلان من إدارة أحلى توانسة", `تم حذف إعلان من لوحة الإدارة.\nالقسم: ${table}\nرقم الإعلان: ${id}`);
