@@ -137,7 +137,7 @@ update public.post_comments
 set body = 'Edited parent'
 where body = 'Parent to test replies';
 
-do $
+do $comment_test$
 begin
   update public.post_comments
   set user_id = '22222222-2222-4222-8222-222222222222'
@@ -146,9 +146,9 @@ begin
 exception when insufficient_privilege then
   null;
 end;
-$;
+$comment_test$;
 
-do $
+do $comment_test$
 begin
   update public.post_comments
   set post_id = 2
@@ -159,7 +159,7 @@ exception when raise_exception then
     raise;
   end if;
 end;
-$;
+$comment_test$;
 
 -- A separate administrator can delete another member's comment.
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
