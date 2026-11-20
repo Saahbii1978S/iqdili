@@ -16,7 +16,8 @@ create table if not exists public.post_comments (
   post_id bigint not null,
   -- Preserve replies by preventing deletion of a parent while replies still reference it.
   parent_id bigint references public.post_comments(id),
-  user_id uuid not null references auth.users(id) on delete cascade,
+  -- Keep the comment and its thread position when its author account is deleted.
+  user_id uuid references auth.users(id) on delete set null,
   body text not null check (char_length(btrim(body)) between 1 and 1000),
   status text not null default 'published' check (status in ('published', 'hidden')),
   created_at timestamptz not null default now(),
@@ -127,7 +128,10 @@ set search_path = ''
 as $comment_guard$
 begin
   if new.id is distinct from old.id
-     or new.user_id is distinct from old.user_id
+     or (
+       new.user_id is distinct from old.user_id
+       and not (old.user_id is not null and new.user_id is null and pg_trigger_depth() > 1)
+     )
      or new.post_table is distinct from old.post_table
      or new.post_id is distinct from old.post_id
      or new.parent_id is distinct from old.parent_id
