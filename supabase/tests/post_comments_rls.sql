@@ -143,8 +143,13 @@ begin
   set user_id = '22222222-2222-4222-8222-222222222222'
   where body = 'Edited parent';
   raise exception 'RLS allowed a member to transfer comment ownership';
-exception when insufficient_privilege then
-  null;
+exception
+  when raise_exception then
+    if sqlerrm <> 'Comment ownership, target, parent, status and creation time are immutable' then
+      raise;
+    end if;
+  when insufficient_privilege then
+    null;
 end;
 $comment_test$;
 
