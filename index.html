@@ -2022,14 +2022,23 @@ function notifyRecentConfirmedSignup(session){
   }).catch(error=>console.warn("Admin signup notification:",error));
  },0);
 }
+// Keep page views that happen before the Supabase SDK/client is ready.
+// They are flushed once connect() creates the client, so the first page is not lost.
+let pendingSitePageViews=[];
 function recordSitePageView(pageId){
- if(!db||!pageId||pageId==="admin"||pageId==="reset-password")return;
+ if(!pageId||pageId==="admin"||pageId==="reset-password")return;
  const allowed=["home","services","jobs","realty","market","good","guide","cv","ask","saved","account"];
  if(!allowed.includes(pageId))return;
+ if(!db){
+  if(pendingSitePageViews.length<20)pendingSitePageViews.push(pageId);
+  return;
+ }
  db.rpc("record_site_page_view",{p_page_key:pageId}).then(({error})=>{if(error)console.warn("Aggregate page analytics:",error.message);}).catch(error=>console.warn("Aggregate page analytics:",error));
 }
 
 let sitePresenceStarted=false;
+let sitePresenceStarting=false;
+let sitePresenceRetryTimer=null;
 function getSitePresenceSessionId(){
  try{
   let token=sessionStorage.getItem("ahla-site-presence-session");
@@ -2041,8 +2050,8 @@ function getSitePresenceSessionId(){
  }catch(error){return "";}
 }
 async function startSitePresence(){
- if(!db||sitePresenceStarted)return;
- sitePresenceStarted=true;
+ if(!db||sitePresenceStarted||sitePresenceStarting)return;
+ sitePresenceStarting=true;
  try{
   const {data:sessionData,error:sessionError}=await db.auth.getSession();
   if(sessionError)throw sessionError;
@@ -2053,22 +2062,34 @@ async function startSitePresence(){
    ]);
    if(adminError)throw adminError;
    if(ownerError)throw ownerError;
-   if(isAdmin===true||isOwner===true)return;
+   if(isAdmin===true||isOwner===true){
+    sitePresenceStarted=true;
+    return;
+   }
   }
+  const token=getSitePresenceSessionId();
+  if(!token)throw new Error("A temporary presence token could not be created.");
+  const heartbeat=()=>{
+   if(!db)return;
+   db.rpc("heartbeat_site_presence",{p_session_id:token}).then(({error})=>{
+    if(error)console.warn("Temporary site presence:",error.message);
+   }).catch(error=>console.warn("Temporary site presence:",error));
+  };
+  heartbeat();
+  window.setInterval(heartbeat,45000);
+  sitePresenceStarted=true;
  }catch(error){
   console.warn("Temporary site presence authorization:",error);
-  return;
+  // A transient session/network failure must not permanently disable presence.
+  if(!sitePresenceRetryTimer){
+   sitePresenceRetryTimer=window.setTimeout(()=>{
+    sitePresenceRetryTimer=null;
+    startSitePresence();
+   },15000);
+  }
+ }finally{
+  sitePresenceStarting=false;
  }
- const token=getSitePresenceSessionId();
- if(!token)return;
- const heartbeat=()=>{
-  if(!db)return;
-  db.rpc("heartbeat_site_presence",{p_session_id:token}).then(({error})=>{
-   if(error)console.warn("Temporary site presence:",error.message);
-  }).catch(error=>console.warn("Temporary site presence:",error));
- };
- heartbeat();
- window.setInterval(heartbeat,45000);
 }
 if(!window.sitePresenceRefreshTimer){
  window.sitePresenceRefreshTimer=window.setInterval(()=>{
@@ -2082,13 +2103,27 @@ try{
 if(!db && window.supabase && typeof window.supabase.createClient==="function"){
 db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }
-if(db)startSitePresence();
+if(db){
+ // Flush navigation events queued while the Supabase SDK was still loading.
+ if(pendingSitePageViews.length){
+  const queuedPageViews=pendingSitePageViews;
+  pendingSitePageViews=[];
+  queuedPageViews.forEach(pageId=>recordSitePageView(pageId));
+ }
+ startSitePresence();
+}
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
  if(event==="SIGNED_IN"){
   notifyRecentConfirmedSignup(session);
+  window.setTimeout(startSitePresence,0);
   if(new URLSearchParams(window.location.search).get("open-admin")==="1" || (el("admin")&&!el("admin").classList.contains("hidden")))show("admin");
+ }
+ if(event==="SIGNED_OUT"){
+  sitePresenceStarted=false;
+  if(sitePresenceRetryTimer){window.clearTimeout(sitePresenceRetryTimer);sitePresenceRetryTimer=null;}
+  window.setTimeout(startSitePresence,0);
  }
 });
 authListenerInstalled=true;
