@@ -61,7 +61,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y librsvg2-bin
           mkdir -p _site
-          cp index.html curated-posts.json privacy.html terms.html delete-account.html download.html 404.html manifest.webmanifest service-worker.js app-icon.svg home-youthful-palette.css _site/
+          cp index.html privacy.html terms.html delete-account.html download.html 404.html manifest.webmanifest service-worker.js app-icon.svg home-youthful-palette.css _site/
           # Keep obsolete database-connection wording out of every published HTML page.
           if grep -nF 'النشر السحابي يتطلب اتصالاً بقاعدة البيانات.' _site/*.html; then
             echo "Obsolete database-connection wording found in public HTML."
