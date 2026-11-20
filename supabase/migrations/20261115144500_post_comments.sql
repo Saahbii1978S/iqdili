@@ -143,10 +143,13 @@ begin
     raise exception 'Only administrators may change comment visibility';
   end if;
 
-  if public.is_admin()
-     and old.user_id is distinct from auth.uid()
-     and new.body is distinct from old.body then
-    raise exception 'Administrators may moderate visibility but cannot rewrite another member comment';
+  -- Avoid calling is_admin() for account-deletion FK updates: auth service roles
+  -- intentionally do not have EXECUTE on that function, and the body is unchanged.
+  if new.body is distinct from old.body
+     and old.user_id is distinct from auth.uid() then
+    if public.is_admin() then
+      raise exception 'Administrators may moderate visibility but cannot rewrite another member comment';
+    end if;
   end if;
 
   return new;
