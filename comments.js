@@ -72,17 +72,35 @@ async function loadComments(widget){
  busy.add(widget);panel.innerHTML='<p class="post-comment-login">جاري تحميل التعليقات...</p>';
  try{
   await refreshUser();
-  const {data,error}=await client.from("post_comments")
+  const postTable=widget.dataset.postTable,postId=Number(widget.dataset.postId);
+  const {data:topData,error:topError}=await client.from("post_comments")
    .select("id,post_id,parent_id,user_id,body,created_at")
-   .eq("post_table",widget.dataset.postTable)
-   .eq("post_id",Number(widget.dataset.postId))
+   .eq("post_table",postTable)
+   .eq("post_id",postId)
    .eq("status","published")
+   .is("parent_id",null)
    .order("created_at",{ascending:false})
    .limit(200);
-  if(error)throw error;
-  // Fetch the newest comments first, then render them in chronological order.
-  const rows=(data||[]).reverse();
-  const top=rows.filter(row=>!row.parent_id);
+  if(topError)throw topError;
+  // Load replies for the selected parent comments separately so busy threads
+  // cannot push their parent comments out of the 200-comment display window.
+  const top=(topData||[]).reverse();
+  const parentIds=top.map(row=>row.id);
+  const replies=[];
+  for(let offset=0;parentIds.length;offset+=1000){
+   const {data:replyPage,error:replyError}=await client.from("post_comments")
+    .select("id,post_id,parent_id,user_id,body,created_at")
+    .eq("post_table",postTable)
+    .eq("post_id",postId)
+    .eq("status","published")
+    .in("parent_id",parentIds)
+    .order("created_at",{ascending:true})
+    .range(offset,offset+999);
+   if(replyError)throw replyError;
+   replies.push(...(replyPage||[]));
+   if(!replyPage||replyPage.length<1000)break;
+  }
+  const rows=[...top,...replies];
   const count=rows.length;
   const toggle=widget.querySelector("[data-comments-toggle]");
   if(toggle)toggle.textContent="💬 التعليقات ("+(count===200?"200+":count)+")";
