@@ -35,12 +35,29 @@ insert into public.service_requests values (1, 'approved'), (2, 'pending');
 insert into public.job_posts values (1, 'approved'), (2, 'pending');
 insert into public.real_estate_posts values (1, 'approved'), (2, 'pending');
 
+-- Match the production authorization source: admins plus staff_roles moderators.
+create table public.admins (user_id uuid primary key);
+create table public.staff_roles (
+  user_id uuid not null,
+  role text not null,
+  primary key (user_id, role)
+);
+insert into public.staff_roles (user_id, role)
+values ('22222222-2222-4222-8222-222222222222', 'moderator');
+
 create function public.is_admin()
 returns boolean
 language sql stable
-as $$
-  select coalesce((auth.jwt() ->> 'is_admin')::boolean, false);
-$$;
+security definer
+set search_path = ''
+as $
+  select
+    exists (select 1 from public.admins a where a.user_id = (select auth.uid()))
+    or exists (
+      select 1 from public.staff_roles r
+      where r.user_id = (select auth.uid()) and r.role = 'moderator'
+    );
+$;
 grant execute on function public.is_admin() to authenticated;
 
 insert into auth.users values
@@ -180,11 +197,11 @@ $member_visibility_test$;
 
 -- A separate administrator can moderate visibility but cannot delete another member's comment.
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
-set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
+set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false}';
 do $$
 begin
   if not public.is_admin() then
-    raise exception 'Test admin JWT was not recognized by the is_admin stub';
+    raise exception 'Production-compatible moderator lookup did not recognize staff_roles entry';
   end if;
 end;
 $$;
