@@ -144,27 +144,18 @@ with check (
 
 drop policy if exists "Members can edit their own comments" on public.post_comments;
 drop policy if exists "Members and moderators can edit comments" on public.post_comments;
-create policy "Members and moderators can edit comments"
+create policy "Members can edit their own comments"
 on public.post_comments for update
 to authenticated
-using (
-  (user_id = (select auth.uid()) and status = 'published')
-  or public.is_admin()
-)
+using (user_id = (select auth.uid()) and status = 'published')
 with check (
-  (
-    user_id = (select auth.uid())
-    and status = 'published'
-    and ahla_internal.comment_target_is_public(post_table, post_id)
-    and char_length(btrim(body)) between 1 and 1000
-  )
-  or (
-    public.is_admin()
-    and status in ('published', 'hidden')
-    and ahla_internal.comment_target_is_public(post_table, post_id)
-    and char_length(btrim(body)) between 1 and 1000
-  )
+  user_id = (select auth.uid())
+  and status = 'published'
+  and ahla_internal.comment_target_is_public(post_table, post_id)
+  and char_length(btrim(body)) between 1 and 1000
 );
+
+drop policy if exists "Moderators can manage comment visibility" on public.post_comments;
 
 drop policy if exists "Members and moderators can delete comments" on public.post_comments;
 create policy "Members and moderators can delete comments"
