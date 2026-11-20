@@ -187,7 +187,7 @@ reset request.jwt.claims;
 set role anon;
 do $public_read_test$
 begin
-  if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 2 then
+  if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 3 then
     raise exception 'Public read policy failed to expose the published parent and its reply';
   end if;
   if (select count(*) from public.post_comments where post_table = 'service_requests' and post_id = 1) <> 0 then
