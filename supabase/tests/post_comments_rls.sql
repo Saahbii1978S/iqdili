@@ -62,7 +62,8 @@ grant execute on function public.is_admin() to authenticated;
 
 insert into auth.users values
   ('11111111-1111-4111-8111-111111111111'),
-  ('22222222-2222-4222-8222-222222222222');
+  ('22222222-2222-4222-8222-222222222222'),
+  ('33333333-3333-4333-8333-333333333333');
 
 \ir ../migrations/20261115144500_post_comments.sql
 
@@ -92,6 +93,42 @@ values (
   auth.uid(),
   'Valid one-level reply'
 );
+
+-- Account deletion must anonymize the author's comments without deleting other members' replies.
+reset role;
+insert into public.post_comments (post_table, post_id, user_id, body)
+values ('market_posts', 2, '11111111-1111-4111-8111-111111111111', 'Account deletion parent');
+insert into public.post_comments (post_table, post_id, parent_id, user_id, body)
+values (
+  'market_posts',
+  2,
+  (select id from public.post_comments where body = 'Account deletion parent'),
+  '33333333-3333-4333-8333-333333333333',
+  'Reply by a different member'
+);
+delete from auth.users where id = '11111111-1111-4111-8111-111111111111';
+do $account_delete_preservation_test$
+declare
+  parent_author uuid;
+  parent_count integer;
+  reply_count integer;
+begin
+  select count(*), min(user_id) into parent_count, parent_author
+  from public.post_comments where body = 'Account deletion parent';
+  select count(*) into reply_count
+  from public.post_comments where body = 'Reply by a different member';
+
+  if parent_count <> 1 or parent_author is not null then
+    raise exception 'Deleted author's parent comment was not retained and anonymized';
+  end if;
+  if reply_count <> 1 then
+    raise exception 'Account deletion removed another member reply';
+  end if;
+end;
+$account_delete_preservation_test$;
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
+set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false}';
 
 -- Deleting a parent must not cascade-delete replies written by other members.
 do $reply_preservation_test$
