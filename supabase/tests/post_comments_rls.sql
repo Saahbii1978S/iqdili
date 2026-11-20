@@ -5,7 +5,7 @@ begin
   where body = 'Edited parent';
   raise exception 'Trigger allowed a member to move a comment to another post';
 exception when raise_exception then
-  if sqlerrm <> 'Comment ownership, target, parent and creation time are immutable' then
+  if sqlerrm <> 'Comment id, ownership, target, parent and creation time are immutable' then
     raise;
   end if;
 end;
