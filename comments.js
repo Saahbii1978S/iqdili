@@ -119,10 +119,10 @@ async function submitComment(form,widget){
  const body=textarea.value.trim();
  if(!body){errorBox.textContent="اكتب تعليقك قبل النشر.";return;}
  if(body.length>1000){errorBox.textContent="التعليق طويل برشة. الحدّ الأقصى 1000 حرف.";return;}
- await refreshUser();
- if(!currentUser){errorBox.textContent="يلزمك تسجّل الدخول قبل التعليق.";return;}
  button.disabled=true;errorBox.textContent="";
  try{
+  await refreshUser();
+  if(!currentUser){errorBox.textContent="يلزمك تسجّل الدخول قبل التعليق.";return;}
   const parentRaw=form.dataset.parentId;
   const payload={post_table:widget.dataset.postTable,post_id:Number(widget.dataset.postId),user_id:currentUser.id,body,status:"published"};
   if(parentRaw)payload.parent_id=Number(parentRaw);
@@ -131,6 +131,7 @@ async function submitComment(form,widget){
   await loadComments(widget);
  }catch(error){
   errorBox.textContent="ما نجّمش ننشر التعليق. تثبّت من تسجيل الدخول وعاود المحاولة.";
+ }finally{
   button.disabled=false;
  }
 }
@@ -190,10 +191,10 @@ async function submitEdit(form,widget){
  const body=textarea.value.trim();
  if(!body){errorBox.textContent="اكتب التعليق قبل حفظ التعديل.";return;}
  if(body.length>1000){errorBox.textContent="التعليق طويل برشة. الحدّ الأقصى 1000 حرف.";return;}
- await refreshUser();
- if(!currentUser){errorBox.textContent="يلزمك تسجّل الدخول قبل التعديل.";return;}
  button.disabled=true;errorBox.textContent="";
  try{
+  await refreshUser();
+  if(!currentUser){errorBox.textContent="يلزمك تسجّل الدخول قبل التعديل.";return;}
   const {error}=await client.from("post_comments")
    .update({body})
    .eq("id",Number(form.dataset.commentId))
@@ -203,6 +204,7 @@ async function submitEdit(form,widget){
   await loadComments(widget);
  }catch(error){
   errorBox.textContent="ما نجّمش نحفظ التعديل. تثبّت من تسجيل الدخول وعاود.";
+ }finally{
   button.disabled=false;
  }
 }
