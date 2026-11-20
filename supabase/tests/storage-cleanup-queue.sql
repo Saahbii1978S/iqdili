@@ -146,12 +146,23 @@ begin
      or has_table_privilege('authenticated', 'public.storage_cleanup_jobs', 'SELECT') then
     raise exception 'Untrusted roles can read the cleanup queue';
   end if;
+  -- Every internal cleanup RPC must remain service_role-only for both browser roles.
   if has_function_privilege('anon', 'public.claim_storage_cleanup_jobs(integer)', 'EXECUTE')
-     or has_function_privilege('authenticated', 'public.delete_account_posts_and_activate_cleanup(uuid,jsonb,jsonb)', 'EXECUTE') then
-    raise exception 'Untrusted roles can execute privileged cleanup RPCs';
-  end if;
-  if not has_function_privilege('service_role', 'public.claim_storage_cleanup_jobs(integer)', 'EXECUTE') then
-    raise exception 'service_role cannot claim cleanup jobs';
+     or has_function_privilege('authenticated', 'public.claim_storage_cleanup_jobs(integer)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.claim_storage_cleanup_jobs(integer)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.activate_storage_cleanup_jobs(jsonb)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.activate_storage_cleanup_jobs(jsonb)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.activate_storage_cleanup_jobs(jsonb)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.delete_account_posts_and_activate_cleanup(uuid,jsonb,jsonb)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.delete_account_posts_and_activate_cleanup(uuid,jsonb,jsonb)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.delete_account_posts_and_activate_cleanup(uuid,jsonb,jsonb)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.delete_post_and_activate_storage_cleanup(text,bigint,uuid,boolean,jsonb,jsonb)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.delete_post_and_activate_storage_cleanup(text,bigint,uuid,boolean,jsonb,jsonb)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.delete_post_and_activate_storage_cleanup(text,bigint,uuid,boolean,jsonb,jsonb)', 'EXECUTE')
+     or has_function_privilege('anon', 'public.is_storage_cleanup_object_referenced(text,text)', 'EXECUTE')
+     or has_function_privilege('authenticated', 'public.is_storage_cleanup_object_referenced(text,text)', 'EXECUTE')
+     or not has_function_privilege('service_role', 'public.is_storage_cleanup_object_referenced(text,text)', 'EXECUTE') then
+    raise exception 'Cleanup queue RPCs are not restricted to service_role';
   end if;
 
   begin
