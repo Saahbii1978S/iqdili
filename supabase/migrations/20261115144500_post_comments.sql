@@ -65,7 +65,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1
     from public.post_comments parent
@@ -76,7 +76,7 @@ as $
       and parent.status = 'published'
       and ahla_internal.comment_target_is_public(parent.post_table, parent.post_id)
   );
-$;
+$$;
 
 revoke all on function ahla_internal.comment_parent_is_public(bigint, text, bigint) from public;
 grant execute on function ahla_internal.comment_parent_is_public(bigint, text, bigint) to anon, authenticated;
