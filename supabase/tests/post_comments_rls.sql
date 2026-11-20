@@ -145,7 +145,7 @@ begin
   raise exception 'RLS allowed a member to transfer comment ownership';
 exception
   when raise_exception then
-    if sqlerrm <> 'Comment ownership, target, parent, status and creation time are immutable' then
+    if sqlerrm <> 'Comment ownership, target, parent and creation time are immutable' then
       raise;
     end if;
   when insufficient_privilege then
@@ -166,7 +166,19 @@ exception when raise_exception then
 end;
 $comment_test$;
 
--- A separate administrator can delete another member's comment.
+-- Ordinary members cannot hide or restore comments.
+do $member_visibility_test$
+begin
+  update public.post_comments set status = 'hidden' where body = 'Market parent';
+  raise exception 'A regular member changed comment visibility';
+exception when raise_exception then
+  if sqlerrm <> 'Only administrators may change comment visibility' then
+    raise;
+  end if;
+end;
+$member_visibility_test$;
+
+-- A separate administrator can moderate visibility and delete another member's comment.
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
 do $$
@@ -176,13 +188,43 @@ begin
   end if;
 end;
 $$;
+-- Admin can hide a comment, but cannot rewrite its text during moderation.
+update public.post_comments set status = 'hidden'
+where body = 'Parent to test replies';
+do $admin_body_guard_test$
+begin
+  update public.post_comments set body = 'Admin rewrote member comment'
+  where body = 'Parent to test replies';
+  raise exception 'Administrator rewrote another member comment';
+exception when raise_exception then
+  if sqlerrm <> 'Administrators may moderate visibility but cannot rewrite another member comment' then
+    raise;
+  end if;
+end;
+$admin_body_guard_test$;
+
+-- Hidden parent and its reply must both disappear from public reads.
+reset role;
+set role anon;
+do $hidden_parent_test$
+begin
+  if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 1 then
+    raise exception 'Hidden parent or its reply remained publicly visible';
+  end if;
+end;
+$hidden_parent_test$;
+reset role;
+
+-- Admin can restore the comment to public visibility.
+set role authenticated;
+set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
+set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
+update public.post_comments set status = 'published'
+where body = 'Parent to test replies';
 delete from public.post_comments where body = 'Service comment';
 reset role;
 reset request.jwt.claim.sub;
 reset request.jwt.claims;
-
--- A hidden-parent moderation flow is intentionally not simulated here:
--- this migration does not yet grant moderators an update policy for status.
 
 set role anon;
 do $public_read_test$
