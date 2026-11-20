@@ -190,7 +190,7 @@ end;
 $$;
 -- Admin can hide a comment, but cannot rewrite its text during moderation.
 update public.post_comments set status = 'hidden'
-where body = 'Parent to test replies';
+where body = 'Edited parent';
 
 -- Confirm the moderator SELECT policy exposes the now-hidden row to its moderator.
 do $admin_hidden_read_test$
@@ -199,7 +199,7 @@ declare
 begin
   select count(*) into visible_count
   from public.post_comments
-  where body = 'Parent to test replies';
+  where body = 'Edited parent';
 
   if visible_count <> 1 then
     raise exception 'Moderator cannot read hidden comment; visible row count=%', visible_count;
@@ -212,7 +212,7 @@ declare
 begin
   begin
     update public.post_comments set body = 'Admin rewrote member comment'
-    where body = 'Parent to test replies';
+    where body = 'Edited parent';
   exception when others then
     if sqlerrm <> 'Administrators may moderate visibility but cannot rewrite another member comment' then
       raise;
@@ -243,7 +243,7 @@ set role authenticated;
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
 update public.post_comments set status = 'published'
-where body = 'Parent to test replies';
+where body = 'Edited parent';
 delete from public.post_comments where body = 'Service comment';
 reset role;
 reset request.jwt.claim.sub;
