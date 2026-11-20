@@ -50,13 +50,13 @@ function renderComment(comment,all){
  const mine=currentUser&&currentUser.id===comment.user_id;
  const replies=all.filter(item=>item.parent_id===comment.id);
  let html='<article class="post-comment" data-comment-id="'+comment.id+'">'+
-  '<div class="post-comment-meta"><strong>'+(mine?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(comment.created_at).toLocaleString("ar-TN"))+'</span></div>'+
+  '<div class="post-comment-meta"><strong>'+(mine?"أنت":comment.user_id===null?"عضو سابق":"عضو")+'</strong><span>'+escapeHtml(new Date(comment.created_at).toLocaleString("ar-TN"))+'</span></div>'+
   '<p class="post-comment-body">'+escapeHtml(comment.body)+'</p>'+
   (currentUser?'<button type="button" class="post-comment-action" data-reply="'+comment.id+'">ردّ</button>':"")+
   (mine?'<button type="button" class="post-comment-action" data-edit-comment="'+comment.id+'">تعديل</button><button type="button" class="post-comment-action" data-delete-comment="'+comment.id+'">حذف</button>':"")+
   '<div data-reply-slot="'+comment.id+'"></div>';
  if(replies.length){
-  html+='<div class="post-comment-replies">'+replies.map(reply=>'<article class="post-comment" data-comment-id="'+reply.id+'"><div class="post-comment-meta"><strong>'+(currentUser&&currentUser.id===reply.user_id?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(reply.created_at).toLocaleString("ar-TN"))+'</span></div><p class="post-comment-body">'+escapeHtml(reply.body)+'</p>'+(currentUser&&currentUser.id===reply.user_id?'<button type="button" class="post-comment-action" data-edit-comment="'+reply.id+'">تعديل</button><button type="button" class="post-comment-action" data-delete-comment="'+reply.id+'">حذف</button>':"")+'</article>').join("")+'</div>';
+  html+='<div class="post-comment-replies">'+replies.map(reply=>'<article class="post-comment" data-comment-id="'+reply.id+'"><div class="post-comment-meta"><strong>'+(currentUser&&currentUser.id===reply.user_id?"أنت":reply.user_id===null?"عضو سابق":"عضو")+'</strong><span>'+escapeHtml(new Date(reply.created_at).toLocaleString("ar-TN"))+'</span></div><p class="post-comment-body">'+escapeHtml(reply.body)+'</p>'+(currentUser&&currentUser.id===reply.user_id?'<button type="button" class="post-comment-action" data-edit-comment="'+reply.id+'">تعديل</button><button type="button" class="post-comment-action" data-delete-comment="'+reply.id+'">حذف</button>':"")+'</article>').join("")+'</div>';
  }
  return html+'</article>';
 }
