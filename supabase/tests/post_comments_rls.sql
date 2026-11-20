@@ -191,6 +191,21 @@ $$;
 -- Admin can hide a comment, but cannot rewrite its text during moderation.
 update public.post_comments set status = 'hidden'
 where body = 'Parent to test replies';
+
+-- Confirm the moderator SELECT policy exposes the now-hidden row to its moderator.
+do $admin_hidden_read_test$
+declare
+  visible_count integer;
+begin
+  select count(*) into visible_count
+  from public.post_comments
+  where body = 'Parent to test replies';
+
+  if visible_count <> 1 then
+    raise exception 'Moderator cannot read hidden comment; visible row count=%', visible_count;
+  end if;
+end;
+$admin_hidden_read_test$;
 do $admin_body_guard_test$
 declare
   rewrite_rejected boolean := false;
