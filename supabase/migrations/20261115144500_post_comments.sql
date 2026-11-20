@@ -122,7 +122,7 @@ create or replace function ahla_internal.prevent_post_comment_identity_change()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $comment_guard$
 begin
   if new.user_id is distinct from old.user_id
      or new.post_table is distinct from old.post_table
@@ -134,7 +134,7 @@ begin
   end if;
   return new;
 end;
-$;
+$comment_guard$;
 
 drop trigger if exists prevent_post_comment_identity_change on public.post_comments;
 create trigger prevent_post_comment_identity_change
