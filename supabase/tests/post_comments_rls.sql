@@ -3,6 +3,7 @@
 -- Isolated PostgreSQL harness: no Supabase project or production data is used.
 create role anon nologin;
 create role authenticated nologin;
+create role auth_executor nologin;
 
 create schema auth;
 create table auth.users (id uuid primary key);
@@ -135,6 +136,28 @@ begin
   end if;
 end;
 $account_delete_preservation_test$;
+
+-- The Auth deletion role has no EXECUTE privilege on public.is_admin().
+-- FK-driven anonymization must still succeed because it does not change comment text or visibility.
+insert into auth.users values ('55555555-5555-4555-8555-555555555555');
+insert into public.post_comments (post_table, post_id, user_id, body)
+values ('market_posts', 2, '55555555-5555-4555-8555-555555555555', 'Auth executor deletion test');
+grant usage on schema auth to auth_executor;
+grant delete on auth.users to auth_executor;
+set role auth_executor;
+delete from auth.users where id = '55555555-5555-4555-8555-555555555555';
+reset role;
+do $auth_executor_delete_test$
+begin
+  if not exists (
+    select 1 from public.post_comments
+    where body = 'Auth executor deletion test' and user_id is null
+  ) then
+    raise exception 'Auth deletion role could not anonymize comment without is_admin() EXECUTE';
+  end if;
+end;
+$auth_executor_delete_test$;
+
 set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
 set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false}';
