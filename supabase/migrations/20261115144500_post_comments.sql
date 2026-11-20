@@ -126,12 +126,13 @@ language plpgsql
 set search_path = ''
 as $comment_guard$
 begin
-  if new.user_id is distinct from old.user_id
+  if new.id is distinct from old.id
+     or new.user_id is distinct from old.user_id
      or new.post_table is distinct from old.post_table
      or new.post_id is distinct from old.post_id
      or new.parent_id is distinct from old.parent_id
      or new.created_at is distinct from old.created_at then
-    raise exception 'Comment ownership, target, parent and creation time are immutable';
+    raise exception 'Comment id, ownership, target, parent and creation time are immutable';
   end if;
 
   if new.status is distinct from old.status and not public.is_admin() then
