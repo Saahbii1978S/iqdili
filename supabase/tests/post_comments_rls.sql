@@ -156,7 +156,7 @@ begin
     raise exception 'Test admin JWT was not recognized by the is_admin stub';
   end if;
 end;
-$;
+$$;
 update public.post_comments set status = 'hidden' where body = 'Edited parent';
 reset role;
 reset request.jwt.claim.sub;
