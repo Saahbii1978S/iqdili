@@ -137,19 +137,16 @@ update public.post_comments
 set body = 'Edited parent'
 where body = 'Parent to test replies';
 
-do $$
-declare
-  changed integer;
+do $
 begin
   update public.post_comments
   set user_id = '22222222-2222-4222-8222-222222222222'
   where body = 'Edited parent';
-  get diagnostics changed = row_count;
-  if changed <> 0 then
-    raise exception 'RLS allowed a member to transfer comment ownership';
-  end if;
+  raise exception 'RLS allowed a member to transfer comment ownership';
+exception when insufficient_privilege then
+  null;
 end;
-$$;
+$;
 
 -- Moderators can hide a comment; its replies must then disappear from public reads.
 set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false,"is_admin":true}';
