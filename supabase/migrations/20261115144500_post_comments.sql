@@ -209,13 +209,11 @@ with check (
 );
 
 drop policy if exists "Members and moderators can delete comments" on public.post_comments;
-create policy "Members and moderators can delete comments"
+drop policy if exists "Members can delete their own comments" on public.post_comments;
+create policy "Members can delete their own comments"
 on public.post_comments for delete
 to authenticated
-using (
-  user_id = (select auth.uid())
-  or public.is_admin()
-);
+using (user_id = (select auth.uid()));
 
 grant select on public.post_comments to anon, authenticated;
 grant insert, update, delete on public.post_comments to authenticated;
