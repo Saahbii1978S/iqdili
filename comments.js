@@ -206,7 +206,7 @@ function init(){
  addStyles();
  refreshUser().catch(()=>{});
  client.auth.onAuthStateChange((_event,session)=>{
-  currentUser=session?.user||null;
+  currentUser=session?.user&&!session.user.is_anonymous?session.user:null;
   loaded=new WeakSet();
   document.querySelectorAll("[data-post-comments]:not([hidden]) [data-comments-panel]").forEach(panel=>{
    if(!panel.hidden){const widget=panel.closest("[data-post-comments]");if(widget)loadComments(widget);}
