@@ -185,7 +185,7 @@ reset request.jwt.claims;
 -- this migration does not yet grant moderators an update policy for status.
 
 set role anon;
-do $
+do $public_read_test$
 begin
   if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 2 then
     raise exception 'Public read policy failed to expose the published parent and its reply';
@@ -194,9 +194,9 @@ begin
     raise exception 'Administrator could not delete another member comment';
   end if;
 end;
-$$;
+$public_read_test$;
 
-do $$
+do $
 begin
   insert into public.post_comments (post_table, post_id, user_id, body)
   values ('market_posts', 1, '11111111-1111-4111-8111-111111111111', 'Anonymous role insert');
