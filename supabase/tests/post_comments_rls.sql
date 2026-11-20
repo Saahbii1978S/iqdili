@@ -108,6 +108,8 @@ values (
   'Reply by a different member'
 );
 delete from auth.users where id = '33333333-3333-4333-8333-333333333333';
+-- Deleting the reply author's account must also preserve that reply as an anonymized row.
+delete from auth.users where id = '44444444-4444-4444-8444-444444444444';
 do $account_delete_preservation_test$
 declare
   parent_is_anonymized boolean;
@@ -124,6 +126,12 @@ begin
   end if;
   if reply_count <> 1 then
     raise exception 'Account deletion removed another member reply';
+  end if;
+  if not exists (
+    select 1 from public.post_comments
+    where body = 'Reply by a different member' and user_id is null
+  ) then
+    raise exception 'Deleted reply author was not anonymized while preserving the reply';
   end if;
 end;
 $account_delete_preservation_test$;
@@ -208,10 +216,23 @@ exception when raise_exception then
 end;
 $$;
 
--- Owners can edit their own comments, but cannot transfer ownership.
+-- Owners can edit their own comments, but cannot transfer ownership or self-anonymize.
 update public.post_comments
 set body = 'Edited parent'
 where body = 'Parent to test replies';
+
+do $comment_self_anonymize_test$
+begin
+  update public.post_comments
+  set user_id = null
+  where body = 'Edited parent';
+  raise exception 'A member was able to self-anonymize a comment';
+exception when raise_exception then
+  if sqlerrm <> 'Comment id, ownership, target, parent and creation time are immutable' then
+    raise;
+  end if;
+end;
+$comment_self_anonymize_test$;
 
 do $comment_test$
 begin
