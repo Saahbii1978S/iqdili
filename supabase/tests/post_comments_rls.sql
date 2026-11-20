@@ -150,6 +150,13 @@ $$;
 
 -- Moderators can hide a comment; its replies must then disappear from public reads.
 set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false,"is_admin":true}';
+do $
+begin
+  if not public.is_admin() then
+    raise exception 'Test admin JWT was not recognized by the is_admin stub';
+  end if;
+end;
+$;
 update public.post_comments set status = 'hidden' where body = 'Edited parent';
 reset role;
 reset request.jwt.claim.sub;
