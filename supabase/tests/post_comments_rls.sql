@@ -120,7 +120,7 @@ begin
   from public.post_comments where body = 'Reply by a different member';
 
   if parent_count <> 1 or parent_is_anonymized is distinct from true then
-    raise exception 'Deleted author's parent comment was not retained and anonymized';
+    raise exception 'Deleted-account parent comment was not retained and anonymized';
   end if;
   if reply_count <> 1 then
     raise exception 'Account deletion removed another member reply';
