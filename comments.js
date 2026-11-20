@@ -208,9 +208,12 @@ function init(){
  client.auth.onAuthStateChange((_event,session)=>{
   currentUser=session?.user&&!session.user.is_anonymous?session.user:null;
   loaded=new WeakSet();
-  document.querySelectorAll("[data-post-comments]:not([hidden]) [data-comments-panel]").forEach(panel=>{
-   if(!panel.hidden){const widget=panel.closest("[data-post-comments]");if(widget)loadComments(widget);}
-  });
+  // Defer Supabase queries until the auth callback has returned and released its lock.
+  window.setTimeout(()=>{
+   document.querySelectorAll("[data-post-comments]:not([hidden]) [data-comments-panel]").forEach(panel=>{
+    if(!panel.hidden){const widget=panel.closest("[data-post-comments]");if(widget)loadComments(widget);}
+   });
+  },0);
  });
  document.addEventListener("click",onClick);
  document.addEventListener("submit",onSubmit);
