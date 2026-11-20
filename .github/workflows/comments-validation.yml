@@ -1,0 +1,40 @@
+name: Validate post comments feature
+
+on:
+  pull_request:
+    paths:
+      - 'comments.js'
+      - 'index.html'
+      - 'supabase/migrations/**'
+      - '.github/workflows/comments-validation.yml'
+  push:
+    branches:
+      - integration/rebuild-from-main-2026-11-20
+    paths:
+      - 'comments.js'
+      - 'index.html'
+      - 'supabase/migrations/**'
+      - '.github/workflows/comments-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: node --check comments.js
+
+      - name: Check comments wiring and migration guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'data-post-comments' index.html
+          grep -q 'src="/iqdili/comments.js"' index.html
+          grep -q 'create table if not exists public.post_comments' supabase/migrations/20261115144500_post_comments.sql
+          grep -q 'enable row level security' supabase/migrations/20261115144500_post_comments.sql
+          grep -q "coalesce(((select auth.jwt()) ->> 'is_anonymous')::boolean, true) = false" supabase/migrations/20261115144500_post_comments.sql
