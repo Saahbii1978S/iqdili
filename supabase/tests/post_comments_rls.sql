@@ -90,6 +90,24 @@ values (
   'Valid one-level reply'
 );
 
+-- Deleting a parent must not cascade-delete replies written by other members.
+do $reply_preservation_test$
+declare
+  deletion_blocked boolean := false;
+begin
+  begin
+    delete from public.post_comments
+    where body = 'Parent to test replies';
+  exception when foreign_key_violation then
+    deletion_blocked := true;
+  end;
+
+  if not deletion_blocked then
+    raise exception 'Deleting a parent comment removed or orphaned its replies';
+  end if;
+end;
+$reply_preservation_test$;
+
 -- Pending posts and forged authorship must be rejected by RLS.
 do $$
 begin
