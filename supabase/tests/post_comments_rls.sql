@@ -192,13 +192,21 @@ $$;
 update public.post_comments set status = 'hidden'
 where body = 'Parent to test replies';
 do $admin_body_guard_test$
+declare
+  rewrite_rejected boolean := false;
 begin
-  update public.post_comments set body = 'Admin rewrote member comment'
-  where body = 'Parent to test replies';
-  raise exception 'Administrator rewrote another member comment';
-exception when raise_exception then
-  if sqlerrm <> 'Administrators may moderate visibility but cannot rewrite another member comment' then
-    raise;
+  begin
+    update public.post_comments set body = 'Admin rewrote member comment'
+    where body = 'Parent to test replies';
+  exception when others then
+    if sqlerrm <> 'Administrators may moderate visibility but cannot rewrite another member comment' then
+      raise;
+    end if;
+    rewrite_rejected := true;
+  end;
+
+  if not rewrite_rejected then
+    raise exception 'Administrator rewrote another member comment';
   end if;
 end;
 $admin_body_guard_test$;
