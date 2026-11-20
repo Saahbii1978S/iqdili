@@ -103,7 +103,7 @@ async function loadComments(widget){
   const rows=[...top,...replies];
   const count=rows.length;
   const toggle=widget.querySelector("[data-comments-toggle]");
-  if(toggle)toggle.textContent="💬 التعليقات ("+(count===200?"200+":count)+")";
+  if(toggle)toggle.textContent="💬 التعليقات ("+(top.length===200?"200+":count)+")";
   panel.innerHTML=(top.length?top.map(row=>renderComment(row,rows)).join(""):'<p class="post-comment-login">ما فماش تعليقات. كن أوّل واحد يعلّق!</p>')+
    (currentUser?makeForm(""):loginPrompt());
   loaded.add(widget);
