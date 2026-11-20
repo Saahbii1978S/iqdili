@@ -50,14 +50,14 @@ returns boolean
 language sql stable
 security definer
 set search_path = ''
-as $
+as $$
   select
     exists (select 1 from public.admins a where a.user_id = (select auth.uid()))
     or exists (
       select 1 from public.staff_roles r
       where r.user_id = (select auth.uid()) and r.role = 'moderator'
     );
-$;
+$$;
 grant execute on function public.is_admin() to authenticated;
 
 insert into auth.users values
