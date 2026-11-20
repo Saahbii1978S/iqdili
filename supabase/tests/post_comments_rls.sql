@@ -242,8 +242,20 @@ $$;
 
 -- Owners can edit their own comments, but cannot transfer ownership or self-anonymize.
 update public.post_comments
-set body = 'Edited parent'
+set body = 'Edited parent', updated_at = '2000-01-01 00:00:00+00'
 where body = 'Parent to test replies';
+
+do $server_owned_updated_at_test$
+begin
+  if not exists (
+    select 1 from public.post_comments
+    where body = 'Edited parent'
+      and updated_at > '2000-01-01 00:00:00+00'::timestamptz
+  ) then
+    raise exception 'Client was able to forge the comment updated_at timestamp';
+  end if;
+end;
+$server_owned_updated_at_test$;
 
 do $comment_self_anonymize_test$
 begin
