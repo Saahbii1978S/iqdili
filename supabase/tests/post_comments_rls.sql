@@ -167,7 +167,7 @@ reset request.jwt.claims;
 update public.post_comments set status = 'hidden' where body = 'Edited parent';
 
 set role anon;
-do $
+do $$
 begin
   if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 1 then
     raise exception 'Public read policy exposed a hidden parent or its reply';
@@ -176,7 +176,7 @@ begin
     raise exception 'Administrator could not delete another member comment';
   end if;
 end;
-$;
+$$;
 
 do $$
 begin
