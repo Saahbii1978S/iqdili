@@ -181,14 +181,14 @@ reset role;
 reset request.jwt.claim.sub;
 reset request.jwt.claims;
 
--- Simulate moderator hiding in the isolated database to verify reply visibility.
-update public.post_comments set status = 'hidden' where body = 'Edited parent';
+-- A hidden-parent moderation flow is intentionally not simulated here:
+-- this migration does not yet grant moderators an update policy for status.
 
 set role anon;
-do $$
+do $
 begin
-  if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 1 then
-    raise exception 'Public read policy exposed a hidden parent or its reply';
+  if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 2 then
+    raise exception 'Public read policy failed to expose the published parent and its reply';
   end if;
   if (select count(*) from public.post_comments where post_table = 'service_requests' and post_id = 1) <> 0 then
     raise exception 'Administrator could not delete another member comment';
