@@ -77,14 +77,15 @@ async function loadComments(widget){
    .eq("post_table",widget.dataset.postTable)
    .eq("post_id",Number(widget.dataset.postId))
    .eq("status","published")
-   .order("created_at",{ascending:true})
+   .order("created_at",{ascending:false})
    .limit(200);
   if(error)throw error;
-  const rows=data||[];
+  // Fetch the newest comments first, then render them in chronological order.
+  const rows=(data||[]).reverse();
   const top=rows.filter(row=>!row.parent_id);
   const count=rows.length;
   const toggle=widget.querySelector("[data-comments-toggle]");
-  if(toggle)toggle.textContent="💬 التعليقات ("+count+")";
+  if(toggle)toggle.textContent="💬 التعليقات ("+(count===200?"200+":count)+")";
   panel.innerHTML=(top.length?top.map(row=>renderComment(row,rows)).join(""):'<p class="post-comment-login">ما فماش تعليقات. كن أوّل واحد يعلّق!</p>')+
    (currentUser?makeForm(""):loginPrompt());
   loaded.add(widget);
