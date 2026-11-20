@@ -62,12 +62,16 @@ values
   ('real_estate_posts', 1, auth.uid(), 'Real estate comment');
 
 insert into public.post_comments (post_table, post_id, user_id, body)
-values ('market_posts', 1, auth.uid(), 'Parent to test replies')
-returning id as parent_id \gset
+values ('market_posts', 1, auth.uid(), 'Parent to test replies');
 
 insert into public.post_comments (post_table, post_id, parent_id, user_id, body)
-values ('market_posts', 1, :parent_id, auth.uid(), 'Valid one-level reply')
-returning id as reply_id \gset
+values (
+  'market_posts',
+  1,
+  (select id from public.post_comments where body = 'Parent to test replies'),
+  auth.uid(),
+  'Valid one-level reply'
+);
 
 -- Pending posts and forged authorship must be rejected by RLS.
 do $$
@@ -107,7 +111,7 @@ set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anon
 do $$
 begin
   insert into public.post_comments (post_table, post_id, parent_id, user_id, body)
-  values ('market_posts', 2, :parent_id, auth.uid(), 'Cross-post reply');
+  values ('market_posts', 2, (select id from public.post_comments where body = 'Parent to test replies'), auth.uid(), 'Cross-post reply');
   raise exception 'Trigger accepted a cross-post reply';
 exception when raise_exception then
   if sqlerrm <> 'Reply must target a visible top-level comment on the same post' then
@@ -119,7 +123,7 @@ $$;
 do $$
 begin
   insert into public.post_comments (post_table, post_id, parent_id, user_id, body)
-  values ('market_posts', 1, :reply_id, auth.uid(), 'Nested reply');
+  values ('market_posts', 1, (select id from public.post_comments where body = 'Valid one-level reply'), auth.uid(), 'Nested reply');
   raise exception 'Trigger accepted a nested reply';
 exception when raise_exception then
   if sqlerrm <> 'Reply must target a visible top-level comment on the same post' then
@@ -131,7 +135,7 @@ $$;
 -- Owners can edit their own comments, but cannot transfer ownership.
 update public.post_comments
 set body = 'Edited parent'
-where id = :parent_id;
+where body = 'Parent to test replies';
 
 do $$
 declare
@@ -139,7 +143,7 @@ declare
 begin
   update public.post_comments
   set user_id = '22222222-2222-4222-8222-222222222222'
-  where id = :parent_id;
+  where body = 'Parent to test replies';
   get diagnostics changed = row_count;
   if changed <> 0 then
     raise exception 'RLS allowed a member to transfer comment ownership';
@@ -149,7 +153,7 @@ $$;
 
 -- Moderators can hide a comment; its replies must then disappear from public reads.
 set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false,"is_admin":true}';
-update public.post_comments set status = 'hidden' where id = :parent_id;
+update public.post_comments set status = 'hidden' where body = 'Parent to test replies';
 reset role;
 reset request.jwt.claim.sub;
 reset request.jwt.claims;
