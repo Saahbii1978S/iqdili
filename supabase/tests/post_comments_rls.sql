@@ -143,7 +143,8 @@ insert into auth.users values ('55555555-5555-4555-8555-555555555555');
 insert into public.post_comments (post_table, post_id, user_id, body)
 values ('market_posts', 2, '55555555-5555-4555-8555-555555555555', 'Auth executor deletion test');
 grant usage on schema auth to auth_executor;
-grant delete on auth.users to auth_executor;
+-- DELETE predicates read the id column, so PostgreSQL also requires SELECT privilege.
+grant select, delete on auth.users to auth_executor;
 set role auth_executor;
 delete from auth.users where id = '55555555-5555-4555-8555-555555555555';
 reset role;
