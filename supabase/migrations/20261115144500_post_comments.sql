@@ -166,12 +166,12 @@ create or replace function ahla_internal.set_post_comment_updated_at()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $set_updated_at$
 begin
   new.updated_at = now();
   return new;
 end;
-$;
+$set_updated_at$;
 
 drop trigger if exists set_post_comment_updated_at on public.post_comments;
 create trigger set_post_comment_updated_at
