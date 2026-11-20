@@ -175,7 +175,7 @@ async function submitEdit(form,widget){
  button.disabled=true;errorBox.textContent="";
  try{
   const {error}=await client.from("post_comments")
-   .update({body,updated_at:new Date().toISOString()})
+   .update({body})
    .eq("id",Number(form.dataset.commentId))
    .eq("user_id",currentUser.id);
   if(error)throw error;
