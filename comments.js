@@ -80,11 +80,12 @@ async function loadComments(widget){
    .eq("status","published")
    .is("parent_id",null)
    .order("created_at",{ascending:false})
-   .limit(200);
+   .limit(201);
   if(topError)throw topError;
   // Load replies for the selected parent comments separately so busy threads
   // cannot push their parent comments out of the 200-comment display window.
-  const top=(topData||[]).reverse();
+  const hasMoreTop=(topData||[]).length>200;
+  const top=(topData||[]).slice(0,200).reverse();
   const parentIds=top.map(row=>row.id);
   const replies=[];
   for(let offset=0;parentIds.length;offset+=1000){
@@ -103,7 +104,7 @@ async function loadComments(widget){
   const rows=[...top,...replies];
   const count=rows.length;
   const toggle=widget.querySelector("[data-comments-toggle]");
-  if(toggle)toggle.textContent="💬 التعليقات ("+(top.length===200?"200+":count)+")";
+  if(toggle)toggle.textContent="💬 التعليقات ("+(hasMoreTop?"200+":count)+")";
   panel.innerHTML=(top.length?top.map(row=>renderComment(row,rows)).join(""):'<p class="post-comment-login">ما فماش تعليقات. كن أوّل واحد يعلّق!</p>')+
    (currentUser?makeForm(""):loginPrompt());
   loaded.add(widget);
