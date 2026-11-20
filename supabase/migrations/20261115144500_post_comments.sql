@@ -117,6 +117,30 @@ before insert or update of post_table, post_id, parent_id
 on public.post_comments
 for each row execute function ahla_internal.validate_post_comment_parent();
 
+-- Owners may edit comment text, but cannot move comments or alter their moderation state.
+create or replace function ahla_internal.prevent_post_comment_identity_change()
+returns trigger
+language plpgsql
+set search_path = ''
+as $
+begin
+  if new.user_id is distinct from old.user_id
+     or new.post_table is distinct from old.post_table
+     or new.post_id is distinct from old.post_id
+     or new.parent_id is distinct from old.parent_id
+     or new.status is distinct from old.status
+     or new.created_at is distinct from old.created_at then
+    raise exception 'Comment ownership, target, parent, status and creation time are immutable';
+  end if;
+  return new;
+end;
+$;
+
+drop trigger if exists prevent_post_comment_identity_change on public.post_comments;
+create trigger prevent_post_comment_identity_change
+before update on public.post_comments
+for each row execute function ahla_internal.prevent_post_comment_identity_change();
+
 drop policy if exists "Public can read published post comments" on public.post_comments;
 create policy "Public can read published post comments"
 on public.post_comments for select
