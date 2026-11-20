@@ -2039,6 +2039,7 @@ function recordSitePageView(pageId){
 let sitePresenceStarted=false;
 let sitePresenceStarting=false;
 let sitePresenceRetryTimer=null;
+let sitePresenceHeartbeatTimer=null;
 function getSitePresenceSessionId(){
  try{
   let token=sessionStorage.getItem("ahla-site-presence-session");
@@ -2063,6 +2064,7 @@ async function startSitePresence(){
    if(adminError)throw adminError;
    if(ownerError)throw ownerError;
    if(isAdmin===true||isOwner===true){
+    if(sitePresenceHeartbeatTimer){window.clearInterval(sitePresenceHeartbeatTimer);sitePresenceHeartbeatTimer=null;}
     sitePresenceStarted=true;
     return;
    }
@@ -2076,7 +2078,7 @@ async function startSitePresence(){
    }).catch(error=>console.warn("Temporary site presence:",error));
   };
   heartbeat();
-  window.setInterval(heartbeat,45000);
+  if(!sitePresenceHeartbeatTimer)sitePresenceHeartbeatTimer=window.setInterval(heartbeat,45000);
   sitePresenceStarted=true;
  }catch(error){
   console.warn("Temporary site presence authorization:",error);
@@ -2122,6 +2124,7 @@ db.auth.onAuthStateChange((event,session)=>{
  }
  if(event==="SIGNED_OUT"){
   sitePresenceStarted=false;
+  if(sitePresenceHeartbeatTimer){window.clearInterval(sitePresenceHeartbeatTimer);sitePresenceHeartbeatTimer=null;}
   if(sitePresenceRetryTimer){window.clearTimeout(sitePresenceRetryTimer);sitePresenceRetryTimer=null;}
   window.setTimeout(startSitePresence,0);
  }
