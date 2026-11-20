@@ -161,6 +161,23 @@ create trigger prevent_post_comment_identity_change
 before update on public.post_comments
 for each row execute function ahla_internal.prevent_post_comment_identity_change();
 
+-- The database owns the update timestamp; clients cannot forge it.
+create or replace function ahla_internal.set_post_comment_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $
+begin
+  new.updated_at = now();
+  return new;
+end;
+$;
+
+drop trigger if exists set_post_comment_updated_at on public.post_comments;
+create trigger set_post_comment_updated_at
+before update on public.post_comments
+for each row execute function ahla_internal.set_post_comment_updated_at();
+
 drop policy if exists "Public can read published post comments" on public.post_comments;
 create policy "Public can read published post comments"
 on public.post_comments for select
