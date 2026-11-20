@@ -149,7 +149,8 @@ end;
 $$;
 
 -- Moderators can hide a comment; its replies must then disappear from public reads.
-set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false,"is_admin":true}';
+set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
+set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
 select auth.jwt() as test_jwt, public.is_admin() as admin_check, auth.uid() as current_user;
 select policyname, permissive, roles, cmd, qual, with_check
 from pg_policies where tablename = 'post_comments' order by policyname;
