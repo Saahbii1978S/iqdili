@@ -110,16 +110,16 @@ values (
 delete from auth.users where id = '33333333-3333-4333-8333-333333333333';
 do $account_delete_preservation_test$
 declare
-  parent_author uuid;
+  parent_is_anonymized boolean;
   parent_count integer;
   reply_count integer;
 begin
-  select count(*), min(user_id) into parent_count, parent_author
+  select count(*), bool_and(user_id is null) into parent_count, parent_is_anonymized
   from public.post_comments where body = 'Account deletion parent';
   select count(*) into reply_count
   from public.post_comments where body = 'Reply by a different member';
 
-  if parent_count <> 1 or parent_author is not null then
+  if parent_count <> 1 or parent_is_anonymized is distinct from true then
     raise exception 'Deleted author's parent comment was not retained and anonymized';
   end if;
   if reply_count <> 1 then
