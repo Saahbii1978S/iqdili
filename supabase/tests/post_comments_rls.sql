@@ -196,7 +196,7 @@ begin
 end;
 $public_read_test$;
 
-do $
+do $anon_role_test$
 begin
   insert into public.post_comments (post_table, post_id, user_id, body)
   values ('market_posts', 1, '11111111-1111-4111-8111-111111111111', 'Anonymous role insert');
@@ -204,7 +204,7 @@ begin
 exception when insufficient_privilege then
   null;
 end;
-$$;
+$anon_role_test$;
 
 reset role;
 select 'post_comments RLS regression tests passed' as result;
