@@ -210,7 +210,5 @@ using (
   or public.is_admin()
 );
 
-drop policy if exists "Moderators can manage comment visibility" on public.post_comments;
-
 grant select on public.post_comments to anon, authenticated;
 grant insert, update, delete on public.post_comments to authenticated;
