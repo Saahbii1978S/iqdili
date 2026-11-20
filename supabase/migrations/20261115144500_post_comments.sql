@@ -55,6 +55,32 @@ $$;
 revoke all on function ahla_internal.comment_target_is_public(text, bigint) from public;
 grant execute on function ahla_internal.comment_target_is_public(text, bigint) to anon, authenticated;
 
+create or replace function ahla_internal.comment_parent_is_public(
+  p_parent_id bigint,
+  p_post_table text,
+  p_post_id bigint
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select exists (
+    select 1
+    from public.post_comments parent
+    where parent.id = p_parent_id
+      and parent.post_table = p_post_table
+      and parent.post_id = p_post_id
+      and parent.parent_id is null
+      and parent.status = 'published'
+      and ahla_internal.comment_target_is_public(parent.post_table, parent.post_id)
+  );
+$;
+
+revoke all on function ahla_internal.comment_parent_is_public(bigint, text, bigint) from public;
+grant execute on function ahla_internal.comment_parent_is_public(bigint, text, bigint) to anon, authenticated;
+
 create or replace function ahla_internal.validate_post_comment_parent()
 returns trigger
 language plpgsql
@@ -98,6 +124,10 @@ to anon, authenticated
 using (
   status = 'published'
   and ahla_internal.comment_target_is_public(post_table, post_id)
+  and (
+    parent_id is null
+    or ahla_internal.comment_parent_is_public(parent_id, post_table, post_id)
+  )
 );
 
 drop policy if exists "Signed-in members can comment on approved posts" on public.post_comments;
