@@ -14,7 +14,8 @@ create table if not exists public.post_comments (
     'real_estate_posts'
   )),
   post_id bigint not null,
-  parent_id bigint references public.post_comments(id) on delete cascade,
+  -- Preserve replies by preventing deletion of a parent while replies still reference it.
+  parent_id bigint references public.post_comments(id),
   user_id uuid not null references auth.users(id) on delete cascade,
   body text not null check (char_length(btrim(body)) between 1 and 1000),
   status text not null default 'published' check (status in ('published', 'hidden')),
