@@ -2,13 +2,12 @@
 "use strict";
 let client=null;
 let currentUser=null;
-const loaded=new Set();
-const busy=new Set();
+let loaded=new WeakSet();
+const busy=new WeakSet();
 
 function escapeHtml(value){
  return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 }
-function keyFor(widget){return widget.dataset.postTable+":"+widget.dataset.postId;}
 function addStyles(){
  if(document.getElementById("ahla-comments-styles"))return;
  const style=document.createElement("style");
@@ -68,9 +67,9 @@ async function refreshUser(){
  if(currentUser?.is_anonymous)currentUser=null;
 }
 async function loadComments(widget){
- const key=keyFor(widget),panel=widget.querySelector("[data-comments-panel]");
- if(!panel||busy.has(key))return;
- busy.add(key);panel.innerHTML='<p class="post-comment-login">جاري تحميل التعليقات...</p>';
+ const panel=widget.querySelector("[data-comments-panel]");
+ if(!panel||busy.has(widget))return;
+ busy.add(widget);panel.innerHTML='<p class="post-comment-login">جاري تحميل التعليقات...</p>';
  try{
   await refreshUser();
   const {data,error}=await client.from("post_comments")
@@ -88,11 +87,11 @@ async function loadComments(widget){
   if(toggle)toggle.textContent="💬 التعليقات ("+count+")";
   panel.innerHTML=(top.length?top.map(row=>renderComment(row,rows)).join(""):'<p class="post-comment-login">ما فماش تعليقات. كن أوّل واحد يعلّق!</p>')+
    (currentUser?makeForm(""):loginPrompt());
-  loaded.add(key);
+  loaded.add(widget);
  }catch(error){
   panel.innerHTML='<p class="post-comment-error">تعذّر تحميل التعليقات. تثبّت من الاتصال وعاود.</p><button type="button" class="post-comment-action" data-comments-retry>إعادة المحاولة</button>';
   console.warn("Post comments:",error);
- }finally{busy.delete(key);}
+ }finally{busy.delete(widget);}
 }
 async function submitComment(form,widget){
  const textarea=form.querySelector("textarea"),button=form.querySelector("button[type=submit]");
@@ -122,7 +121,7 @@ function onClick(event){
   const panel=widget.querySelector("[data-comments-panel]");
   panel.hidden=!panel.hidden;
   toggle.setAttribute("aria-expanded",String(!panel.hidden));
-  if(!panel.hidden&&!loaded.has(keyFor(widget)))loadComments(widget);
+  if(!panel.hidden&&!loaded.has(widget))loadComments(widget);
   return;
  }
  const login=event.target.closest("[data-comment-login]");
@@ -161,7 +160,7 @@ function onClick(event){
   if(!currentUser||!window.confirm("تحب تحذف التعليق هذا؟"))return;
   const widget=remove.closest("[data-post-comments]");
   client.from("post_comments").delete().eq("id",Number(remove.dataset.deleteComment)).eq("user_id",currentUser.id)
-   .then(({error})=>{if(error)throw error;loaded.delete(keyFor(widget));return loadComments(widget);})
+   .then(({error})=>{if(error)throw error;loaded.delete(widget);return loadComments(widget);})
    .catch(error=>alert("تعذّر حذف التعليق: "+(error.message||"عاود المحاولة.")));
  }
 }
@@ -180,7 +179,7 @@ async function submitEdit(form,widget){
    .eq("id",Number(form.dataset.commentId))
    .eq("user_id",currentUser.id);
   if(error)throw error;
-  loaded.delete(keyFor(widget));
+  loaded.delete(widget);
   await loadComments(widget);
  }catch(error){
   errorBox.textContent="ما نجّمش نحفظ التعديل. تثبّت من تسجيل الدخول وعاود.";
@@ -208,7 +207,7 @@ function init(){
  refreshUser().catch(()=>{});
  client.auth.onAuthStateChange((_event,session)=>{
   currentUser=session?.user||null;
-  loaded.clear();
+  loaded=new WeakSet();
   document.querySelectorAll("[data-post-comments]:not([hidden]) [data-comments-panel]").forEach(panel=>{
    if(!panel.hidden){const widget=panel.closest("[data-post-comments]");if(widget)loadComments(widget);}
   });
