@@ -137,7 +137,7 @@ update public.post_comments
 set body = 'Edited parent'
 where body = 'Parent to test replies';
 
-do $$
+do $
 begin
   update public.post_comments
   set user_id = '22222222-2222-4222-8222-222222222222'
@@ -146,7 +146,20 @@ begin
 exception when insufficient_privilege then
   null;
 end;
-$$;
+$;
+
+do $
+begin
+  update public.post_comments
+  set post_id = 2
+  where body = 'Edited parent';
+  raise exception 'Trigger allowed a member to move a comment to another post';
+exception when raise_exception then
+  if sqlerrm <> 'Comment ownership, target, parent, status and creation time are immutable' then
+    raise;
+  end if;
+end;
+$;
 
 -- A separate administrator can delete another member's comment.
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
