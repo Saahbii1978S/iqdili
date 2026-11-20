@@ -178,7 +178,7 @@ exception when raise_exception then
 end;
 $member_visibility_test$;
 
--- A separate administrator can moderate visibility and delete another member's comment.
+-- A separate administrator can moderate visibility but cannot delete another member's comment.
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
 do $$
@@ -244,7 +244,18 @@ set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
 update public.post_comments set status = 'published'
 where body = 'Edited parent';
-delete from public.post_comments where body = 'Service comment';
+do $admin_delete_guard_test$
+declare
+  deleted_count integer;
+begin
+  delete from public.post_comments
+  where body = 'Service comment';
+  get diagnostics deleted_count = row_count;
+  if deleted_count <> 0 then
+    raise exception 'Administrator deleted another member comment without an explicit moderation-delete permission';
+  end if;
+end;
+$admin_delete_guard_test$;
 reset role;
 reset request.jwt.claim.sub;
 reset request.jwt.claims;
@@ -255,8 +266,8 @@ begin
   if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 3 then
     raise exception 'Public read policy failed to expose the published parent and its reply';
   end if;
-  if (select count(*) from public.post_comments where post_table = 'service_requests' and post_id = 1) <> 0 then
-    raise exception 'Administrator could not delete another member comment';
+  if (select count(*) from public.post_comments where post_table = 'service_requests' and post_id = 1) <> 1 then
+    raise exception 'Administrator unexpectedly deleted another member comment';
   end if;
 end;
 $public_read_test$;
