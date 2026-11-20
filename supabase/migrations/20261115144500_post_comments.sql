@@ -165,6 +165,13 @@ using (
   )
 );
 
+-- Moderators need SELECT visibility on hidden rows before PostgreSQL permits UPDATE.
+drop policy if exists "Moderators can read comments for moderation" on public.post_comments;
+create policy "Moderators can read comments for moderation"
+on public.post_comments for select
+to authenticated
+using (public.is_admin());
+
 drop policy if exists "Signed-in members can comment on approved posts" on public.post_comments;
 create policy "Signed-in members can comment on approved posts"
 on public.post_comments for insert
