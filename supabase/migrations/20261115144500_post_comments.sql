@@ -117,7 +117,8 @@ before insert or update of post_table, post_id, parent_id
 on public.post_comments
 for each row execute function ahla_internal.validate_post_comment_parent();
 
--- Owners may edit comment text, but cannot move comments or alter their moderation state.
+-- Owners may edit their own text. Only administrators may change visibility,
+-- and moderators cannot rewrite another member's comment while moderating it.
 create or replace function ahla_internal.prevent_post_comment_identity_change()
 returns trigger
 language plpgsql
@@ -128,10 +129,20 @@ begin
      or new.post_table is distinct from old.post_table
      or new.post_id is distinct from old.post_id
      or new.parent_id is distinct from old.parent_id
-     or new.status is distinct from old.status
      or new.created_at is distinct from old.created_at then
-    raise exception 'Comment ownership, target, parent, status and creation time are immutable';
+    raise exception 'Comment ownership, target, parent and creation time are immutable';
   end if;
+
+  if new.status is distinct from old.status and not public.is_admin() then
+    raise exception 'Only administrators may change comment visibility';
+  end if;
+
+  if public.is_admin()
+     and old.user_id is distinct from auth.uid()
+     and new.body is distinct from old.body then
+    raise exception 'Administrators may moderate visibility but cannot rewrite another member comment';
+  end if;
+
   return new;
 end;
 $comment_guard$;
@@ -180,6 +191,15 @@ with check (
 );
 
 drop policy if exists "Moderators can manage comment visibility" on public.post_comments;
+create policy "Moderators can manage comment visibility"
+on public.post_comments for update
+to authenticated
+using (public.is_admin())
+with check (
+  public.is_admin()
+  and status in ('published', 'hidden')
+  and char_length(btrim(body)) between 1 and 1000
+);
 
 drop policy if exists "Members and moderators can delete comments" on public.post_comments;
 create policy "Members and moderators can delete comments"
