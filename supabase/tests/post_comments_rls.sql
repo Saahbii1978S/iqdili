@@ -150,6 +150,13 @@ $$;
 
 -- Moderators can hide a comment; its replies must then disappear from public reads.
 set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false,"is_admin":true}';
+select auth.jwt() as test_jwt, public.is_admin() as admin_check, auth.uid() as current_user;
+select policyname, permissive, roles, cmd, qual, with_check
+from pg_policies where tablename = 'post_comments' order by policyname;
+select body, status, user_id = auth.uid() as owner_check,
+       public.is_admin() as admin_check,
+       ahla_internal.comment_target_is_public(post_table, post_id) as target_check
+from public.post_comments where body = 'Edited parent';
 do $$
 begin
   if not public.is_admin() then
