@@ -148,16 +148,9 @@ exception when insufficient_privilege then
 end;
 $$;
 
--- Moderators can hide a comment; its replies must then disappear from public reads.
+-- A separate administrator can delete another member's comment.
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
-select auth.jwt() as test_jwt, public.is_admin() as admin_check, auth.uid() as current_user;
-select policyname, permissive, roles, cmd, qual, with_check
-from pg_policies where tablename = 'post_comments' order by policyname;
-select body, status, user_id = auth.uid() as owner_check,
-       public.is_admin() as admin_check,
-       ahla_internal.comment_target_is_public(post_table, post_id) as target_check
-from public.post_comments where body = 'Edited parent';
 do $$
 begin
   if not public.is_admin() then
@@ -165,19 +158,25 @@ begin
   end if;
 end;
 $$;
-update public.post_comments set status = 'hidden' where body = 'Edited parent';
+delete from public.post_comments where body = 'Service comment';
 reset role;
 reset request.jwt.claim.sub;
 reset request.jwt.claims;
 
+-- Simulate moderator hiding in the isolated database to verify reply visibility.
+update public.post_comments set status = 'hidden' where body = 'Edited parent';
+
 set role anon;
-do $$
+do $
 begin
   if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 1 then
     raise exception 'Public read policy exposed a hidden parent or its reply';
   end if;
+  if (select count(*) from public.post_comments where post_table = 'service_requests' and post_id = 1) <> 0 then
+    raise exception 'Administrator could not delete another member comment';
+  end if;
 end;
-$$;
+$;
 
 do $$
 begin
