@@ -1,0 +1,21 @@
+name: Trusted client IP source check
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "supabase/functions/ask-iqdili/index.ts"
+      - "tests/ask-iqdili-client-ip-contract.py"
+      - ".github/workflows/ask-iqdili-client-ip-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  client-ip-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check rate-limit client IP source
+        run: python3 tests/ask-iqdili-client-ip-contract.py
