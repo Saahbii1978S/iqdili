@@ -244,7 +244,7 @@ using (user_id = (select auth.uid()));
 
 -- Client roles may create comments, but cannot read or mutate the base table.
 -- Reads use the privacy-safe view; edits, deletes and moderation use guarded RPCs.
-revoke all on public.post_comments from anon, authenticated;
+revoke all on public.post_comments from public, anon, authenticated;
 grant insert on public.post_comments to authenticated;
 
 
@@ -264,7 +264,7 @@ where c.status = 'published'
     or ahla_internal.comment_parent_is_public(c.parent_id, c.post_table, c.post_id)
   );
 
-revoke all on public.post_comments from anon, authenticated;
+revoke all on public.post_comments from public, anon, authenticated;
 grant select on public.post_comments_public to anon, authenticated;
 
 -- Moderation gets a separate privileged read surface, including hidden rows.
