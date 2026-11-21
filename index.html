@@ -2040,6 +2040,8 @@ let sitePresenceStarted=false;
 let sitePresenceStarting=false;
 let sitePresenceRetryTimer=null;
 let sitePresenceHeartbeatTimer=null;
+let sitePresenceGeneration=0;
+let sitePresenceRestartPending=false;
 function getSitePresenceSessionId(){
  try{
   let token=sessionStorage.getItem("ahla-site-presence-session");
@@ -2050,12 +2052,25 @@ function getSitePresenceSessionId(){
   return token;
  }catch(error){return "";}
 }
+function restartSitePresence(){
+ sitePresenceGeneration++;
+ sitePresenceStarted=false;
+ if(sitePresenceHeartbeatTimer){window.clearInterval(sitePresenceHeartbeatTimer);sitePresenceHeartbeatTimer=null;}
+ if(sitePresenceRetryTimer){window.clearTimeout(sitePresenceRetryTimer);sitePresenceRetryTimer=null;}
+ if(sitePresenceStarting){
+  sitePresenceRestartPending=true;
+  return;
+ }
+ window.setTimeout(startSitePresence,0);
+}
 async function startSitePresence(){
  if(!db||sitePresenceStarted||sitePresenceStarting)return;
  sitePresenceStarting=true;
+ const generation=sitePresenceGeneration;
  try{
   const {data:sessionData,error:sessionError}=await db.auth.getSession();
   if(sessionError)throw sessionError;
+  if(generation!==sitePresenceGeneration)return;
   if(sessionData?.session){
    const [{data:isAdmin,error:adminError},{data:isOwner,error:ownerError}]=await Promise.all([
     db.rpc("is_admin"),
@@ -2063,16 +2078,18 @@ async function startSitePresence(){
    ]);
    if(adminError)throw adminError;
    if(ownerError)throw ownerError;
+   if(generation!==sitePresenceGeneration)return;
    if(isAdmin===true||isOwner===true){
     if(sitePresenceHeartbeatTimer){window.clearInterval(sitePresenceHeartbeatTimer);sitePresenceHeartbeatTimer=null;}
     sitePresenceStarted=true;
     return;
    }
   }
+  if(generation!==sitePresenceGeneration)return;
   const token=getSitePresenceSessionId();
   if(!token)throw new Error("A temporary presence token could not be created.");
   const heartbeat=()=>{
-   if(!db)return;
+   if(!db||generation!==sitePresenceGeneration)return;
    db.rpc("heartbeat_site_presence",{p_session_id:token}).then(({error})=>{
     if(error)console.warn("Temporary site presence:",error.message);
    }).catch(error=>console.warn("Temporary site presence:",error));
@@ -2083,7 +2100,7 @@ async function startSitePresence(){
  }catch(error){
   console.warn("Temporary site presence authorization:",error);
   // A transient session/network failure must not permanently disable presence.
-  if(!sitePresenceRetryTimer){
+  if(generation===sitePresenceGeneration&&!sitePresenceRetryTimer){
    sitePresenceRetryTimer=window.setTimeout(()=>{
     sitePresenceRetryTimer=null;
     startSitePresence();
@@ -2091,7 +2108,11 @@ async function startSitePresence(){
   }
  }finally{
   sitePresenceStarting=false;
- }
+  if(sitePresenceRestartPending){
+   sitePresenceRestartPending=false;
+   window.setTimeout(startSitePresence,0);
+  }
+ } 
 }
 if(!window.sitePresenceRefreshTimer){
  window.sitePresenceRefreshTimer=window.setInterval(()=>{
@@ -2119,14 +2140,11 @@ db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
  if(event==="SIGNED_IN"){
   notifyRecentConfirmedSignup(session);
-  window.setTimeout(startSitePresence,0);
+  restartSitePresence();
   if(new URLSearchParams(window.location.search).get("open-admin")==="1" || (el("admin")&&!el("admin").classList.contains("hidden")))show("admin");
  }
  if(event==="SIGNED_OUT"){
-  sitePresenceStarted=false;
-  if(sitePresenceHeartbeatTimer){window.clearInterval(sitePresenceHeartbeatTimer);sitePresenceHeartbeatTimer=null;}
-  if(sitePresenceRetryTimer){window.clearTimeout(sitePresenceRetryTimer);sitePresenceRetryTimer=null;}
-  window.setTimeout(startSitePresence,0);
+  restartSitePresence();
  }
 });
 authListenerInstalled=true;
