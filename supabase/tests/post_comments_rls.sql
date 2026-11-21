@@ -323,10 +323,13 @@ do $member_visibility_test$
 begin
   update public.post_comments set status = 'hidden' where body = 'Market parent';
   raise exception 'A regular member changed comment visibility';
-exception when raise_exception then
-  if sqlerrm <> 'Only administrators may change comment visibility' then
-    raise;
-  end if;
+exception
+  when insufficient_privilege then
+    null;
+  when raise_exception then
+    if sqlerrm <> 'Only administrators may change comment visibility' then
+      raise;
+    end if;
 end;
 $member_visibility_test$;
 
@@ -451,6 +454,16 @@ begin
   end if;
   if not has_table_privilege('anon', 'public.post_comments_public', 'select') then
     raise exception 'Anonymous visitors cannot read the privacy-safe comments view';
+  end if;
+  if has_table_privilege('authenticated', 'public.post_comments', 'select')
+     or has_table_privilege('authenticated', 'public.post_comments', 'update')
+     or has_table_privilege('authenticated', 'public.post_comments', 'delete')
+     or has_table_privilege('anon', 'public.post_comments', 'select')
+     or has_table_privilege('anon', 'public.post_comments', 'insert') then
+    raise exception 'Client roles retain forbidden raw-table privileges';
+  end if;
+  if not has_table_privilege('authenticated', 'public.post_comments', 'insert') then
+    raise exception 'Signed-in members cannot insert comments';
   end if;
 end;
 $privacy_surface_test$;
