@@ -263,6 +263,16 @@ where c.status = 'published'
 
 revoke all on public.post_comments from anon, authenticated;
 grant select on public.post_comments_public to anon, authenticated;
+
+-- Moderation gets a separate privileged read surface, including hidden rows.
+create or replace view public.post_comments_moderation
+with (security_barrier = true)
+as
+select c.*
+from public.post_comments c
+where public.is_admin();
+grant select on public.post_comments_moderation to authenticated;
+
 grant insert, update, delete on public.post_comments to authenticated;
 
 create or replace function public.update_own_post_comment(p_comment_id bigint, p_body text)
