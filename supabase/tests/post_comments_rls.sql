@@ -344,9 +344,11 @@ begin
   end if;
 end;
 $$;
--- Admin can hide a comment, but cannot rewrite its text during moderation.
-update public.post_comments set status = 'hidden'
-where body = 'Edited parent';
+-- Moderators change visibility through the guarded RPC, not direct table access.
+select public.set_post_comment_visibility(
+  (select id from public.post_comments_moderation where body = 'Edited parent'),
+  'hidden'
+);
 
 -- Confirm the moderator SELECT policy exposes the now-hidden row to its moderator.
 do $admin_hidden_read_test$
