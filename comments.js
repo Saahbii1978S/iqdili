@@ -50,7 +50,7 @@ function renderComment(comment,all){
  const mine=comment.is_mine;
  const replies=all.filter(item=>item.parent_id===comment.id);
  let html='<article class="post-comment" data-comment-id="'+comment.id+'">'+
-  '<div class="post-comment-meta"><strong>'+(mine?"أنت":comment.is_mine?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(comment.created_at).toLocaleString("ar-TN"))+'</span></div>'+
+  '<div class="post-comment-meta"><strong>'+(mine?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(comment.created_at).toLocaleString("ar-TN"))+'</span></div>'+
   '<p class="post-comment-body">'+escapeHtml(comment.body)+'</p>'+
   (currentUser?'<button type="button" class="post-comment-action" data-reply="'+comment.id+'">ردّ</button>':"")+
   (mine?'<button type="button" class="post-comment-action" data-edit-comment="'+comment.id+'">تعديل</button>'+(replies.length?'<span class="post-comment-login">لا يمكن حذف تعليق فيه ردود</span>':'<button type="button" class="post-comment-action" data-delete-comment="'+comment.id+'">حذف</button>'):"")+
