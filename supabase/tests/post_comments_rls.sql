@@ -245,11 +245,14 @@ exception when raise_exception then
 end;
 $$;
 
--- Owners can edit their own comments, but cannot transfer ownership or self-anonymize.
-update public.post_comments
-set body = 'Edited parent', updated_at = '2000-01-01 00:00:00+00'
-where body = 'Parent to test replies';
+-- Members edit their own comments only through the guarded RPC; raw table reads/writes are revoked.
+select public.update_own_post_comment(
+  (select id from public.post_comments_public where body = 'Parent to test replies'),
+  'Edited parent'
+);
 
+-- The remaining integrity probes inspect the private table as the test owner.
+reset role;
 do $server_owned_updated_at_test$
 begin
   if not exists (
@@ -286,8 +289,6 @@ exception
     if sqlerrm <> 'Comment id, ownership, target, parent and creation time are immutable' then
       raise;
     end if;
-  when insufficient_privilege then
-    null;
 end;
 $comment_test$;
 
@@ -328,6 +329,10 @@ exception when raise_exception then
   end if;
 end;
 $member_visibility_test$;
+
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
+set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false}';
 
 -- A separate administrator can moderate visibility but cannot delete another member's comment.
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
