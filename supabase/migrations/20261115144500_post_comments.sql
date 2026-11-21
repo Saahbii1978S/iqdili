@@ -242,8 +242,10 @@ on public.post_comments for delete
 to authenticated
 using (user_id = (select auth.uid()));
 
-grant select on public.post_comments to anon, authenticated;
-grant insert, update, delete on public.post_comments to authenticated;
+-- Client roles may create comments, but cannot read or mutate the base table.
+-- Reads use the privacy-safe view; edits, deletes and moderation use guarded RPCs.
+revoke all on public.post_comments from anon, authenticated;
+grant insert on public.post_comments to authenticated;
 
 
 -- Expose a privacy-safe read surface: never return the author's UUID to clients.
@@ -273,8 +275,6 @@ select c.*
 from public.post_comments c
 where public.is_admin();
 grant select on public.post_comments_moderation to authenticated;
-
-grant insert, update, delete on public.post_comments to authenticated;
 
 create or replace function public.update_own_post_comment(p_comment_id bigint, p_body text)
 returns boolean
