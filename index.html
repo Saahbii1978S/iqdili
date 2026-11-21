@@ -2151,7 +2151,11 @@ db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
  if(event==="SIGNED_IN"){
   notifyRecentConfirmedSignup(session);
+  restartSitePresence();
   if(new URLSearchParams(window.location.search).get("open-admin")==="1" || (el("admin")&&!el("admin").classList.contains("hidden")))show("admin");
+ }
+ if(event==="SIGNED_OUT"){
+  restartSitePresence();
  }
 });
 authListenerInstalled=true;
