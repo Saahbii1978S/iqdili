@@ -163,6 +163,8 @@ set role authenticated;
 set request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
 set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false}';
 
+-- The raw table is intentionally not client-readable; run the FK integrity probe as the test owner.
+reset role;
 -- Deleting a parent must not cascade-delete replies written by other members.
 do $reply_preservation_test$
 declare
@@ -180,6 +182,9 @@ begin
   end if;
 end;
 $reply_preservation_test$;
+set role authenticated;
+set request.jwt.claim.sub = '11111111-1111-4111-8111-111111111111';
+set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anonymous":false}';
 
 -- Pending posts and forged authorship must be rejected by RLS.
 do $$
