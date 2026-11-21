@@ -91,7 +91,7 @@ insert into public.post_comments (post_table, post_id, parent_id, user_id, body)
 values (
   'market_posts',
   1,
-  (select id from public.post_comments where body = 'Parent to test replies'),
+  (select id from public.post_comments_public where body = 'Parent to test replies'),
   auth.uid(),
   'Valid one-level reply'
 );
@@ -104,7 +104,7 @@ insert into public.post_comments (post_table, post_id, parent_id, user_id, body)
 values (
   'market_posts',
   2,
-  (select id from public.post_comments where body = 'Account deletion parent'),
+  (select id from public.post_comments_public where body = 'Account deletion parent'),
   '44444444-4444-4444-8444-444444444444',
   'Reply by a different member'
 );
@@ -118,9 +118,9 @@ declare
   reply_count integer;
 begin
   select count(*), bool_and(user_id is null) into parent_count, parent_is_anonymized
-  from public.post_comments where body = 'Account deletion parent';
+  from public.post_comments_public where body = 'Account deletion parent';
   select count(*) into reply_count
-  from public.post_comments where body = 'Reply by a different member';
+  from public.post_comments_public where body = 'Reply by a different member';
 
   if parent_count <> 1 or parent_is_anonymized is distinct from true then
     raise exception 'Deleted-account parent comment was not retained and anonymized';
@@ -219,7 +219,7 @@ set request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","is_anon
 do $$
 begin
   insert into public.post_comments (post_table, post_id, parent_id, user_id, body)
-  values ('market_posts', 2, (select id from public.post_comments where body = 'Parent to test replies'), auth.uid(), 'Cross-post reply');
+  values ('market_posts', 2, (select id from public.post_comments_public where body = 'Parent to test replies'), auth.uid(), 'Cross-post reply');
   raise exception 'Trigger accepted a cross-post reply';
 exception when raise_exception then
   if sqlerrm <> 'Reply must target a visible top-level comment on the same post' then
@@ -231,7 +231,7 @@ $$;
 do $$
 begin
   insert into public.post_comments (post_table, post_id, parent_id, user_id, body)
-  values ('market_posts', 1, (select id from public.post_comments where body = 'Valid one-level reply'), auth.uid(), 'Nested reply');
+  values ('market_posts', 1, (select id from public.post_comments_public where body = 'Valid one-level reply'), auth.uid(), 'Nested reply');
   raise exception 'Trigger accepted a nested reply';
 exception when raise_exception then
   if sqlerrm <> 'Reply must target a visible top-level comment on the same post' then
@@ -377,7 +377,7 @@ reset role;
 set role anon;
 do $hidden_parent_test$
 begin
-  if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 1 then
+  if (select count(*) from public.post_comments_public where post_table = 'market_posts' and post_id = 1) <> 1 then
     raise exception 'Hidden parent or its reply remained publicly visible';
   end if;
 end;
@@ -409,10 +409,10 @@ reset request.jwt.claims;
 set role anon;
 do $public_read_test$
 begin
-  if (select count(*) from public.post_comments where post_table = 'market_posts' and post_id = 1) <> 3 then
+  if (select count(*) from public.post_comments_public where post_table = 'market_posts' and post_id = 1) <> 3 then
     raise exception 'Public read policy failed to expose the published parent and its reply';
   end if;
-  if (select count(*) from public.post_comments where post_table = 'service_requests' and post_id = 1) <> 1 then
+  if (select count(*) from public.post_comments_public where post_table = 'service_requests' and post_id = 1) <> 1 then
     raise exception 'Administrator unexpectedly deleted another member comment';
   end if;
 end;
@@ -429,4 +429,15 @@ end;
 $anon_role_test$;
 
 reset role;
+do $privacy_surface_test$
+begin
+  if has_column_privilege('anon', 'public.post_comments', 'user_id', 'select')
+     or has_column_privilege('authenticated', 'public.post_comments', 'user_id', 'select') then
+    raise exception 'Client role can still read raw comment author UUIDs';
+  end if;
+  if not has_table_privilege('anon', 'public.post_comments_public', 'select') then
+    raise exception 'Anonymous visitors cannot read the privacy-safe comments view';
+  end if;
+end;
+$privacy_surface_test$;
 select 'post_comments RLS regression tests passed' as result;
