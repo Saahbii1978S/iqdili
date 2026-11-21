@@ -377,7 +377,7 @@ reset role;
 set role anon;
 do $hidden_parent_test$
 begin
-  if (select count(*) from public.post_comments_public where post_table = 'market_posts' and post_id = 1) <> 1 then
+  if (select count(*) from public.post_comments_moderation where post_table = 'market_posts' and post_id = 1) <> 1 then
     raise exception 'Hidden parent or its reply remained publicly visible';
   end if;
 end;
