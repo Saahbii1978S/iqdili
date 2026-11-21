@@ -243,3 +243,77 @@ using (user_id = (select auth.uid()));
 
 grant select on public.post_comments to anon, authenticated;
 grant insert, update, delete on public.post_comments to authenticated;
+
+
+-- Expose a privacy-safe read surface: never return the author's UUID to clients.
+-- The view applies the same public-post and visible-parent constraints as the table RLS.
+create or replace view public.post_comments_public
+with (security_barrier = true)
+as
+select
+  c.id, c.post_table, c.post_id, c.parent_id, c.body, c.created_at,
+  (c.user_id = (select auth.uid())) as is_mine
+from public.post_comments c
+where c.status = 'published'
+  and ahla_internal.comment_target_is_public(c.post_table, c.post_id)
+  and (
+    c.parent_id is null
+    or ahla_internal.comment_parent_is_public(c.parent_id, c.post_table, c.post_id)
+  );
+
+revoke all on public.post_comments from anon, authenticated;
+grant select on public.post_comments_public to anon, authenticated;
+
+-- Moderation gets a separate privileged read surface, including hidden rows.
+create or replace view public.post_comments_moderation
+with (security_barrier = true)
+as
+select c.*
+from public.post_comments c
+where public.is_admin();
+grant select on public.post_comments_moderation to authenticated;
+
+grant insert, update, delete on public.post_comments to authenticated;
+
+create or replace function public.update_own_post_comment(p_comment_id bigint, p_body text)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare affected integer;
+begin
+  if (select auth.uid()) is null
+     or char_length(btrim(coalesce(p_body, ''))) not between 1 and 1000 then
+    return false;
+  end if;
+  update public.post_comments
+     set body = btrim(p_body)
+   where id = p_comment_id
+     and user_id = (select auth.uid())
+     and status = 'published';
+  get diagnostics affected = row_count;
+  return affected = 1;
+end;
+$$;
+revoke all on function public.update_own_post_comment(bigint, text) from public, anon;
+grant execute on function public.update_own_post_comment(bigint, text) to authenticated;
+
+create or replace function public.delete_own_post_comment(p_comment_id bigint)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare affected integer;
+begin
+  if (select auth.uid()) is null then return false; end if;
+  delete from public.post_comments
+   where id = p_comment_id
+     and user_id = (select auth.uid());
+  get diagnostics affected = row_count;
+  return affected = 1;
+end;
+$$;
+revoke all on function public.delete_own_post_comment(bigint) from public, anon;
+grant execute on function public.delete_own_post_comment(bigint) to authenticated;
