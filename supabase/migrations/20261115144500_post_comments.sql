@@ -318,3 +318,26 @@ end;
 $$;
 revoke all on function public.delete_own_post_comment(bigint) from public, anon;
 grant execute on function public.delete_own_post_comment(bigint) to authenticated;
+
+create or replace function public.set_post_comment_visibility(p_comment_id bigint, p_status text)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare affected integer;
+begin
+  if (select auth.uid()) is null
+     or not public.is_admin()
+     or p_status not in ('published', 'hidden') then
+    return false;
+  end if;
+  update public.post_comments
+     set status = p_status
+   where id = p_comment_id;
+  get diagnostics affected = row_count;
+  return affected = 1;
+end;
+$;
+revoke all on function public.set_post_comment_visibility(bigint, text) from public, anon;
+grant execute on function public.set_post_comment_visibility(bigint, text) to authenticated;
