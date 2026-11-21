@@ -118,9 +118,9 @@ declare
   reply_count integer;
 begin
   select count(*), bool_and(user_id is null) into parent_count, parent_is_anonymized
-  from public.post_comments_public where body = 'Account deletion parent';
+  from public.post_comments where body = 'Account deletion parent';
   select count(*) into reply_count
-  from public.post_comments_public where body = 'Reply by a different member';
+  from public.post_comments where body = 'Reply by a different member';
 
   if parent_count <> 1 or parent_is_anonymized is distinct from true then
     raise exception 'Deleted-account parent comment was not retained and anonymized';
@@ -344,7 +344,7 @@ declare
   visible_count integer;
 begin
   select count(*) into visible_count
-  from public.post_comments
+  from public.post_comments_moderation
   where body = 'Edited parent';
 
   if visible_count <> 1 then
@@ -377,7 +377,7 @@ reset role;
 set role anon;
 do $hidden_parent_test$
 begin
-  if (select count(*) from public.post_comments_moderation where post_table = 'market_posts' and post_id = 1) <> 1 then
+  if (select count(*) from public.post_comments_public where post_table = 'market_posts' and post_id = 1) <> 1 then
     raise exception 'Hidden parent or its reply remained publicly visible';
   end if;
 end;
