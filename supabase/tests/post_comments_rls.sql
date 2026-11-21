@@ -371,15 +371,12 @@ begin
   begin
     update public.post_comments set body = 'Admin rewrote member comment'
     where body = 'Edited parent';
-  exception when others then
-    if sqlerrm <> 'Administrators may moderate visibility but cannot rewrite another member comment' then
-      raise;
-    end if;
+  exception when insufficient_privilege then
     rewrite_rejected := true;
   end;
 
   if not rewrite_rejected then
-    raise exception 'Administrator rewrote another member comment';
+    raise exception 'Administrator unexpectedly had raw-table UPDATE access';
   end if;
 end;
 $admin_body_guard_test$;
@@ -400,17 +397,22 @@ reset role;
 set role authenticated;
 set request.jwt.claim.sub = '22222222-2222-4222-8222-222222222222';
 set request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","is_anonymous":false,"is_admin":true}';
-update public.post_comments set status = 'published'
-where body = 'Edited parent';
+select public.set_post_comment_visibility(
+  (select id from public.post_comments_moderation where body = 'Edited parent'),
+  'published'
+);
 do $admin_delete_guard_test$
 declare
-  deleted_count integer;
+  delete_rejected boolean := false;
 begin
-  delete from public.post_comments
-  where body = 'Service comment';
-  get diagnostics deleted_count = row_count;
-  if deleted_count <> 0 then
-    raise exception 'Administrator deleted another member comment without an explicit moderation-delete permission';
+  begin
+    delete from public.post_comments
+    where body = 'Service comment';
+  exception when insufficient_privilege then
+    delete_rejected := true;
+  end;
+  if not delete_rejected then
+    raise exception 'Administrator unexpectedly had raw-table DELETE access';
   end if;
 end;
 $admin_delete_guard_test$;
