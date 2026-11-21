@@ -264,7 +264,8 @@ where c.status = 'published'
     or ahla_internal.comment_parent_is_public(c.parent_id, c.post_table, c.post_id)
   );
 
-revoke all on public.post_comments from public, anon, authenticated;
+-- Base-table privileges remain restricted; preserve authenticated INSERT granted above.
+
 grant select on public.post_comments_public to anon, authenticated;
 
 -- Moderation gets a separate privileged read surface, including hidden rows.
