@@ -1,0 +1,30 @@
+name: Public listing startup retry checks
+
+on:
+  push:
+    branches:
+      - fix/public-listings-auto-retry-when-db-ready
+    paths:
+      - "index.html"
+      - "tests/validate-public-listing-startup-retry.py"
+      - ".github/workflows/public-listing-startup-retry.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "index.html"
+      - "tests/validate-public-listing-startup-retry.py"
+      - ".github/workflows/public-listing-startup-retry.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  startup-retry-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Validate startup retry contract
+        run: python3 tests/validate-public-listing-startup-retry.py
