@@ -86,6 +86,7 @@ grant execute on function ahla_internal.comment_parent_is_public(bigint, text, b
 create or replace function ahla_internal.validate_post_comment_parent()
 returns trigger
 language plpgsql
+security definer
 set search_path = ''
 as $$
 declare
