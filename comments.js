@@ -47,16 +47,16 @@ function makeEditForm(commentId,body){
   '<div class="post-comment-error" aria-live="polite"></div></form>';
 }
 function renderComment(comment,all){
- const mine=currentUser&&currentUser.id===comment.user_id;
+ const mine=comment.is_mine;
  const replies=all.filter(item=>item.parent_id===comment.id);
  let html='<article class="post-comment" data-comment-id="'+comment.id+'">'+
-  '<div class="post-comment-meta"><strong>'+(mine?"أنت":comment.user_id===null?"عضو سابق":"عضو")+'</strong><span>'+escapeHtml(new Date(comment.created_at).toLocaleString("ar-TN"))+'</span></div>'+
+  '<div class="post-comment-meta"><strong>'+(mine?"أنت":comment.is_mine?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(comment.created_at).toLocaleString("ar-TN"))+'</span></div>'+
   '<p class="post-comment-body">'+escapeHtml(comment.body)+'</p>'+
   (currentUser?'<button type="button" class="post-comment-action" data-reply="'+comment.id+'">ردّ</button>':"")+
   (mine?'<button type="button" class="post-comment-action" data-edit-comment="'+comment.id+'">تعديل</button>'+(replies.length?'<span class="post-comment-login">لا يمكن حذف تعليق فيه ردود</span>':'<button type="button" class="post-comment-action" data-delete-comment="'+comment.id+'">حذف</button>'):"")+
   '<div data-reply-slot="'+comment.id+'"></div>';
  if(replies.length){
-  html+='<div class="post-comment-replies">'+replies.map(reply=>'<article class="post-comment" data-comment-id="'+reply.id+'"><div class="post-comment-meta"><strong>'+(currentUser&&currentUser.id===reply.user_id?"أنت":reply.user_id===null?"عضو سابق":"عضو")+'</strong><span>'+escapeHtml(new Date(reply.created_at).toLocaleString("ar-TN"))+'</span></div><p class="post-comment-body">'+escapeHtml(reply.body)+'</p>'+(currentUser&&currentUser.id===reply.user_id?'<button type="button" class="post-comment-action" data-edit-comment="'+reply.id+'">تعديل</button><button type="button" class="post-comment-action" data-delete-comment="'+reply.id+'">حذف</button>':"")+'</article>').join("")+'</div>';
+  html+='<div class="post-comment-replies">'+replies.map(reply=>'<article class="post-comment" data-comment-id="'+reply.id+'"><div class="post-comment-meta"><strong>'+(reply.is_mine?"أنت":"عضو")+'</strong><span>'+escapeHtml(new Date(reply.created_at).toLocaleString("ar-TN"))+'</span></div><p class="post-comment-body">'+escapeHtml(reply.body)+'</p>'+(reply.is_mine?'<button type="button" class="post-comment-action" data-edit-comment="'+reply.id+'">تعديل</button><button type="button" class="post-comment-action" data-delete-comment="'+reply.id+'">حذف</button>':"")+'</article>').join("")+'</div>';
  }
  return html+'</article>';
 }
@@ -73,8 +73,8 @@ async function loadComments(widget){
  try{
   await refreshUser();
   const postTable=widget.dataset.postTable,postId=Number(widget.dataset.postId);
-  const {data:topData,error:topError}=await client.from("post_comments")
-   .select("id,post_id,parent_id,user_id,body,created_at")
+  const {data:topData,error:topError}=await client.from("post_comments_public")
+   .select("id,post_id,parent_id,body,created_at,is_mine")
    .eq("post_table",postTable)
    .eq("post_id",postId)
    .eq("status","published")
@@ -92,8 +92,8 @@ async function loadComments(widget){
   let replies=[];
   let hasMoreReplies=false;
   if(parentIds.length){
-   const {data:replyData,error:replyError}=await client.from("post_comments")
-    .select("id,post_id,parent_id,user_id,body,created_at")
+   const {data:replyData,error:replyError}=await client.from("post_comments_public")
+    .select("id,post_id,parent_id,body,created_at,is_mine")
     .eq("post_table",postTable)
     .eq("post_id",postId)
     .eq("status","published")
@@ -186,8 +186,8 @@ function onClick(event){
  if(remove){
   if(!currentUser||!window.confirm("تحب تحذف التعليق هذا؟"))return;
   const widget=remove.closest("[data-post-comments]");
-  client.from("post_comments").delete().eq("id",Number(remove.dataset.deleteComment)).eq("user_id",currentUser.id)
-   .then(({error})=>{if(error)throw error;loaded.delete(widget);return loadComments(widget);})
+  client.rpc("delete_own_post_comment",{p_comment_id:Number(remove.dataset.deleteComment)})
+   .then(({error,data})=>{if(error)throw error;if(data!==true)throw new Error("تعذّر حذف التعليق");loaded.delete(widget);return loadComments(widget);})
    .catch(error=>alert("تعذّر حذف التعليق: "+(error.message||"عاود المحاولة.")));
  }
 }
@@ -201,10 +201,7 @@ async function submitEdit(form,widget){
  try{
   await refreshUser();
   if(!currentUser){errorBox.textContent="يلزمك تسجّل الدخول قبل التعديل.";return;}
-  const {error}=await client.from("post_comments")
-   .update({body})
-   .eq("id",Number(form.dataset.commentId))
-   .eq("user_id",currentUser.id);
+  const {error}=await client.rpc("update_own_post_comment",{p_comment_id:Number(form.dataset.commentId),p_body:body});
   if(error)throw error;
   loaded.delete(widget);
   await loadComments(widget);
