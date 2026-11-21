@@ -112,9 +112,9 @@ async function loadComments(widget){
   const rows=[...top,...replies];
   const count=rows.length;
   const toggle=widget.querySelector("[data-comments-toggle]");
-  if(toggle)toggle.textContent="💬 التعليقات ("+(hasMoreTop?"200+":count+(hasMoreReplies?"+":""))+")";
+  if(toggle)toggle.textContent="💬 التعليقات ("+(hasMoreTop?"200+":count)+")";
   panel.innerHTML=(top.length?top.map(row=>renderComment(row,rows)).join(""):'<p class="post-comment-login">ما فماش تعليقات. كن أوّل واحد يعلّق!</p>')+
-   (hasMoreReplies?'<p class="post-comment-login">عرضنا أول 1000 ردّ فقط. بعض الردود الأقدم أو الإضافية قد لا تظهر هنا.</p>':"")+
+
    (currentUser?makeForm(""):loginPrompt());
   loaded.add(widget);
  }catch(error){
