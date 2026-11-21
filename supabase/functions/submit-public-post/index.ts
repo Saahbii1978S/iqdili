@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { buildStorageCleanupJobs, scheduleStorageCleanup } from "../_shared/storage-cleanup-queue.ts";
+import { readLimitedRequest } from "../_shared/request-size.ts";
 
 const ALLOWED_ORIGINS = new Set(["https://saahbii1978s.github.io", "https://ahla-tounsa-project.github.io"]);
 const corsHeaders = {
@@ -90,9 +91,14 @@ Deno.serve(async (req: Request) => {
     const contentType = req.headers.get("content-type") || "";
     const contentLength = Number(req.headers.get("content-length") || "0");
     const isMultipart = contentType.toLowerCase().includes("multipart/form-data");
-    if (Number.isFinite(contentLength) && contentLength > (isMultipart ? 4000000 : 20000)) {
+    const maxRequestBytes = isMultipart ? 4000000 : 20000;
+    if (Number.isFinite(contentLength) && contentLength > maxRequestBytes) {
       return reply({ error: "حجم الطلب كبير أكثر من اللازم." }, 413);
     }
+    // Enforce the same limit while streaming, including requests without Content-Length.
+    const limitedRequest = await readLimitedRequest(req, maxRequestBytes);
+    if (!limitedRequest) return reply({ error: "حجم الطلب كبير أكثر من اللازم." }, 413);
+    req = limitedRequest;
 
     let table: unknown;
     let data: unknown;
