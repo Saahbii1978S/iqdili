@@ -61,11 +61,12 @@ assert "let sitePresenceRestartPending=false;" in HTML
 assert "if(generation!==sitePresenceGeneration)return;" in HTML
 assert "if(!db||generation!==sitePresenceGeneration)return;" in HTML
 for event in ("SIGNED_IN", "SIGNED_OUT"):
-    match = re.search(
-        rf'if\(event==="{event}"\)\{{([\s\S]*?)\n \}}',
-        HTML,
-    )
-    assert match and "restartSitePresence();" in match.group(1), (
+    marker = f'if(event==="{event}"){{'
+    start = HTML.find(marker)
+    assert start >= 0, f"{event} listener is missing"
+    next_event = HTML.find('if(event==="', start + len(marker))
+    block_end = next_event if next_event >= 0 else HTML.find("\\n});", start)
+    assert block_end >= 0 and "restartSitePresence();" in HTML[start:block_end], (
         f"{event} must invalidate and restart the presence check"
     )
 
