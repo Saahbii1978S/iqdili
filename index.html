@@ -1777,6 +1777,7 @@ main>section input[type="file"]::file-selector-button{
 const SUPABASE_URL="https://djzapiwxxuligpdbskfm.supabase.co";
 const SUPABASE_KEY="sb_publishable_IO1BB--ciapq2gJBjYxr3g_Yv4um_9n";
 let db=null;
+let publicDataReadyRefreshDone=false;
 
 function el(id){return document.getElementById(id)}
 function val(id){const node=el(id);return node ? node.value.trim() : ""}
@@ -2082,7 +2083,19 @@ try{
 if(!db && window.supabase && typeof window.supabase.createClient==="function"){
 db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }
-if(db)startSitePresence();
+if(db){
+ startSitePresence();
+ // If a visitor opened a listings section before Supabase finished loading,
+ // retry that initial load automatically once the client becomes available.
+ const visibleListingSection=["services","jobs","realty","market"].some(id=>{
+  const section=el(id);
+  return section&&!section.classList.contains("hidden");
+ });
+ if(visibleListingSection&&!publicDataReadyRefreshDone){
+  publicDataReadyRefreshDone=true;
+  loadData();
+ }
+}
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event,session)=>{
  if(event==="PASSWORD_RECOVERY"){show("reset-password");}
