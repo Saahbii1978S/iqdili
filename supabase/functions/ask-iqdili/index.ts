@@ -66,11 +66,10 @@ Deno.serve(async (req: Request) => {
     }
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    const forwardedFor = req.headers.get("x-forwarded-for") || "";
-    const clientIp = forwardedFor.split(",")[0].trim()
-      || req.headers.get("cf-connecting-ip")?.trim()
-      || req.headers.get("x-real-ip")?.trim()
-      || "";
+    // Supabase's hosted gateway logs expose cf-connecting-ip. Prefer this
+    // Cloudflare-origin header and fail closed if it is absent; never trust
+    // the caller-controlled first element of x-forwarded-for for rate limits.
+    const clientIp = req.headers.get("cf-connecting-ip")?.trim() || "";
     if (!supabaseUrl || !serviceRoleKey || !clientIp) {
       console.error("Ask rate-limit configuration or client IP is unavailable");
       return reply({ error: "خدمة الحماية مش متاحة مؤقتاً. عاود بعد شوية." }, 503);
