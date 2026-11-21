@@ -324,7 +324,7 @@ returns boolean
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $visibility$
 declare affected integer;
 begin
   if (select auth.uid()) is null
@@ -338,6 +338,6 @@ begin
   get diagnostics affected = row_count;
   return affected = 1;
 end;
-$;
+$visibility$;
 revoke all on function public.set_post_comment_visibility(bigint, text) from public, anon;
 grant execute on function public.set_post_comment_visibility(bigint, text) to authenticated;
