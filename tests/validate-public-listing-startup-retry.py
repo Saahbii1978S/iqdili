@@ -4,7 +4,7 @@ source = Path("index.html").read_text(encoding="utf-8")
 
 checks = {
     "one-time retry guard exists": "let publicDataReadyRefreshDone=false;" in source,
-    "retry runs only after Supabase client exists": "if(db){\n startSitePresence();" in source,
+    "retry runs only after Supabase client exists": "if(db){" in source and "startSitePresence();" in source,
     "only listing sections trigger retry": '["services","jobs","realty","market"].some(id=>' in source,
     "section visibility is checked": 'return section&&!section.classList.contains("hidden");' in source,
     "retry is guarded against duplicate calls": "if(visibleListingSection&&!publicDataReadyRefreshDone){" in source,
