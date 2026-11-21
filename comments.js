@@ -73,18 +73,27 @@ async function loadComments(widget){
  try{
   await refreshUser();
   const postTable=widget.dataset.postTable,postId=Number(widget.dataset.postId);
-  const {data:topData,error:topError}=await client.from("post_comments_public")
-   .select("id,post_id,parent_id,body,created_at,is_mine")
-   .eq("post_table",postTable)
-   .eq("post_id",postId)
-   .is("parent_id",null)
-   .order("created_at",{ascending:false})
-   .limit(201);
-  if(topError)throw topError;
-  // Load replies for the selected parent comments separately so busy threads
-  // cannot push their parent comments out of the 200-comment display window.
-  const hasMoreTop=(topData||[]).length>200;
-  const top=(topData||[]).slice(0,200).reverse();
+  // Fetch every top-level comment in bounded pages; do not silently cap
+  // popular posts at 200 comments.
+  const pageSize=500;
+  let top=[];
+  for(let offset=0;;offset+=pageSize){
+   const {data:topPage,error:topError}=await client.from("post_comments_public")
+    .select("id,post_id,parent_id,body,created_at,is_mine")
+    .eq("post_table",postTable)
+    .eq("post_id",postId)
+    .is("parent_id",null)
+    .order("created_at",{ascending:false})
+    .order("id",{ascending:false})
+    .range(offset,offset+pageSize-1);
+   if(topError)throw topError;
+   const page=topPage||[];
+   top.push(...page);
+   if(page.length<pageSize)break;
+  }
+  // Render oldest-to-newest while retaining a deterministic order for ties.
+  top.reverse();
+  // Load replies separately so large threads cannot displace top-level comments.
   const parentIds=top.map(row=>row.id);
   // Skip the replies request when a post has no top-level comments.
   // This avoids sending an empty .in() filter to PostgREST.
@@ -112,7 +121,7 @@ async function loadComments(widget){
   const rows=[...top,...replies];
   const count=rows.length;
   const toggle=widget.querySelector("[data-comments-toggle]");
-  if(toggle)toggle.textContent="💬 التعليقات ("+(hasMoreTop?"200+":count)+")";
+  if(toggle)toggle.textContent="💬 التعليقات ("+count+")";
   panel.innerHTML=(top.length?top.map(row=>renderComment(row,rows)).join(""):'<p class="post-comment-login">ما فماش تعليقات. كن أوّل واحد يعلّق!</p>')+
 
    (currentUser?makeForm(""):loginPrompt());
