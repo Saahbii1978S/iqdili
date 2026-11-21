@@ -87,25 +87,23 @@ async function loadComments(widget){
   const hasMoreTop=(topData||[]).length>200;
   const top=(topData||[]).slice(0,200).reverse();
   const parentIds=top.map(row=>row.id);
-  const replies=[];
-  for(let offset=0;parentIds.length;offset+=1000){
-   const {data:replyPage,error:replyError}=await client.from("post_comments")
-    .select("id,post_id,parent_id,user_id,body,created_at")
-    .eq("post_table",postTable)
-    .eq("post_id",postId)
-    .eq("status","published")
-    .in("parent_id",parentIds)
-    .order("created_at",{ascending:true})
-    .range(offset,offset+999);
-   if(replyError)throw replyError;
-   replies.push(...(replyPage||[]));
-   if(!replyPage||replyPage.length<1000)break;
-  }
+  const {data:replyData,error:replyError}=await client.from("post_comments")
+   .select("id,post_id,parent_id,user_id,body,created_at")
+   .eq("post_table",postTable)
+   .eq("post_id",postId)
+   .eq("status","published")
+   .in("parent_id",parentIds)
+   .order("created_at",{ascending:true})
+   .limit(1001);
+  if(replyError)throw replyError;
+  const hasMoreReplies=(replyData||[]).length>1000;
+  const replies=(replyData||[]).slice(0,1000);
   const rows=[...top,...replies];
   const count=rows.length;
   const toggle=widget.querySelector("[data-comments-toggle]");
-  if(toggle)toggle.textContent="💬 التعليقات ("+(hasMoreTop?"200+":count)+")";
+  if(toggle)toggle.textContent="💬 التعليقات ("+(hasMoreTop||hasMoreReplies?"200+":count)+")";
   panel.innerHTML=(top.length?top.map(row=>renderComment(row,rows)).join(""):'<p class="post-comment-login">ما فماش تعليقات. كن أوّل واحد يعلّق!</p>')+
+   (hasMoreReplies?'<p class="post-comment-login">عرضنا أول 1000 ردّ فقط. بعض الردود الأقدم أو الإضافية قد لا تظهر هنا.</p>':"")+
    (currentUser?makeForm(""):loginPrompt());
   loaded.add(widget);
  }catch(error){
