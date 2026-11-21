@@ -87,17 +87,23 @@ async function loadComments(widget){
   const hasMoreTop=(topData||[]).length>200;
   const top=(topData||[]).slice(0,200).reverse();
   const parentIds=top.map(row=>row.id);
-  const {data:replyData,error:replyError}=await client.from("post_comments")
-   .select("id,post_id,parent_id,user_id,body,created_at")
-   .eq("post_table",postTable)
-   .eq("post_id",postId)
-   .eq("status","published")
-   .in("parent_id",parentIds)
-   .order("created_at",{ascending:true})
-   .limit(1001);
-  if(replyError)throw replyError;
-  const hasMoreReplies=(replyData||[]).length>1000;
-  const replies=(replyData||[]).slice(0,1000);
+  // Skip the replies request when a post has no top-level comments.
+  // This avoids sending an empty .in() filter to PostgREST.
+  let replies=[];
+  let hasMoreReplies=false;
+  if(parentIds.length){
+   const {data:replyData,error:replyError}=await client.from("post_comments")
+    .select("id,post_id,parent_id,user_id,body,created_at")
+    .eq("post_table",postTable)
+    .eq("post_id",postId)
+    .eq("status","published")
+    .in("parent_id",parentIds)
+    .order("created_at",{ascending:true})
+    .limit(1001);
+   if(replyError)throw replyError;
+   hasMoreReplies=(replyData||[]).length>1000;
+   replies=(replyData||[]).slice(0,1000);
+  }
   const rows=[...top,...replies];
   const count=rows.length;
   const toggle=widget.querySelector("[data-comments-toggle]");
