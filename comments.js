@@ -201,6 +201,7 @@ async function submitEdit(form,widget){
   if(!currentUser){errorBox.textContent="يلزمك تسجّل الدخول قبل التعديل.";return;}
   const {error}=await client.rpc("update_own_post_comment",{p_comment_id:Number(form.dataset.commentId),p_body:body});
   if(error)throw error;
+  if(data!==true)throw new Error("تعذّر تعديل التعليق");
   loaded.delete(widget);
   await loadComments(widget);
  }catch(error){
