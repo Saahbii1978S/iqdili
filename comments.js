@@ -99,24 +99,31 @@ async function loadComments(widget){
   // This avoids sending an empty .in() filter to PostgREST.
   let replies=[];
   if(parentIds.length){
-   // Fetch every reply in bounded pages; a single PostgREST response can be capped.
-   const pageSize=500;
-   for(let offset=0;;offset+=pageSize){
-    const {data:replyPage,error:replyError}=await client.from("post_comments_public")
-     .select("id,post_id,parent_id,body,created_at,is_mine")
-     .eq("post_table",postTable)
-     .eq("post_id",postId)
-     .in("parent_id",parentIds)
-     .order("created_at",{ascending:false})
-     .order("id",{ascending:false})
-     .range(offset,offset+pageSize-1);
-    if(replyError)throw replyError;
-    const page=replyPage||[];
-    replies.push(...page);
-    if(page.length<pageSize)break;
+   // Keep each IN filter small to avoid oversized PostgREST URLs/parameter lists.
+   const parentBatchSize=100;
+   const replyPageSize=500;
+   for(let start=0;start<parentIds.length;start+=parentBatchSize){
+    const parentBatch=parentIds.slice(start,start+parentBatchSize);
+    for(let offset=0;;offset+=replyPageSize){
+     const {data:replyPage,error:replyError}=await client.from("post_comments_public")
+      .select("id,post_id,parent_id,body,created_at,is_mine")
+      .eq("post_table",postTable)
+      .eq("post_id",postId)
+      .in("parent_id",parentBatch)
+      .order("created_at",{ascending:false})
+      .order("id",{ascending:false})
+      .range(offset,offset+replyPageSize-1);
+     if(replyError)throw replyError;
+     const page=replyPage||[];
+     replies.push(...page);
+     if(page.length<replyPageSize)break;
+    }
    }
    // Restore chronological order for reading after fetching newest-first pages.
-   replies.reverse();
+   replies.sort((a,b)=>{
+    const time=Date.parse(a.created_at)-Date.parse(b.created_at);
+    return time||Number(a.id)-Number(b.id);
+   });
   }
   const rows=[...top,...replies];
   const count=rows.length;
