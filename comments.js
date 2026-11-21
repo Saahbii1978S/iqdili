@@ -98,11 +98,13 @@ async function loadComments(widget){
     .eq("post_id",postId)
     .eq("status","published")
     .in("parent_id",parentIds)
-    .order("created_at",{ascending:true})
+    .order("created_at",{ascending:false})
     .limit(1001);
    if(replyError)throw replyError;
    hasMoreReplies=(replyData||[]).length>1000;
-   replies=(replyData||[]).slice(0,1000);
+   // Keep the newest replies when a thread exceeds the display cap,
+   // then restore chronological order for reading.
+   replies=(replyData||[]).slice(0,1000).reverse();
   }
   const rows=[...top,...replies];
   const count=rows.length;
