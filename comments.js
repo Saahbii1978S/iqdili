@@ -89,20 +89,25 @@ async function loadComments(widget){
   // Skip the replies request when a post has no top-level comments.
   // This avoids sending an empty .in() filter to PostgREST.
   let replies=[];
-  let hasMoreReplies=false;
   if(parentIds.length){
-   const {data:replyData,error:replyError}=await client.from("post_comments_public")
-    .select("id,post_id,parent_id,body,created_at,is_mine")
-    .eq("post_table",postTable)
-    .eq("post_id",postId)
+   // Fetch every reply in bounded pages; a single PostgREST response can be capped.
+   const pageSize=500;
+   for(let offset=0;;offset+=pageSize){
+    const {data:replyPage,error:replyError}=await client.from("post_comments_public")
+     .select("id,post_id,parent_id,body,created_at,is_mine")
+     .eq("post_table",postTable)
+     .eq("post_id",postId)
      .in("parent_id",parentIds)
-    .order("created_at",{ascending:false})
-    .limit(1001);
-   if(replyError)throw replyError;
-   hasMoreReplies=(replyData||[]).length>1000;
-   // Keep the newest replies when a thread exceeds the display cap,
-   // then restore chronological order for reading.
-   replies=(replyData||[]).slice(0,1000).reverse();
+     .order("created_at",{ascending:false})
+     .order("id",{ascending:false})
+     .range(offset,offset+pageSize-1);
+    if(replyError)throw replyError;
+    const page=replyPage||[];
+    replies.push(...page);
+    if(page.length<pageSize)break;
+   }
+   // Restore chronological order for reading after fetching newest-first pages.
+   replies.reverse();
   }
   const rows=[...top,...replies];
   const count=rows.length;
