@@ -77,7 +77,6 @@ async function loadComments(widget){
    .select("id,post_id,parent_id,body,created_at,is_mine")
    .eq("post_table",postTable)
    .eq("post_id",postId)
-   .eq("status","published")
    .is("parent_id",null)
    .order("created_at",{ascending:false})
    .limit(201);
@@ -96,8 +95,7 @@ async function loadComments(widget){
     .select("id,post_id,parent_id,body,created_at,is_mine")
     .eq("post_table",postTable)
     .eq("post_id",postId)
-    .eq("status","published")
-    .in("parent_id",parentIds)
+     .in("parent_id",parentIds)
     .order("created_at",{ascending:false})
     .limit(1001);
    if(replyError)throw replyError;
