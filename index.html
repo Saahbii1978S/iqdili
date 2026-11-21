@@ -2082,6 +2082,10 @@ try{
 if(!db && window.supabase && typeof window.supabase.createClient==="function"){
 db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }
+if(db && window.ahlaTounsaSupabase!==db){
+ window.ahlaTounsaSupabase=db;
+ window.dispatchEvent(new Event("ahla:supabase-ready"));
+}
 if(db)startSitePresence();
 if(db && !authListenerInstalled){
 db.auth.onAuthStateChange((event,session)=>{
@@ -2406,7 +2410,22 @@ function listingLoadError(message){
 function renderList(id,rows,makeHtml,error){
 const target=el(id);if(!target)return;
 if(error){target.innerHTML=listingLoadError("تعذّر تحميل المنشورات. تثبّت من الاتصال وعاود المحاولة.");return;}
-target.innerHTML=rows && rows.length ? rows.map(makeHtml).join("") : '<p class="muted">ما فماش منشورات حالياً.</p>';
+const commentTableByList={
+ "market-list":"market_posts","market-live":"market_posts",
+ "sl":"service_requests","public-services-list":"service_requests",
+ "jl":"job_posts","public-jobs-list":"job_posts",
+ "rl":"real_estate_posts","public-realty-list":"real_estate_posts"
+};
+const commentTable=commentTableByList[id];
+target.innerHTML=rows && rows.length ? rows.map(row=>{
+ let html=makeHtml(row);
+ if(commentTable && row && row.id!==undefined && row.id!==null){
+  const widget='<div class="post-comments" data-post-comments data-post-table="'+commentTable+'" data-post-id="'+Number(row.id)+'"><button type="button" class="post-comments-toggle" data-comments-toggle aria-expanded="false">💬 التعليقات</button><div class="post-comments-panel" data-comments-panel hidden></div></div>';
+  const closeAt=html.lastIndexOf("</div>");
+  if(closeAt>=0)html=html.slice(0,closeAt)+widget+html.slice(closeAt);
+ }
+ return html;
+}).join("") : '<p class="muted">ما فماش منشورات حالياً.</p>';
 if(rows&&rows.length){target.querySelectorAll(".entry").forEach((entry,index)=>{entry.dataset.city=String(rows[index]?.city||"");});}
 }
 async function loadData(){
@@ -3888,6 +3907,8 @@ if ("serviceWorker" in navigator) {
  });
 })();
 </script>
+
+<script src="/iqdili/comments.js" defer></script>
 
 </body>
 </html>

@@ -1,0 +1,66 @@
+name: Validate post comments feature
+
+on:
+  pull_request:
+    paths:
+      - 'comments.js'
+      - 'index.html'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/comments-validation.yml'
+  push:
+    branches:
+      - integration/rebuild-from-main-2026-11-20
+    paths:
+      - 'comments.js'
+      - 'index.html'
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/comments-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: node --check comments.js
+
+      - name: Run isolated PostgreSQL RLS regression tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/post_comments_rls.sql
+
+      - name: Check comments wiring and migration guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'data-post-comments' index.html
+          grep -q 'src="/iqdili/comments.js"' index.html
+          grep -q 'create table if not exists public.post_comments' supabase/migrations/20261115144500_post_comments.sql
+          grep -q 'enable row level security' supabase/migrations/20261115144500_post_comments.sql
+          grep -q "coalesce(((select auth.jwt()) ->> 'is_anonymous')::boolean, true) = false" supabase/migrations/20261115144500_post_comments.sql
